@@ -1,18 +1,112 @@
 import jinja2
 import weasyprint
+from abc import ABC, abstractmethod
 
-def render_html(params):
-    """
-    Render html page using jinja2
-    :param row:
-    :return:
-    """
-    template_loader = jinja2.FileSystemLoader(searchpath="./")
-    template_env = jinja2.Environment(loader=template_loader)
-    template_file = "layout.html"
-    template = template_env.get_template(template_file)
-    output_text = template.render(
-        name=row.Name
-    )
+class Formatter(ABC):
+    def __init__(self):
+        self.type_report = None
+        self.sender_email = None
+        self.reciever_email = None
+        self.subject = None
+        self.server = None
+        self.port = None
 
-    weasyprint.HTML(string=output_text).write_pdf("report.pdf")
+    @abstractmethod
+    def render(self):
+        raise NotImplementedError("render implementation not found")
+
+
+class BaseFormatter(Formatter):
+    def __init__(self):
+        super(BaseFormatter, self).__init__()
+
+
+
+    def _make_message(self):
+        subject = "Dummy subject"
+        body = "This is an email attachment sent from OpenMinds regarding your project for protocol compliance"
+
+        message = multipart.MIMEMultipart()
+        message["From"] = self.sender_email
+        message["To"] = self.receiver_email
+        message["Subject"] = subject
+
+        message.attach(text.MIMEText(body, "plain"))
+        with open(self.report_path, "rb") as attachment:
+            # Add file as application/octet-stream
+            # Email client can usually download this attachment
+            part = base.MIMEBase("application", "octet-stream")
+            part.set_payload(attachment.read())
+
+        # Encode file in ASCII characters to send by email
+        encoders.encode_base64(part)
+
+        # Add header as key/value pair to attachment to part
+        part.add_header(
+            "Content-Disposition",
+            f"attachment; filename={self.report_path}"
+        )
+
+        # Add attachment to message and convert message to string
+        message.attach(part)
+        return message.as_string()
+
+    def email(self, debug=True):
+        if debug:
+            # Use SMTP server
+            server = 'localhost'
+            port = 1025
+        else:
+            # Use Gmail server
+            server = "smtp.gmail.com"
+            port = 465
+
+        password = input("Provide password: ")
+        message = self._make_message()
+
+        # Create a secure SSL context
+        context = ssl.create_default_context()
+        # Try to log in to server and send email
+        try:
+            server = smtplib.SMTP(server, port)
+            server.ehlo()
+            server.starttls(context=context)
+            server.ehlo()
+            if not debug:
+                server.login(self.sender_email, password)
+                server.sendmail(self.sender_email, self.receiver_email, message)
+        except Exception as e:
+            print(e)
+        finally:
+            server.quit()
+
+    def render(self):
+        raise NotImplementedError("BaseFormatter doesn't provide an implementation for formatting.")
+
+
+class HtmlFormatter(BaseFormatter):
+    def __init__(self):
+        super(HtmlFormatter, self).__init__()
+
+    def render(params):
+        """
+        Render html page using jinja2
+        :param row:
+        :return:
+        """
+        template_loader = jinja2.FileSystemLoader(searchpath="./")
+        template_env = jinja2.Environment(loader=template_loader)
+        template_file = "layout.html"
+        template = template_env.get_template(template_file)
+        output_text = template.render(
+            name=row.Name
+        )
+
+        weasyprint.HTML(string=output_text).write_pdf("report.pdf")
+
+
+
+class PdfFormatter(HtmlFormatter):
+    def __init__(self):
+        super().__init__()
+
