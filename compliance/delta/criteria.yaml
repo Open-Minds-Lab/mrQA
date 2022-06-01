@@ -1,60 +1,60 @@
 manufacturer:
     enabled: true
     mode: single
-    default: siemens
+    value: siemens
 organ:
     enabled: true
     mode: single
-    default: brain
+    value: brain
 te:
     enabled: true
     mode: range
-    default: None
+    value: None
 tr:
     enabled: true
     mode: range
-    default: None
+    value: None
 b0:
     enabled: true
     mode: single
-    default: None
+    value: None
 flip_angle:
     enabled: true
     mode: range
-    default: None
+    value: None
 bwpx:
     enabled: true
     mode: range
-    default: None
+    value: None
 comments:
     enabled: false
     mode: single
-    default: None
+    value: None
 scanning_sequence:
     enabled: true
     mode: single
-    default: None
+    value: None
 sequence_variant:
     enabled: true
     mode: single
-    default: None
+    value: None
 mr_acquisition_type:
     enabled: true
     mode: single
-    default: None
+    value: None
 phase_encoding_lines:
     enabled: true
     mode: multiple
-    default: ['ROW', 'COL']
+    value: ['ROW', 'COL']
 bwp_phase_encode:
     enabled: true
     mode: single
-    default: None
+    value: None
 echo_train_length:
     enabled: true
     mode: single
-    default: None
+    value: None
 phase_encoding_direction:
     enabled: true
     mode: single
-    default: None
+    value: None

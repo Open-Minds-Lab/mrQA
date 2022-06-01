@@ -60,13 +60,6 @@ class Node:
     def __repr__(self):
         return repr(self.fparams)
 
-    def is
-
-    def populate(self, *args, **kwargs):
-        for k in self.children:
-            if k.isconsistent():
-                self.fparams.append(k.fparams)
-
 
 class Dicom(Node):
     def __init__(self, filepath):

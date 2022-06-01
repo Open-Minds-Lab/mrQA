@@ -3,7 +3,7 @@ import argparse
 import sys
 from pathlib import Path
 from MRdataset import create_dataset
-from compliance.delta import project
+from compliance.elements import project
 
 
 def main():

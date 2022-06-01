@@ -4,10 +4,12 @@ import ssl
 import yaml
 from email.mime import base, multipart, text
 from email import encoders
+from pathlib import Path
+import time
 
 
 class Project(node.Node):
-    def __init__(self, dataset, protopath):
+    def __init__(self, dataset, protopath, export=False):
         super().__init__()
         self.dataset = dataset
         self._construct_tree()
@@ -16,9 +18,21 @@ class Project(node.Node):
         self.report = None
         self.report_path = None
         self.protocol = None
-        self.export_protocol = True
+        self.protocol = self.import_protocol(protopath)
+        if export:
+            self.export_protocol(protopath)
+
+    def import_protocol(self, protopath):
         with open(protopath, 'r') as file:
-            self.protocol = yaml.safe_load(file)
+            protocol = yaml.safe_load(file)
+        return protocol
+
+    def export_protocol(self, protopath):
+        path = Path(protopath).parent
+        time_string = time.strftime("%m_%d_%Y-%H_%M")
+        filepath = path/'criteria_{0}.yaml'.format(time_string)
+        with open(filepath, 'w') as file:
+            yaml.dump(self.fparams, file, default_flow_style=False)
 
     def _construct_tree(self):
         for sid in self.dataset.subjects:
@@ -31,29 +45,6 @@ class Project(node.Node):
                     session_node.insert(d)
                 sub.insert(session_node)
             self.insert(sub)
-
-    def check_consistent(self, dcm_node):
-        # for k, v in dcm_node:
-        pass
-
-    def post_order_traversal(self):
-        for sub in self.children:
-            for sess in sub.children:
-                for dcm_node in sess.children:
-                    # If Dicom is already populated
-                    if not dcm_node:
-                        dcm_node.load()
-
-
-
-    def check_compliance(self, span=True, style=None):
-        # Generate complete report
-        if span:
-            self.post_order_traversal()
-        else:
-            # Generate a different type of report
-            raise NotImplementedError("<span> has to be True.")
-        pass
 
     def export(self, astype='json', path=None, email=False):
         if astype == 'json':
