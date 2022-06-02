@@ -1,9 +1,6 @@
 from compliance.elements import node
-import smtplib
-import ssl
 import yaml
-from email.mime import base, multipart, text
-from email import encoders
+
 from pathlib import Path
 import time
 
@@ -12,9 +9,8 @@ class Project(node.Node):
     def __init__(self, dataset, protopath, export=False):
         super().__init__()
         self.dataset = dataset
+        self.name = dataset.name
         self._construct_tree()
-        self.sender_email = "mail.sinha.harsh@gmail.com"
-        self.receiver_email = "harsh.sinha@pitt.edu"
         self.report = None
         self.report_path = None
         self.protocol = None

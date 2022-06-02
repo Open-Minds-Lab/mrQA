@@ -1,15 +1,22 @@
 import jinja2
 import weasyprint
+import smtplib
+import ssl
 from abc import ABC, abstractmethod
+from email.mime import base, multipart, text
+from email import encoders
+from pathlib import Path
+
 
 class Formatter(ABC):
     def __init__(self):
         self.type_report = None
         self.sender_email = None
-        self.reciever_email = None
+        self.receiver_email = None
         self.subject = None
         self.server = None
         self.port = None
+        self.output = None
 
     @abstractmethod
     def render(self):
@@ -17,14 +24,14 @@ class Formatter(ABC):
 
 
 class BaseFormatter(Formatter):
-    def __init__(self):
+    def __init__(self, project, filepath):
         super(BaseFormatter, self).__init__()
-
-
+        self.project = project
+        self.filepath = filepath
 
     def _make_message(self):
         subject = "Dummy subject"
-        body = "This is an email attachment sent from OpenMinds regarding your project for protocol compliance"
+        body = "Regarding your project {0} for protocol compliance".format(self.project.name)
 
         message = multipart.MIMEMultipart()
         message["From"] = self.sender_email
@@ -32,7 +39,7 @@ class BaseFormatter(Formatter):
         message["Subject"] = subject
 
         message.attach(text.MIMEText(body, "plain"))
-        with open(self.report_path, "rb") as attachment:
+        with open(self.filepath, "rb") as attachment:
             # Add file as application/octet-stream
             # Email client can usually download this attachment
             part = base.MIMEBase("application", "octet-stream")
@@ -44,7 +51,7 @@ class BaseFormatter(Formatter):
         # Add header as key/value pair to attachment to part
         part.add_header(
             "Content-Disposition",
-            f"attachment; filename={self.report_path}"
+            f"attachment; filename={self.filepath}"
         )
 
         # Add attachment to message and convert message to string
@@ -80,33 +87,38 @@ class BaseFormatter(Formatter):
         finally:
             server.quit()
 
-    def render(self):
+    def render(self, *args, **kwargs):
         raise NotImplementedError("BaseFormatter doesn't provide an implementation for formatting.")
 
 
 class HtmlFormatter(BaseFormatter):
     def __init__(self):
         super(HtmlFormatter, self).__init__()
+        self.template_folder = Path(__file__).resolve().parent/'templates'
 
-    def render(params):
+    def render(self, params):
         """
         Render html page using jinja2
         :param row:
         :return:
         """
-        template_loader = jinja2.FileSystemLoader(searchpath="./")
+        template_loader = jinja2.FileSystemLoader(searchpath=self.template_folder)
         template_env = jinja2.Environment(loader=template_loader)
         template_file = "layout.html"
         template = template_env.get_template(template_file)
         output_text = template.render(
-            name=row.Name
+            # name=row.Name
         )
-
-        weasyprint.HTML(string=output_text).write_pdf("report.pdf")
-
+        self.output = weasyprint.HTML(string=output_text)
+        return self.output
 
 
 class PdfFormatter(HtmlFormatter):
     def __init__(self):
         super().__init__()
+        self.output = super(PdfFormatter, self).render()
+
+    def render(self, params):
+        return self.output.write_pdf(self.filepath)
+
 
