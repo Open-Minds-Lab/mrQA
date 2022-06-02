@@ -1,19 +1,22 @@
 import pydicom
 import warnings
 from collections import defaultdict
-
+from compliance.utils import functional
+from compliance.utils import error
 from nibabel.nicom import csareader
-
+from pathlib import Path
 from compliance.utils import config
 
 
 class Node:
     def __init__(self):
-        self.fparams = defaultdict(list)
+        self.fparams = defaultdict()
         self.children = []
         self.verbose = False
         self.filepath = None
-        self._nonzero = False
+        self.consistent = False
+        self.delta = None
+        self.error_prone = False
 
     def __bool__(self):
         return len(self) > 0
@@ -64,7 +67,10 @@ class Node:
 class Dicom(Node):
     def __init__(self, filepath):
         super().__init__()
-        self.filepath = filepath
+        self.filepath = Path(filepath)
+        if not self.filepath.exists():
+            raise OSError("Expected a valid filepath, Got invalid path : {0}\n"
+                          "Consider re-indexing dataset.".format(filepath))
 
     def free_memory(self):
         """
@@ -75,18 +81,27 @@ class Dicom(Node):
         del self.csaprops
 
     def load(self):
-        self._read()
-        self.set_property()
-        self._csa_parser()
-        self._adhoc_property()
-        self._get_phase_encoding()
-        self.free_memory()
+        try:
+            self._read()
+            self.set_property()
+            self._csa_parser()
+            self._adhoc_property()
+            self._get_phase_encoding()
+            self.free_memory()
+            return True
+        except error.DicomParsingError:
+            # Flush parameters for dicom file
+            self.error_prone = True
+            warnings.warn("Error parsing dicom file. Skip?")
+            return False
 
     def _read(self):
         try:
             self.dicom = pydicom.dcmread(self.filepath)
         except OSError:
-            print("Unable to read dicom file from disk.{0}".format(self.filepath))
+            raise error.DicomParsingError(
+                "Unable to read dicom file from disk : {0}".format(self.filepath)
+            )
 
     def get_value(self, name):
         data = self.dicom.get(config.PARAMETER_TAGS[name], None)
@@ -119,9 +134,17 @@ class Dicom(Node):
             self[k] = self.get_value(k)
 
     def _csa_parser(self):
-        self.image_header = csareader.read(self._get_header('ImageHeaderInfo'))
-        self.series_header = csareader.read(self._get_header('SeriesHeaderInfo'))
-        text = self.series_header['tags']['MrPhoenixProtocol']['items'][0].split("\n")
+        self.image_header = csareader.read(self._get_header('image_header_info'))
+        self.series_header = csareader.read(self._get_header('series_header_info'))
+        items = functional.safe_get(self.series_header, 'tags.MrPhoenixProtocol.items')
+        if items:
+            text = items[0].split("\n")
+        else:
+            raise error.DicomPropertyNotFoundError(
+                filepath=self.filepath,
+                attribute='series_header.tags.MrPhoenixProtocol.items'
+            )
+
         start = False
         end = False
         props = {}
@@ -138,57 +161,56 @@ class Dicom(Node):
         return
 
     def _adhoc_property(self):
-        self["MultiBandComment"] = self.get("Comments")
-        so = str(eval(self.csaprops["sKSpace.ucMultiSliceMode"]))
-        self["SliceOrder"] = config.SODict[so]
-        if self.get("EchoTrainLength") > 1:
-            check = (self.get("EchoTrainLength") == self.get("PhaseEncodingLines"))
-            if not check:
-                print("PhaseEncodingLines is not equal to EchoTrainLength : {0}".format(self.filepath))
-        try:
-            self['EffectiveEchoSpacing'] = 1000 / (
-                    self.get('BandwidthPerPixelPhaseEncode') * self.get("PhaseEncodingLines"))
-        except Exception as e:
-            if self.verbose:
-                if self.get('PhaseEncodingLines') is None:
-                    warnings.warn('PhaseEncodingLines is None')
-                else:
-                    warnings.warn("Could not calculate EffectiveEchoSpacing : ")
-            self['EffectiveEchoSpacing'] = None
+        self["multi_band_comment"] = self.get("comments")
+        so = self.csaprops["sKSpace.ucMultiSliceMode"]
+        self["slice_order"] = config.SODict[so]
+        # if self.get("echo_train_length") > 1: # Check if etl == pel
+        #     check = (self.get("echo_train_length") == self.get("phase_encoding_lines"))
+        #     if not check:
+        #         print("PhaseEncodingLines is not equal to EchoTrainLength : {0}".format(self.filepath))
+        if (self.get('bwp_phase_encode') is None) or (self.get('phase_encoding_lines') is None):
+            self['effective_echo_spacing'] = None
+        else:
+            self['effective_echo_spacing'] = 1000 / (
+                    self.get('bwp_phase_encode') * self.get("phase_encoding_lines"))
         # three modes: warm-up, standard, advanced
-        self["iPAT"] = self.csaprops.get("sPat.lAccelFactPE", None)
-        self["ShimMethod"] = self.csaprops["sAdjData.uiAdjShimMode"]
-        self["is3D"] = self.get("MRAcquisitionType") == '3D'
+        self["ipat"] = self.csaprops.get("sPat.lAccelFactPE", None)
+        self["shim_method"] = self.csaprops["sAdjData.uiAdjShimMode"]
+        self["is3d"] = self.get("mr_acquisition_type") == '3D'
 
-    def _get_phase_encoding(self, isFlipY=True):
+    def _get_phase_encoding(self, isflipy=True):
         """
         https://github.com/rordenlab/dcm2niix/blob/23d087566a22edd4f50e4afe829143cb8f6e6720/console/nii_dicom_batch.cpp
         """
         is_skip = False
         if self.get('is3D'):
             is_skip = True
-        if self.get('EchoTrainLength') > 1:
+        if self.get('echo_train_length') > 1:
             is_skip = False
-        phPos = self.image_header["tags"]['PhaseEncodingDirectionPositive']['items'].pop()
-        ped_dcm = self.get_value("PedDCM")
+        phpos = self.image_header["tags"]['PhaseEncodingDirectionPositive']['items'].pop()
+        ped_dcm = self.get_value("phase_encoding_direction")
         ped = ""
         assert ped_dcm in ["COL", "ROW"]
         if not is_skip and ped_dcm == "COL":
             ped = "j"
         elif not is_skip and ped_dcm == "ROW":
             ped = "i"
-        if phPos >= 0 and not is_skip:
-            if phPos == 0 and ped_dcm == 'ROW':
+        if phpos >= 0 and not is_skip:
+            if phpos == 0 and ped_dcm == 'ROW':
                 ped += "-"
-            elif ped_dcm == "COL" and phPos == 1 and isFlipY:
+            elif ped_dcm == "COL" and phpos == 1 and isflipy:
                 ped += "-"
-            elif ped_dcm == "COL" and phPos == 0 and not isFlipY:
+            elif ped_dcm == "COL" and phpos == 0 and not isflipy:
                 ped += "-"
-            pedDict = {'i': 'Left-Right', 'i-': 'Right-Left',
-                       'j-': 'Anterior-Posterior', 'j': 'Posterior-Anterior'}
-            self["PhaseEncodingDirection"] = pedDict[ped]
+            ped_dict = {
+                'i': 'Left-Right',
+                'i-': 'Right-Left',
+                'j-': 'Anterior-Posterior',
+                'j': 'Posterior-Anterior'
+            }
+            self["phase_encoding_direction"] = ped_dict[ped]
         else:
-            self["PhaseEncodingDirection"] = None
+            self["phase_encoding_direction"] = None
 
     def __str__(self):
         return self

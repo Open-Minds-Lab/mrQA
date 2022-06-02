@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 from MRdataset import create_dataset
 from compliance.elements import project
-
+from compliance.delta import diff
 
 def main():
     """Console script for compliance."""
@@ -37,6 +37,7 @@ def main():
     if not Path(args.dataroot).is_dir():
         raise OSError('Expected valid directory for --dataroot argument, Got {0}'.format(args.dataroot))
     metadata_dir = Path(args.metadataroot)
+    # print(metadata_dir)
     if not metadata_dir.is_dir():
         if args.create:
             metadata_dir.mkdir(parents=True, exist_ok=True)
@@ -45,7 +46,10 @@ def main():
                 'Expected valid directory for --metadata argument. Use -c flag to create new directories automatically')
     dataset = create_dataset(args)
     proj = project.Project(dataset, args.protocol)
-    return dataset
+    # monitor = diff.Monitor(proj)
+    proj.check_compliance()
+
+    return 0
 
 
 if __name__ == "__main__":
