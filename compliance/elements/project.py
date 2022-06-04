@@ -70,7 +70,7 @@ class Project(node.Node):
                 # Criteria for comparison, compare with first file, or use a protocol criteria
                 anchor, i = self.get_anchor(sess)
                 if anchor is None:
-                    warnings.warn("All dicom files in folder {0} have a problem. What to do?".format(sess.children[0].filepath.parent))
+                    warnings.warn("All dicom files in folder {0} have a problem. What to do?".format(sess.children[0].filepath.parent), stacklevel=2)
                     continue
                 for dcm_node in sess.children[i:]:
                     # If Dicom is already populated
@@ -80,6 +80,17 @@ class Project(node.Node):
                     if dcm_node.delta:
                         consistent_sess = False
                 sess.consistent = consistent_sess
+
+    def partition_sessions(self):
+        consistent_sess = []
+        inconsistent_sess = []
+        for sub in self.children:
+            for sess in sub.children:
+                if sess.consistent:
+                    consistent_sess.append(sess.children[0].filepath.parent)
+                else:
+                    inconsistent_sess.append(sess.children[0].filepath.parent)
+            return consistent_sess, inconsistent_sess
 
     def check_compliance(self, span=True, style=None):
         # Generate complete report

@@ -92,7 +92,7 @@ class Dicom(Node):
         except error.DicomParsingError:
             # Flush parameters for dicom file
             self.error_prone = True
-            warnings.warn("Error parsing dicom file. Skip?")
+            warnings.warn("Error parsing dicom file. Skip?", stacklevel=2)
             return False
 
     def _read(self):
@@ -126,6 +126,7 @@ class Dicom(Node):
                     name,
                     config.PARAMETER_TAGS[name]
                 )
+                , stacklevel=2
             )
             return None
 

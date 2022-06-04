@@ -24,9 +24,9 @@ class Formatter(ABC):
 
 
 class BaseFormatter(Formatter):
-    def __init__(self, project, filepath):
+    def __init__(self, filepath):
         super(BaseFormatter, self).__init__()
-        self.project = project
+        # self.project = project
         self.filepath = filepath
 
     def _make_message(self):
@@ -92,9 +92,9 @@ class BaseFormatter(Formatter):
 
 
 class HtmlFormatter(BaseFormatter):
-    def __init__(self):
-        super(HtmlFormatter, self).__init__()
-        self.template_folder = Path(__file__).resolve().parent/'templates'
+    def __init__(self, filepath):
+        super(HtmlFormatter, self).__init__(filepath)
+        self.template_folder = Path(__file__).resolve().parent
 
     def render(self, params):
         """
@@ -106,19 +106,23 @@ class HtmlFormatter(BaseFormatter):
         template_env = jinja2.Environment(loader=template_loader)
         template_file = "layout.html"
         template = template_env.get_template(template_file)
+        # print(params)
         output_text = template.render(
-            # name=row.Name
+            good_sessions=params['good_sessions'],
+            bad_sessions=params['bad_sessions']
         )
         self.output = weasyprint.HTML(string=output_text)
+        f = open(self.template_folder/'gen.html', 'w')
+        f.write(output_text)
         return self.output
 
 
 class PdfFormatter(HtmlFormatter):
-    def __init__(self):
-        super().__init__()
-        self.output = super(PdfFormatter, self).render()
+    def __init__(self, params, filepath):
+        super().__init__(filepath)
+        self.output = super(PdfFormatter, self).render(params)
 
-    def render(self, params):
+    def render(self):
         return self.output.write_pdf(self.filepath)
 
 

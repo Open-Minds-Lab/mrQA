@@ -5,6 +5,7 @@ from pathlib import Path
 from MRdataset import create_dataset
 from compliance.elements import project
 from compliance.delta import diff
+from compliance.templates import formatter
 
 def main():
     """Console script for compliance."""
@@ -48,7 +49,13 @@ def main():
     proj = project.Project(dataset, args.protocol)
     # monitor = diff.Monitor(proj)
     proj.check_compliance()
-
+    consistent_sess, inconsistent_sess = proj.partition_sessions()
+    params = {
+        'good_sessions': consistent_sess,
+        'bad_sessions' : inconsistent_sess
+    }
+    report = formatter.PdfFormatter(filepath=Path(args.metadataroot)/'report.pdf',
+                                    params=params).render()
     return 0
 
 
