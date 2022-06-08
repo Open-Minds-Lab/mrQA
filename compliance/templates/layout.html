@@ -100,15 +100,31 @@
 <thead>
   <tr>
     <th class="tg-c3ow" colspan="4">Bad Sessions</th>
+      {% for k in bad_sessions[0].keys() %}
+        <th class=""tg=-0pky" colspan="2">{{k}}</th>
+      {% endfor %}
   </tr>
 </thead>
-    <tbody>
-        {% for sess in bad_sessions %}
-          <tr>
-              <td class="tg-0pky" colspan="4">{{ sess }}</td>
-          </tr>
+<tbody>
+    {% for sess in bad_sessions %}
+    <tr>
+        <td class="tg-0pky" colspan="4"> {{sess.filepath}} </td>
+        {% for k in sess.keys()%}
+          <td class="tg-0pky" colspan="2">{{sess[k]}}</td>
         {% endfor %}
-    </tbody>
+    </tr>
+    {% for dcm_node in sess.children %}
+    <tr>
+      {% if dcm_node.delta %}
+      <td class="tg-0pky" colspan="4">{{ dcm_node.filepath.name }}</td>
+      {% for k in dcm_node.keys()%}
+        <td class="tg-0pky" colspan="2">{{dcm_node[k]}}</td>
+      {% endfor %}
+      {% endif %}}
+    </tr>
+     {% endfor %}
+    {% endfor %}
+</tbody>
 </table>
 
 </body>
