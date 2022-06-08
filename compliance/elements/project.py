@@ -41,6 +41,7 @@ class Project(node.Node):
                 for f in data['files']:
                     d = node.Dicom(filepath=f)
                     session_node.insert(d)
+                session_node.filepath = d.filepath
                 sub.insert(session_node)
             self.insert(sub)
 
@@ -77,8 +78,14 @@ class Project(node.Node):
                     if not dcm_node:
                         dcm_node.load()
                     dcm_node.delta = self.diff(dcm_node, anchor)
+                    # If Dicom file has some differences, set consistent session to False
+                    # Store delta in dicom object only, better
                     if dcm_node.delta:
                         consistent_sess = False
+                    else:
+                        # Given the fact that session is consistent
+                        # use one of the dicom files, to copy and store the consistent parameters
+                        sess.copy(anchor)
                 sess.consistent = consistent_sess
 
     def partition_sessions(self):
@@ -87,9 +94,9 @@ class Project(node.Node):
         for sub in self.children:
             for sess in sub.children:
                 if sess.consistent:
-                    consistent_sess.append(sess.children[0].filepath.parent)
+                    consistent_sess.append(sess)
                 else:
-                    inconsistent_sess.append(sess.children[0].filepath.parent)
+                    inconsistent_sess.append(sess)
             return consistent_sess, inconsistent_sess
 
     def check_compliance(self, span=True, style=None):

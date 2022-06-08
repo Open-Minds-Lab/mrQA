@@ -50,6 +50,8 @@ def main():
     # monitor = diff.Monitor(proj)
     proj.check_compliance()
     consistent_sess, inconsistent_sess = proj.partition_sessions()
+    print(len(consistent_sess))
+    print(len(inconsistent_sess))
     params = {
         'good_sessions': consistent_sess,
         'bad_sessions' : inconsistent_sess

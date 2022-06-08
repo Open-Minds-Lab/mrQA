@@ -63,6 +63,13 @@ class Node:
     def __repr__(self):
         return repr(self.fparams)
 
+    def copy(self, other):
+        self.fparams = other.fparams.copy()
+
+    def keys(self):
+        return self.fparams.keys()
+
+
 
 class Dicom(Node):
     def __init__(self, filepath):

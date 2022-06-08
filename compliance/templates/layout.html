@@ -7,7 +7,7 @@
 </head>
 <body>
 
-<table class="tg">
+<table class="tg" id="documentation">
 <thead>
   <tr>
     <th class="tg-c3ow" colspan="4">Report Documentation Page</th>
@@ -74,26 +74,42 @@
 </tbody>
 </table>
 
-<table>
 
-<table class="tg">
+<table class="tg" id="good_sessions">
 <thead>
   <tr>
     <th class="tg-c3ow" colspan="4">Good Sessions</th>
+      {% for k in good_sessions[0].keys()%}
+        <th class="tg-0pky" colspan="2">{{k}}</th>
+      {% endfor %}
   </tr>
 </thead>
 <tbody>
 {% for sess in good_sessions %}
   <tr>
-      <td class="tg-0pky" colspan="4">{{ sess }}</td>
+      <td class="tg-0pky" colspan="4">{{ sess.filepath }}</td>
+      {% for k in sess.keys()%}
+        <td class="tg-0pky" colspan="2">{{sess[k]}}</td>
+      {% endfor %}
   </tr>
 {% endfor %}
-{% for sess in bad_sessions %}
-  <tr>
-      <td class="tg-0pky" colspan="4">{{ sess }}</td>
-  </tr>
-{% endfor %}
-
+</tbody>
 </table>
+
+<table class="tg" id="bad_sessions">
+<thead>
+  <tr>
+    <th class="tg-c3ow" colspan="4">Bad Sessions</th>
+  </tr>
+</thead>
+    <tbody>
+        {% for sess in bad_sessions %}
+          <tr>
+              <td class="tg-0pky" colspan="4">{{ sess }}</td>
+          </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
 </body>
 </html>
