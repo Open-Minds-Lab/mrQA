@@ -54,7 +54,9 @@ class Project(node.Node):
 
     def get_anchor(self, session, style='first'):
         if style == 'first':
-            for i in range(len(session.children)):
+            # Check untill there are two dicom files, otherwise what is
+            # the point choosing the single MRI file, as anchor
+            for i in range(len(session.children)-1):
                 anchor = session.children[i]
                 if not anchor:
                     success = anchor.load()
@@ -73,7 +75,7 @@ class Project(node.Node):
                 if anchor is None:
                     warnings.warn("All dicom files in folder {0} have a problem. What to do?".format(sess.children[0].filepath.parent), stacklevel=2)
                     continue
-                for dcm_node in sess.children[i:]:
+                for dcm_node in sess.children[i+1:]:
                     # If Dicom is already populated
                     if not dcm_node:
                         dcm_node.load()
@@ -82,10 +84,12 @@ class Project(node.Node):
                     # Store delta in dicom object only, better
                     if dcm_node.delta:
                         consistent_sess = False
-                    else:
-                        # Given the fact that session is consistent
-                        # use one of the dicom files, to copy and store the consistent parameters
-                        sess.copy(anchor)
+
+                # Given the fact that session is consistent
+                # use one of the dicom files, to copy and store the consistent parameters
+                # If session was inconsistent, make sure  you store the parameters used
+                # for comparison
+                sess.copy(anchor)
                 sess.consistent = consistent_sess
 
     def partition_sessions(self):
