@@ -41,7 +41,7 @@ class Project(node.Node):
                 for f in data['files']:
                     d = node.Dicom(filepath=f)
                     session_node.insert(d)
-                session_node.filepath = d.filepath
+                session_node.filepath = d.filepath.parent
                 sub.insert(session_node)
             self.insert(sub)
 
