@@ -108,23 +108,23 @@
 <tbody>
     {% for sess in bad_sessions %}
         {% if not sess.error %}
-        <tr>
-        <td class="tg-0pky" colspan="4"> {{sess.filepath}} </td>
-        {% for k in sess.keys()%}
-          <td class="tg-0pky" colspan="2">{{sess[k]}}</td>
-        {% endfor %}
-        </tr>
+            <tr>
+            <td class="tg-0pky" colspan="4">{{sess.filepath}}</td>
+            {% for k in sess.keys() %}
+              <td class="tg-0pky" colspan="2">{{sess[k]}}</td>
+            {% endfor %}
+            </tr>
 
             {% for dcm_node in sess.children %}
+            {% if dcm_node.delta %}
             <tr>
-              {% if dcm_node.delta %}
               <td class="tg-0pky" colspan="4">{{ dcm_node.filepath.name }}</td>
               {% for k in dcm_node.keys()%}
                 <td class="tg-0pky" colspan="2">{{dcm_node[k]}}</td>
               {% endfor %}
-              {% endif %}}
             </tr>
-             {% endfor %}
+            {% endif %}
+            {% endfor %}
         {% endif %}
     {% endfor %}
 </tbody>
