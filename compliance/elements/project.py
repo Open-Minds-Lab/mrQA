@@ -74,6 +74,7 @@ class Project(node.Node):
                 anchor, i = self.get_anchor(sess)
                 if anchor is None:
                     warnings.warn("All dicom files in folder {0} have a problem. What to do?".format(sess.children[0].filepath.parent), stacklevel=2)
+                    sess.error = True
                     continue
                 for dcm_node in sess.children[i+1:]:
                     # If Dicom is already populated

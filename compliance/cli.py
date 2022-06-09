@@ -50,8 +50,13 @@ def main():
     # monitor = diff.Monitor(proj)
     proj.check_compliance()
     consistent_sess, inconsistent_sess = proj.partition_sessions()
-    print(len(consistent_sess))
-    print(len(inconsistent_sess))
+    # print(len(consistent_sess))
+    # print(len(inconsistent_sess))
+
+    # for sess in inconsistent_sess:
+    #     for dcm_node in sess.children:
+    #         if dcm_node.delta:
+    #             print(dcm_node)
     params = {
         'good_sessions': consistent_sess,
         'bad_sessions' : inconsistent_sess
