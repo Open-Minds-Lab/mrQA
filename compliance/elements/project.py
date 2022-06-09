@@ -102,7 +102,7 @@ class Project(node.Node):
                     consistent_sess.append(sess)
                 else:
                     inconsistent_sess.append(sess)
-            return consistent_sess, inconsistent_sess
+        return consistent_sess, inconsistent_sess
 
     def check_compliance(self, span=True, style=None):
         # Generate complete report
