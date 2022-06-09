@@ -11,7 +11,13 @@ class Project(node.Node):
     def __init__(self, dataset, protopath, export=False):
         super().__init__()
         self.dataset = dataset
-        self.name = dataset.name
+
+        if dataset.name is None:
+            if not dataset.projects:
+                self.id = dataset.projects[0]
+        else:
+            self.id = dataset.name
+
         self._construct_tree()
         self.report = None
         self.report_path = None
@@ -35,6 +41,7 @@ class Project(node.Node):
     def _construct_tree(self):
         for sid in self.dataset.subjects:
             sub = node.Node()
+            sub.id = sid
             for sess in self.dataset.sessions[sid]:
                 data = self.dataset[sid, sess]
                 session_node = node.Node()
@@ -94,15 +101,16 @@ class Project(node.Node):
                 sess.consistent = consistent_sess
 
     def partition_sessions(self):
-        consistent_sess = []
-        inconsistent_sess = []
         for sub in self.children:
+            consistent_sess = []
+            inconsistent_sess = []
             for sess in sub.children:
                 if sess.consistent:
                     consistent_sess.append(sess)
                 else:
                     inconsistent_sess.append(sess)
-        return consistent_sess, inconsistent_sess
+            sub.good_sessions = consistent_sess.copy()
+            sub.bad_sessions = inconsistent_sess.copy()
 
     def check_compliance(self, span=True, style=None):
         # Generate complete report

@@ -17,6 +17,9 @@ class Node:
         self.consistent = False
         self.delta = None
         self.error = False
+        self.id = None
+        self.good_sessions = None
+        self.bad_sessions = None
 
     def __bool__(self):
         return len(self) > 0

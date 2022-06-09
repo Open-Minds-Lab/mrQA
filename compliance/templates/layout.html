@@ -74,18 +74,19 @@
 </tbody>
 </table>
 
-
-<table class="tg" id="good_sessions">
+{% for sub in project.children %}
+<h1>{{sub.id}}</h1>
+    <table class="tg" id="good_sessions">
 <thead>
   <tr>
     <th class="tg-c3ow" colspan="4">Good Sessions</th>
-      {% for k in good_sessions[0].keys()%}
+      {% for k in sub.good_sessions[0].keys()%}
         <th class="tg-0pky" colspan="2">{{k}}</th>
       {% endfor %}
   </tr>
 </thead>
 <tbody>
-{% for sess in good_sessions %}
+{% for sess in sub.good_sessions %}
   <tr>
       <td class="tg-0pky" colspan="4">{{ sess.filepath }}</td>
       {% for k in sess.keys()%}
@@ -96,17 +97,17 @@
 </tbody>
 </table>
 
-<table class="tg" id="bad_sessions">
+    <table class="tg" id="bad_sessions">
 <thead>
   <tr>
     <th class="tg-c3ow" colspan="4">Bad Sessions</th>
-      {% for k in bad_sessions[0].keys() %}
+      {% for k in sub.bad_sessions[0].keys() %}
         <th class=""tg=-0pky" colspan="2">{{k}}</th>
       {% endfor %}
   </tr>
 </thead>
 <tbody>
-    {% for sess in bad_sessions %}
+    {% for sess in sub.bad_sessions %}
         {% if not sess.error %}
             <tr>
             <td class="tg-0pky" colspan="4">{{sess.filepath}}</td>
@@ -131,17 +132,17 @@
 </table>
 
 
-<table class="tg" id="invalid_sessions">
+    <table class="tg" id="invalid_sessions">
 <thead>
   <tr>
     <th class="tg-c3ow" colspan="4">Invalid Sessions</th>
-<!--      {% for k in bad_sessions[0].keys()%}-->
-<!--        <th class="tg-0pky" colspan="2">{{k}}</th>-->
-<!--      {% endfor %}-->
+      {# {% for k in bad_sessions[0].keys()%} #}
+      {#   <th class="tg-0pky" colspan="2">{{k}}</th> #}
+      {# {% endfor %} #}
   </tr>
 </thead>
 <tbody>
-{% for sess in bad_sessions %}
+{% for sess in sub.bad_sessions %}
   {% if sess.error %}
   <tr>
       <td class="tg-0pky" colspan="4">{{ sess.filepath }}</td>
@@ -154,6 +155,6 @@
 </tbody>
 </table>
 
-
+{% endfor %}
 </body>
 </html>

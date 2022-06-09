@@ -49,7 +49,7 @@ def main():
     proj = project.Project(dataset, args.protocol)
     # monitor = diff.Monitor(proj)
     proj.check_compliance()
-    consistent_sess, inconsistent_sess = proj.partition_sessions()
+    proj.partition_sessions()
     # print(len(consistent_sess))
     # print(len(inconsistent_sess))
 
@@ -58,8 +58,7 @@ def main():
     #         if dcm_node.delta:
     #             print(dcm_node)
     params = {
-        'good_sessions': consistent_sess,
-        'bad_sessions' : inconsistent_sess
+        'project': proj,
     }
     report = formatter.PdfFormatter(filepath=Path(args.metadataroot)/'report.pdf',
                                     params=params).render()

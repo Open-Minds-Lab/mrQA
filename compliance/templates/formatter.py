@@ -108,8 +108,7 @@ class HtmlFormatter(BaseFormatter):
         template = template_env.get_template(template_file)
         # print(params)
         output_text = template.render(
-            good_sessions=params['good_sessions'],
-            bad_sessions=params['bad_sessions']
+            project=params['project']
         )
         self.output = weasyprint.HTML(string=output_text)
         f = open(self.template_folder/'gen.html', 'w')
