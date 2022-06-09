@@ -21,7 +21,7 @@
     <td class="tg-0pky" colspan="2">3.</td>
   </tr>
   <tr>
-    <td class="tg-0lax" colspan="4" rowspan="3">4. PROJECT TITLE</td>
+    <td class="tg-0lax" colspan="4" rowspan="3">4. PROJECT TITLE {{project.id}}</td>
     <td class="tg-0lax" colspan="2">5a. Project Properties</td>
   </tr>
   <tr>
@@ -75,7 +75,7 @@
 </table>
 
 {% for sub in project.children %}
-<h1>{{sub.id}}</h1>
+<h2>Subject Id : {{sub.id}}</h2>
     <table class="tg" id="good_sessions">
 <thead>
   <tr>
@@ -120,8 +120,19 @@
             {% if dcm_node.delta %}
             <tr>
               <td class="tg-0pky" colspan="4">{{ dcm_node.filepath.name }}</td>
-              {% for k in dcm_node.keys()%}
+              {% for k in dcm_node.keys() %}
+                {% set ns = namespace(flag=false) %}
+                {% for e in dcm_node.delta %}
+                  {% if k == e[1] %}
+                    {% set ns.flag = true %}
+                    {% break %}
+                  {% endif %}
+                {% endfor %}
+                {% if ns.flag%}
+                <td class="tg-color" colspan="2">{{dcm_node[k]}}</td>
+                {% else %}
                 <td class="tg-0pky" colspan="2">{{dcm_node[k]}}</td>
+                {% endif %}
               {% endfor %}
             </tr>
             {% endif %}

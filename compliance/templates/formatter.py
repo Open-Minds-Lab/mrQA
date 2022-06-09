@@ -103,7 +103,8 @@ class HtmlFormatter(BaseFormatter):
         :return:
         """
         template_loader = jinja2.FileSystemLoader(searchpath=self.template_folder)
-        template_env = jinja2.Environment(loader=template_loader)
+        template_env = jinja2.Environment(loader=template_loader,
+                                          extensions=['jinja2.ext.loopcontrols'])
         template_file = "layout.html"
         template = template_env.get_template(template_file)
         # print(params)
