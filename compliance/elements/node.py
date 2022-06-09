@@ -16,7 +16,7 @@ class Node:
         self.filepath = None
         self.consistent = False
         self.delta = None
-        self.error_prone = False
+        self.error = False
 
     def __bool__(self):
         return len(self) > 0
@@ -68,6 +68,9 @@ class Node:
 
     def keys(self):
         return self.fparams.keys()
+
+    def __str__(self):
+        return str(self.fparams)
 
 
 
@@ -219,6 +222,3 @@ class Dicom(Node):
             self["phase_encoding_direction"] = ped_dict[ped]
         else:
             self["phase_encoding_direction"] = None
-
-    def __str__(self):
-        return self
