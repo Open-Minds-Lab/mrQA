@@ -110,7 +110,8 @@ class Dicom(Node):
 
     def _read(self):
         try:
-            self.dicom = pydicom.dcmread(self.filepath)
+            self.dicom = pydicom.dcmread(self.filepath,
+                                         stop_before_pixels=True)
         except OSError:
             raise error.DicomParsingError(
                 "Unable to read dicom file from disk : {0}".format(self.filepath)

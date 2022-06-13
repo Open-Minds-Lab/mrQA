@@ -96,7 +96,7 @@
 {% endfor %}
 </tbody>
 </table>
-
+{% if sub.bad_sessions %}
     <table class="tg" id="bad_sessions">
 <thead>
   <tr>
@@ -165,7 +165,7 @@
 {% endfor %}
 </tbody>
 </table>
-
+{% endif %}
 {% endfor %}
 </body>
 </html>
