@@ -110,16 +110,22 @@ class Project(node.Node):
                 sess.consistent = consistent_sess
 
     def partition_sessions(self):
-        for sub in self.children:
+        for mode in self.children:
             consistent_sess = []
             inconsistent_sess = []
-            for sess in sub.children:
-                if sess.consistent:
-                    consistent_sess.append(sess)
-                else:
-                    inconsistent_sess.append(sess)
-            sub.good_sessions = consistent_sess.copy()
-            sub.bad_sessions = inconsistent_sess.copy()
+            for i, c in enumerate(mode.children):
+                if c.consistent:
+                    anchor = c
+                    break
+            for sub in mode.children[i:]:
+                if sub.consistent:
+                    sub.delta = self.diff(sub, anchor)
+                    if not sub.delta:
+                        consistent_sess.append(sub)
+                    else:
+                        inconsistent_sess.append(sub)
+            mode.good_sessions = consistent_sess.copy()
+            mode.bad_sessions = inconsistent_sess.copy()
 
     def check_compliance(self, span=True, style=None):
         # Generate complete report

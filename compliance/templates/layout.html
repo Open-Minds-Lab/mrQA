@@ -77,95 +77,61 @@
 {% for sub in project.children %}
 
 <h2>Modality : {{sub.id}}</h2>
-    <table class="tg" id="good_sessions">
+<h4>Compliant: Reference</h4>
+<table class="tg" id="good_sessions">
+
 <thead>
   <tr>
-    <th class="tg-c3ow" colspan="4">Subject</th>
       {% for k in sub.good_sessions[0].keys()%}
         <th class="tg-0pky" colspan="2">{{k}}</th>
       {% endfor %}
   </tr>
 </thead>
 <tbody>
-{% for sess in sub.good_sessions %}
+{% set sess = sub.good_sessions[0] %}
   <tr>
-      <td class="tg-0pky" colspan="4">{{ sess.id}}</td>
       {% for k in sess.keys()%}
         <td class="tg-0pky" colspan="2">{{sess[k]}}</td>
       {% endfor %}
   </tr>
-{% endfor %}
 </tbody>
 </table>
+<h4>Subjects</h4>
+{% for sess in sub.good_sessions %}
+    <ul>
+    <li>{{ sess.id }}</li>
+    </ul>
+{% endfor %}
+
+
+
 {% if sub.bad_sessions %}
+<hr>
+
+<h4>Non - Compliant</h4>
     <table class="tg" id="bad_sessions">
-<thead>
-  <tr>
-    <th class="tg-c3ow" colspan="4">Bad Sessions</th>
-      {% for k in sub.bad_sessions[0].keys() %}
-        <th class=""tg=-0pky" colspan="2">{{k}}</th>
-      {% endfor %}
-  </tr>
-</thead>
-<tbody>
     {% for sess in sub.bad_sessions %}
         {% if not sess.error %}
+            <thead>
             <tr>
-            <td class="tg-0pky" colspan="4">{{sess.filepath}}</td>
-            {% for k in sess.keys() %}
-              <td class="tg-0pky" colspan="2">{{sess[k]}}</td>
-            {% endfor %}
-            </tr>
-
-            {% for dcm_node in sess.children %}
-            {% if dcm_node.delta %}
-            <tr>
-              <td class="tg-0pky" colspan="4">{{ dcm_node.filepath.name }}</td>
-              {% for k in dcm_node.keys() %}
-                {% set ns = namespace(flag=false) %}
-                {% for e in dcm_node.delta %}
-                  {% if k == e[1] %}
-                    {% set ns.flag = true %}
-                    {% break %}
-                  {% endif %}
+            <th class="tg-c3ow" colspan="4">Subject</th>
+                {% for k in sess.delta %}
+                <th class=""tg=-0pky" colspan="2">{{k[1]}}</th>
                 {% endfor %}
-                {% if ns.flag%}
-                <td class="tg-color" colspan="2">{{dcm_node[k]}}</td>
-                {% else %}
-                <td class="tg-0pky" colspan="2">{{dcm_node[k]}}</td>
-                {% endif %}
-              {% endfor %}
             </tr>
-            {% endif %}
+            </thead>
+            <tbody>
+            <tr>
+            <td class="tg-0pky" colspan="4">{{sess.id}}</td>
+            {% for k in sess.delta %}
+              <td class="tg-0pky" colspan="2">{{k[2][0]}}</td>
             {% endfor %}
+            </tr>
         {% endif %}
     {% endfor %}
 </tbody>
 </table>
 
-
-    <table class="tg" id="invalid_sessions">
-<thead>
-  <tr>
-    <th class="tg-c3ow" colspan="4">Invalid Sessions</th>
-      {# {% for k in bad_sessions[0].keys()%} #}
-      {#   <th class="tg-0pky" colspan="2">{{k}}</th> #}
-      {# {% endfor %} #}
-  </tr>
-</thead>
-<tbody>
-{% for sess in sub.bad_sessions %}
-  {% if sess.error %}
-  <tr>
-      <td class="tg-0pky" colspan="4">{{ sess.filepath }}</td>
-<!--      {% for k in sess.keys()%}-->
-<!--        <td class="tg-0pky" colspan="2">{{sess[k]}}</td>-->
-<!--      {% endfor %}-->
-  </tr>
-  {% endif %}
-{% endfor %}
-</tbody>
-</table>
 {% endif %}
 {% endfor %}
 </body>
