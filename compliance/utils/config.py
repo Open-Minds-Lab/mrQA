@@ -14,10 +14,15 @@ PARAMETER_TAGS = {
     "phase_encoding_lines": [0x18, 0x89],
     "bwp_phase_encode": [0x19, 0x1028],
     "phase_encoding_direction": [0x18, 0x1312],
+
 }
 HEADER_TAGS = {
     "image_header_info": [0x29, 0x1010],
-    "series_header_info": [0x29, 0x1020]
+    "series_header_info": [0x29, 0x1020],
+    "series_description": [0x08, 0x103E],
+    "series_number": [0x20, 0x11],
+    "protocol_name": [0x18, 0x1030],
+    "sequence_name": [0x18, 0x24]
 }
 SODict = {
     "1": "sequential",

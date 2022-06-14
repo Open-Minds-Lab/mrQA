@@ -39,18 +39,19 @@ class Project(node.Node):
             yaml.dump(self.fparams, file, default_flow_style=False)
 
     def _construct_tree(self):
-        for sid in self.dataset.subjects:
-            sub = node.Node()
-            sub.id = sid
-            for sess in self.dataset.sessions[sid]:
-                data = self.dataset[sid, sess]
+        for mode in self.dataset.modalities:
+            modality = node.Node()
+            modality.id = mode
+            for sid in self.dataset.modalities[mode]:
+                data = self.dataset[sid, mode]
                 session_node = node.Node()
+                session_node.id = sid
                 for f in data['files']:
                     d = node.Dicom(filepath=f)
                     session_node.insert(d)
                 session_node.filepath = d.filepath.parent
-                sub.insert(session_node)
-            self.insert(sub)
+                modality.insert(session_node)
+            self.insert(modality)
 
     def diff(self, dcm_node, anchor):
         diff = dictdiffer.diff(
@@ -82,8 +83,8 @@ class Project(node.Node):
             raise NotImplementedError("We support comparing from within the folder (generally the first file) only!")
 
     def post_order_traversal(self, style='first'):
-        for sub in self.children:
-            for sess in sub.children:
+        for modality in self.children:
+            for sess in modality.children:
                 consistent_sess = True
                 # Criteria for comparison, compare with first file, or use a protocol criteria
                 anchor, i = self.get_anchor(sess)

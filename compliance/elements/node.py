@@ -192,6 +192,7 @@ class Dicom(Node):
         self["ipat"] = self.csaprops.get("sPat.lAccelFactPE", None)
         self["shim_method"] = self.csaprops["sAdjData.uiAdjShimMode"]
         self["is3d"] = self.get("mr_acquisition_type") == '3D'
+        self["modality"] = "_".join([str(self._get_header("series_number")), self._get_header("series_description")]).replace(" ", "_")
 
     def _get_phase_encoding(self, isflipy=True):
         """

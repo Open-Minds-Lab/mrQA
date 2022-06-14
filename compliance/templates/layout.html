@@ -75,11 +75,12 @@
 {#</table>#}
 
 {% for sub in project.children %}
-<h2>Subject Id : {{sub.id}}</h2>
+
+<h2>Modality : {{sub.id}}</h2>
     <table class="tg" id="good_sessions">
 <thead>
   <tr>
-    <th class="tg-c3ow" colspan="4">Good Sessions</th>
+    <th class="tg-c3ow" colspan="4">Subject</th>
       {% for k in sub.good_sessions[0].keys()%}
         <th class="tg-0pky" colspan="2">{{k}}</th>
       {% endfor %}
@@ -88,7 +89,7 @@
 <tbody>
 {% for sess in sub.good_sessions %}
   <tr>
-      <td class="tg-0pky" colspan="4">{{ sess.filepath }}</td>
+      <td class="tg-0pky" colspan="4">{{ sess.id}}</td>
       {% for k in sess.keys()%}
         <td class="tg-0pky" colspan="2">{{sess[k]}}</td>
       {% endfor %}
