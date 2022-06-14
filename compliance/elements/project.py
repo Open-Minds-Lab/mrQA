@@ -61,12 +61,20 @@ class Project(node.Node):
 
     def get_anchor(self, session, style='first'):
         if style == 'first':
+            # A single .dcm file in the folder
+            if len(session.children) == 1:
+                anchor = session.children[0]
+                success = anchor.load()
+                if not success:
+                    return None, -1
+                return anchor, -1
             # Check untill there are two dicom files, otherwise what is
             # the point choosing the single MRI file, as anchor
             for i in range(len(session.children)-1):
                 anchor = session.children[i]
                 if not anchor:
                     success = anchor.load()
+                    # print(success, anchor.filepath)
                     if success:
                         return anchor, i
             return None, -1
