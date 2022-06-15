@@ -99,8 +99,9 @@
 
 <h2>Modality : {{sub.id}}</h2>
 <h4>Compliant: Reference</h4>
-<table class="tg" id="good_sessions">
 
+{% if sub.good_sessions %}
+<table class="tg" id="good_sessions">
 <thead>
   <tr>
       {% for k in sub.good_sessions[0].keys()%}
@@ -123,7 +124,7 @@
     <li>{{ sess.id }}</li>
     </ul>
 {% endfor %}
-
+{% endif %}
 
 
 {% if sub.bad_sessions %}
@@ -137,7 +138,8 @@
             <tr>
             <th class="tg-c3ow" colspan="4">Subject</th>
                 {% for k in sess.delta %}
-                <th class=""tg=-0pky" colspan="2">{{k[1]}}</th>
+                <th class=""tg=-0pky" colspan="2">{{"Ref. : "+k[1]}}</th>
+                <th class=""tg=-0pky" colspan="2">{{"Found: "+k[1]}}</th>
                 {% endfor %}
             </tr>
             </thead>
@@ -145,6 +147,7 @@
             <tr>
             <td class="tg-0pky" colspan="4">{{sess.id}}</td>
             {% for k in sess.delta %}
+              <td class="tg-0pky" colspan="2">{{k[2][1]}}</td>
               <td class="tg-0pky" colspan="2">{{k[2][0]}}</td>
             {% endfor %}
             </tr>
