@@ -203,7 +203,12 @@ class Dicom(Node):
             is_skip = True
         if self.get('echo_train_length') > 1:
             is_skip = False
-        phpos = self.image_header["tags"]['PhaseEncodingDirectionPositive']['items'].pop()
+        phvalue = functional.safe_get(self.image_header, 'tags.PhaseEncodingDirectionPositive.items')
+        if phvalue:
+            phpos = phvalue[0]
+        else:
+            return None
+        # phpos = self.image_header["tags"]['PhaseEncodingDirectionPositive']['items'].pop()
         ped_dcm = self.get_value("phase_encoding_direction")
         ped = ""
         assert ped_dcm in ["COL", "ROW"]

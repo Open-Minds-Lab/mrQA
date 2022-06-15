@@ -4,14 +4,14 @@ from compliance.elements import node
 import yaml
 import dictdiffer
 from pathlib import Path
-import time
-
+from compliance.templates import formatter
+from compliance.utils import functional
 
 class Project(node.Node):
-    def __init__(self, dataset, protopath, export=False):
+    def __init__(self, dataset, probe='first', protocol=None, export=False, metadataroot=None, **kwargs):
         super().__init__()
         self.dataset = dataset
-
+        self.metadataroot = metadataroot
         if dataset.name is None:
             if not dataset.projects:
                 self.id = dataset.projects[0]
@@ -22,9 +22,13 @@ class Project(node.Node):
         self.report = None
         self.report_path = None
         self.protocol = None
-        self.protocol = self.import_protocol(protopath)
+        self.probe = probe
+        if protocol:
+            self.protocol = self.import_protocol(protocol)
+        else:
+            warnings.warn("Expected protocol reference for compliance check. Falling back to majority vote.")
         if export:
-            self.export_protocol(protopath)
+            self.export_protocol(protocol)
 
     def import_protocol(self, protopath):
         with open(protopath, 'r') as file:
@@ -33,8 +37,7 @@ class Project(node.Node):
 
     def export_protocol(self, protopath):
         path = Path(protopath).parent
-        time_string = time.strftime("%m_%d_%Y-%H_%M")
-        filepath = path/'criteria_{0}.yaml'.format(time_string)
+        filepath = path/'criteria_{0}.yaml'.format(functional.timestamp())
         with open(filepath, 'w') as file:
             yaml.dump(self.fparams, file, default_flow_style=False)
 
@@ -109,7 +112,7 @@ class Project(node.Node):
                 sess.copy(anchor)
                 sess.consistent = consistent_sess
 
-    def partition_sessions(self):
+    def partition_sessions_by_first(self):
         for mode in self.children:
             consistent_sess = []
             inconsistent_sess = []
@@ -127,13 +130,29 @@ class Project(node.Node):
             mode.good_sessions = consistent_sess.copy()
             mode.bad_sessions = inconsistent_sess.copy()
 
-    def check_compliance(self, span=True, style=None):
-        # Generate complete report
-        if span:
-            self.post_order_traversal()
-        else:
-            # Generate a different type of report
-            raise NotImplementedError("<span> has to be True.")
+    def partition_sessions_by_majority(self):
         pass
 
+    def partition_sessions_by_reference(self):
+        pass
+
+    def check_compliance(self):
+        # Generate complete report
+        self.post_order_traversal()
+        if self.probe == 'first':
+            self.partition_sessions_by_first()
+        elif self.probe == 'majority':
+            self.partition_sessions_by_majority()
+        elif self.probe == 'reference':
+            self.partition_sessions_by_reference()
+        else:
+            # Generate a different type of report
+            raise NotImplementedError("Report <style> not found.")
+        pass
+
+    def generate_report(self):
+        formatter.HtmlFormatter(filepath=Path(self.metadataroot) / ('{0}_{1}.{2}'.format(self.dataset.name,
+                                                                                                 functional.timestamp(),
+                                                                                                 'html')),
+                                params=self)
 

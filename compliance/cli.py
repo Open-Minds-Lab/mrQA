@@ -3,9 +3,7 @@ import argparse
 import sys
 from pathlib import Path
 from MRdataset import create_dataset
-from compliance.elements import project
-from compliance.delta import diff
-from compliance.templates import formatter
+from compliance import create_report
 
 def main():
     """Console script for compliance."""
@@ -19,7 +17,7 @@ def main():
                           help='show this help message and exit')
     required.add_argument('-i', '--dataroot', type=str,
                           help='directory containing downloaded dataset with dicom files, supports nested hierarchies')
-    required.add_argument('-m', '--metadataroot', type=str,
+    optional.add_argument('-m', '--metadataroot', type=str,
                           help='directory to store metadata files')
     required.add_argument('-n', '--name', type=str,
                          help='provide a identifier/name for the dataset')
@@ -29,16 +27,18 @@ def main():
                           help='allow verbose output on console')
     optional.add_argument('-c', '--create', action='store_true',
                           help='create directories if required')
-    required.add_argument('-s', '--style', type=str,
+    optional.add_argument('-s', '--style', type=str, default='xnat',
                           help='choose type of dataset, one of [xnat|bids|other]')
-    required.add_argument('-p', '--protocol', type=str,
+    optional.add_argument('-p', '--protocol', type=str,
                           help='.yaml file containing protocol specification')
+    optional.add_argument('--probe', type=str, default='first',
+                          help='how to examine parameters [reference|majority|first].'
+                               'Option --protocol is required if using reference ')
 
     args = parser.parse_args()
     if not Path(args.dataroot).is_dir():
         raise OSError('Expected valid directory for --dataroot argument, Got {0}'.format(args.dataroot))
     metadata_dir = Path(args.metadataroot)
-    # print(metadata_dir)
     if not metadata_dir.is_dir():
         if args.create:
             metadata_dir.mkdir(parents=True, exist_ok=True)
@@ -46,17 +46,7 @@ def main():
             raise OSError(
                 'Expected valid directory for --metadata argument. Use -c flag to create new directories automatically')
     dataset = create_dataset(args)
-    proj = project.Project(dataset, args.protocol)
-    # monitor = diff.Monitor(proj)
-    proj.check_compliance()
-    proj.partition_sessions()
-
-
-    params = {
-        'project': proj,
-    }
-    report = formatter.PdfFormatter(filepath=Path(args.metadataroot)/'report.pdf',
-                                    params=params).render()
+    report = create_report(dataset, args)
     return 0
 
 

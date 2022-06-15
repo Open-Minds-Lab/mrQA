@@ -92,11 +92,14 @@ class BaseFormatter(Formatter):
 
 
 class HtmlFormatter(BaseFormatter):
-    def __init__(self, filepath):
+    def __init__(self, filepath, params, render=True):
         super(HtmlFormatter, self).__init__(filepath)
         self.template_folder = Path(__file__).resolve().parent
+        self.params = params
+        if render:
+            self.render()
 
-    def render(self, params):
+    def render(self):
         """
         Render html page using jinja2
         :param row:
@@ -109,10 +112,10 @@ class HtmlFormatter(BaseFormatter):
         template = template_env.get_template(template_file)
         # print(params)
         output_text = template.render(
-            project=params['project']
+            project=self.params
         )
         self.output = weasyprint.HTML(string=output_text)
-        f = open(self.template_folder/'gen.html', 'w')
+        f = open(self.filepath, 'w')
         f.write(output_text)
         return self.output
 
