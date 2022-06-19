@@ -94,6 +94,34 @@
 {#  </tr>#}
 {#</tbody>#}
 {#</table>#}
+<h2>Bird's eye View</h2>
+<table class="tg" id="good_sessions">
+    <thead>
+    <tr>
+        <th class="tg-0pky" colspan="2">Modality</th>
+        <th class="tg-0pky" colspan="2">Compliant Subjects</th>
+        <th class="tg-0pky" colspan="2">Non-compliant Subjects</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for sub in project.children %}
+    <tr>
+        <td class="tg-0pky" colspan="2">{{sub.id}}</td>
+        <td class="tg-0pky" colspan="2">
+            {% for sess in sub.good_sessions %}
+            {{ sess.id }}
+            {% endfor %}
+        </td>
+        <td class="tg-0pky" colspan="2">
+            {% for sess in sub.bad_sessions %}
+            {{ sess.id }}
+            {% endfor %}
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
 
 {% for sub in project.children %}
 

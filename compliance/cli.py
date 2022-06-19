@@ -32,7 +32,7 @@ def main():
                           help='choose type of dataset, one of [xnat|bids|other]')
     optional.add_argument('-p', '--protocol', type=str,
                           help='.yaml file containing protocol specification')
-    optional.add_argument('-l', '--log', type=int, default=40,
+    optional.add_argument('-l', '--logging', type=int, default=40,
                           help='set logging to appropriate level [0|10|20|30|40|50]')
     optional.add_argument('--probe', type=str, default='first',
                           help='how to examine parameters [reference|majority|first].'
