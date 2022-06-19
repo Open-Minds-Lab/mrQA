@@ -108,9 +108,11 @@
     <tr>
         <td class="tg-0pky" colspan="2">{{sub.id}}</td>
         <td class="tg-0pky" colspan="2">
-            {% for sess in sub.good_sessions %}
-            {{ sess.id }}
-            {% endfor %}
+            {{sub.good_sessions|length}} out of {{sub.children|length}}
+            {# If you want to list all the subjects, uncomment below #}
+            {# {% for sess in sub.good_sessions %} #}
+            {# {{ sess.id }} #}
+            {# {% endfor %} #}
         </td>
         <td class="tg-0pky" colspan="2">
             {% for sess in sub.bad_sessions %}
