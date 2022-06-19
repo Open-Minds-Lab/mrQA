@@ -99,6 +99,7 @@
     <thead>
     <tr>
         <th class="tg-0pky" colspan="2">Modality</th>
+        <th class="tg-0pky" colspan="2">Number of Subjects</th>
         <th class="tg-0pky" colspan="2">Compliant Subjects</th>
         <th class="tg-0pky" colspan="2">Non-compliant Subjects</th>
     </tr>
@@ -108,7 +109,10 @@
     <tr>
         <td class="tg-0pky" colspan="2">{{sub.id}}</td>
         <td class="tg-0pky" colspan="2">
-            {{sub.good_sessions|length}} out of {{sub.children|length}}
+            {{sub.children|length}}
+        </td>
+        <td class="tg-0pky" colspan="2">
+            {{sub.good_sessions|length}}
             {# If you want to list all the subjects, uncomment below #}
             {# {% for sess in sub.good_sessions %} #}
             {# {{ sess.id }} #}
