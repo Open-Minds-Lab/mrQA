@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 from MRdataset import create_dataset
 from compliance import create_report
+import logging
 
 def main():
     """Console script for compliance."""
@@ -31,11 +32,17 @@ def main():
                           help='choose type of dataset, one of [xnat|bids|other]')
     optional.add_argument('-p', '--protocol', type=str,
                           help='.yaml file containing protocol specification')
+    optional.add_argument('-l', '--log', type=int, default=40,
+                          help='set logging to appropriate level [0|10|20|30|40|50]')
     optional.add_argument('--probe', type=str, default='first',
                           help='how to examine parameters [reference|majority|first].'
                                'Option --protocol is required if using reference ')
 
     args = parser.parse_args()
+    logging.basicConfig(filename=Path(args.metadataroot)/'execution.log',
+                        format='%(asctime)s | %(levelname)s: %(message)s',
+                        level=args.logging)
+
     if not Path(args.dataroot).is_dir():
         raise OSError('Expected valid directory for --dataroot argument, Got {0}'.format(args.dataroot))
     metadata_dir = Path(args.metadataroot)

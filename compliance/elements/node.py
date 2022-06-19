@@ -186,8 +186,9 @@ class Dicom(Node):
         if (self.get('bwp_phase_encode') is None) or (self.get('phase_encoding_lines') is None):
             self['effective_echo_spacing'] = None
         else:
-            self['effective_echo_spacing'] = 1000 / (
+            value = 1000 / (
                     self.get('bwp_phase_encode') * self.get("phase_encoding_lines"))
+            self['effective_echo_spacing'] = round(value, 2)
         # three modes: warm-up, standard, advanced
         self["ipat"] = self.csaprops.get("sPat.lAccelFactPE", None)
         self["shim_method"] = self.csaprops["sAdjData.uiAdjShimMode"]

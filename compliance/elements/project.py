@@ -23,10 +23,12 @@ class Project(node.Node):
         self.report_path = None
         self.protocol = None
         self.probe = probe
-        if protocol:
-            self.protocol = self.import_protocol(protocol)
-        else:
-            warnings.warn("Expected protocol reference for compliance check. Falling back to majority vote.")
+        try:
+            if Path(protocol).exists():
+                self.protocol = self.import_protocol(protocol)
+        except FileNotFoundError:
+            warnings.warn("Expected protocol reference not found on disk. Falling back to majority vote.")
+
         if export:
             self.export_protocol(protocol)
 
