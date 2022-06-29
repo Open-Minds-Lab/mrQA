@@ -188,7 +188,9 @@ class Dicom(Node):
         else:
             value = 1000 / (
                     self.get('bwp_phase_encode') * self.get("phase_encoding_lines"))
-            self['effective_echo_spacing'] = round(value, 2)
+
+            # Match value to output of dcm2niix
+            self['effective_echo_spacing'] = round(value, 2)/1000
         # three modes: warm-up, standard, advanced
         self["ipat"] = self.csaprops.get("sPat.lAccelFactPE", None)
         self["shim_method"] = self.csaprops["sAdjData.uiAdjShimMode"]
