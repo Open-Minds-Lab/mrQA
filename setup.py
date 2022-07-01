@@ -31,7 +31,8 @@ setup(
     description="Temporary container for library",
     entry_points={
         'console_scripts': [
-            'compliance=compliance.cli:main',
+            'protocol_compliance=compliance.cli:main',
+            'mr_proto_compl=compliance.cli:main',
         ],
     },
     install_requires=requirements,
@@ -43,7 +44,7 @@ setup(
     packages=find_packages(include=['compliance', 'compliance.*']),
     test_suite='tests',
     tests_require=test_requirements,
-    url='https://github.com/sinhaharsh/compliance',
+    url='https://github.com/openmindslab/compliance',
     version='0.1.0',
     zip_safe=False,
 )
