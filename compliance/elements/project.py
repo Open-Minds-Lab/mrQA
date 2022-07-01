@@ -7,6 +7,7 @@ from pathlib import Path
 from compliance.templates import formatter
 from compliance.utils import functional
 
+
 class Project(node.Node):
     def __init__(self, dataset, probe='first', protocol=None, export=False, metadataroot=None, **kwargs):
         super().__init__()
@@ -51,6 +52,10 @@ class Project(node.Node):
                 data = self.dataset[sid, mode]
                 session_node = node.Node()
                 session_node.id = sid
+                d = None
+                if len(data['files']) == 0:
+                    warnings.warn("Expected > 3 .dcm files, Got 0.")
+                    continue
                 for f in data['files']:
                     d = node.Dicom(filepath=f)
                     session_node.insert(d)
@@ -59,6 +64,8 @@ class Project(node.Node):
             self.insert(modality)
 
     def diff(self, dcm_node, anchor):
+        if anchor is None:
+            return []
         diff = dictdiffer.diff(
             dict(dcm_node.fparams),
             dict(anchor.fparams)
@@ -74,7 +81,7 @@ class Project(node.Node):
                 if not success:
                     return None, -1
                 return anchor, -1
-            # Check untill there are two dicom files, otherwise what is
+            # Check until there are two dicom files, otherwise what is
             # the point choosing the single MRI file, as anchor
             for i in range(len(session.children)-1):
                 anchor = session.children[i]
@@ -87,14 +94,15 @@ class Project(node.Node):
         else:
             raise NotImplementedError("We support comparing from within the folder (generally the first file) only!")
 
-    def post_order_traversal(self, style='first'):
+    def post_order_traversal(self):
         for modality in self.children:
             for sess in modality.children:
                 consistent_sess = True
                 # Criteria for comparison, compare with first file, or use a protocol criteria
                 anchor, i = self.get_anchor(sess)
                 if anchor is None:
-                    warnings.warn("All dicom files in folder {0} have a problem. What to do?".format(sess.children[0].filepath.parent), stacklevel=2)
+                    warnings.warn("All dicom files in folder {0} have a problem. "
+                                  "What to do?".format(sess.children[0].filepath.parent), stacklevel=2)
                     sess.error = True
                     continue
                 for dcm_node in sess.children[i+1:]:
@@ -115,9 +123,11 @@ class Project(node.Node):
                 sess.consistent = consistent_sess
 
     def partition_sessions_by_first(self):
+        anchor = None
         for mode in self.children:
             consistent_sess = []
             inconsistent_sess = []
+            i = 0
             for i, c in enumerate(mode.children):
                 if c.consistent:
                     anchor = c
@@ -153,8 +163,8 @@ class Project(node.Node):
         pass
 
     def generate_report(self):
-        formatter.HtmlFormatter(filepath=Path(self.metadataroot) / ('{0}_{1}.{2}'.format(self.dataset.name,
-                                                                                                 functional.timestamp(),
-                                                                                                 'html')),
-                                params=self)
-
+        formatter.HtmlFormatter(filepath=Path(self.metadataroot) / (
+            '{0}_{1}.{2}'.format(self.dataset.name,
+                                 functional.timestamp(),
+                                 'html')
+            ), params=self)

@@ -47,4 +47,3 @@ SVDict = {
     "NONE": "no sequence variant"
 }
 ATDict = ["2D", "3D"]
-

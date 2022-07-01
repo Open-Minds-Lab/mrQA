@@ -20,30 +20,13 @@ class Node:
         self.id = None
         self.good_sessions = None
         self.bad_sessions = None
+        self.error_prone = False
 
     def __bool__(self):
         return len(self) > 0
 
     def insert(self, other):
         self.children.append(other)
-
-    # def __eq__(self, other):
-    #     if not isinstance(other, Node):
-    #         return NotImplemented
-    #     if self.fparams is None:
-    #         raise TypeError("Parameters expected, not NoneType for Node at index 0.")
-    #     if other.fparams is None:
-    #         raise TypeError("Parameters expected, not NoneType for Node at index 0.")
-    #     flag = True
-    #     diff = defaultdict(list)
-    #     for k in self.fparams:
-    #         if self.fparams[k] != other.fparams[k]:
-    #             diff[k].append(self.fparams[k])
-    #             diff[k].append(other.fparams[k])
-    #             flag = False
-    #     if not flag:
-    #         print(diff)
-    #     return flag
 
     def get(self, item):
         return self[item]
@@ -74,7 +57,6 @@ class Node:
 
     def __str__(self):
         return str(self.fparams)
-
 
 
 class Dicom(Node):
@@ -139,8 +121,7 @@ class Dicom(Node):
                 '{0} parameter at tag {1} does not exit in this DICOM file'.format(
                     name,
                     config.PARAMETER_TAGS[name]
-                )
-                , stacklevel=2
+                ), stacklevel=2
             )
             return None
 
@@ -190,12 +171,13 @@ class Dicom(Node):
                     self.get('bwp_phase_encode') * self.get("phase_encoding_lines"))
 
             # Match value to output of dcm2niix
-            self['effective_echo_spacing'] = round(value, 2)/1000
+            self['effective_echo_spacing'] = value/1000
         # three modes: warm-up, standard, advanced
         self["ipat"] = self.csaprops.get("sPat.lAccelFactPE", None)
         self["shim_method"] = self.csaprops["sAdjData.uiAdjShimMode"]
         self["is3d"] = self.get("mr_acquisition_type") == '3D'
-        self["modality"] = "_".join([str(self._get_header("series_number")), self._get_header("series_description")]).replace(" ", "_")
+        self["modality"] = "_".join([str(self._get_header("series_number")),
+                                     self._get_header("series_description")]).replace(" ", "_")
 
     def _get_phase_encoding(self, isflipy=True):
         """

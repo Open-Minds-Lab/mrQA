@@ -17,6 +17,7 @@ class Formatter(ABC):
         self.server = None
         self.port = None
         self.output = None
+        self.params = None
 
     @abstractmethod
     def render(self):
@@ -31,7 +32,7 @@ class BaseFormatter(Formatter):
 
     def _make_message(self):
         subject = "Dummy subject"
-        body = "Regarding your project {0} for protocol compliance".format(self.project.name)
+        body = "Regarding your project {0} for protocol compliance".format(self.params.name)
 
         message = multipart.MIMEMultipart()
         message["From"] = self.sender_email
@@ -102,7 +103,7 @@ class HtmlFormatter(BaseFormatter):
     def render(self):
         """
         Render html page using jinja2
-        :param row:
+        :param
         :return:
         """
         template_loader = jinja2.FileSystemLoader(searchpath=self.template_folder)
@@ -121,11 +122,9 @@ class HtmlFormatter(BaseFormatter):
 
 
 class PdfFormatter(HtmlFormatter):
-    def __init__(self, params, filepath):
-        super().__init__(filepath)
-        self.output = super(PdfFormatter, self).render(params)
+    def __init__(self, filepath, params):
+        super().__init__(filepath, params)
+        # self.output = super(PdfFormatter, self).render(params)
 
     def render(self):
         return self.output.write_pdf(self.filepath)
-
-

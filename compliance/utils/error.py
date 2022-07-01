@@ -12,4 +12,3 @@ class DicomPropertyNotFoundError(DicomParsingError):
         self.filepath = filepath
         self.attribute = attribute
         super().__init__("Expected {0} attribute not found in dicom file : {1}".format(attribute, filepath))
-

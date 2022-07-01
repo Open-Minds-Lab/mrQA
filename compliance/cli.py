@@ -6,6 +6,7 @@ from MRdataset import create_dataset
 from compliance import create_report
 import logging
 
+
 def main():
     """Console script for compliance."""
     parser = argparse.ArgumentParser(description='ProtocolCompliance, check consistency of dicom files',
@@ -21,7 +22,7 @@ def main():
     optional.add_argument('-m', '--metadataroot', type=str,
                           help='directory to store metadata files')
     required.add_argument('-n', '--name', type=str,
-                         help='provide a identifier/name for the dataset')
+                          help='provide a identifier/name for the dataset')
     optional.add_argument('-r', '--reindex', action='store_true',
                           help='recreate compliance report')
     optional.add_argument('-v', '--verbose', action='store_true',
@@ -53,7 +54,7 @@ def main():
             raise OSError(
                 'Expected valid directory for --metadata argument. Use -c flag to create new directories automatically')
     dataset = create_dataset(args)
-    report = create_report(dataset, args)
+    create_report(dataset, args)
     return 0
 
 
