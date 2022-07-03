@@ -10,13 +10,21 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = [ ]
+requirements = [
+    "mrdataset",
+    "pydicom",
+    "nibabel",
+    "pyyaml",
+    "dictdiffer",
+    "jinja2",
+    "weasyprint",
+]
 
 test_requirements = ['pytest>=3', ]
 
 setup(
-    author="Harsh Sinha",
-    author_email='harsh.sinha@pitt.edu',
+    author="Pradeep Raamana",
+    author_email='raamana@gmail.com',
     python_requires='>=3.6',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
