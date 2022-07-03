@@ -9,10 +9,16 @@ from compliance.utils import functional
 
 
 class Project(node.Node):
-    def __init__(self, dataset, probe='first', protocol=None, export=False, metadataroot=None, **kwargs):
+    def __init__(self,
+                 dataset,
+                 probe='first',
+                 protocol=None,
+                 export=False):
+        """constructor"""
+
         super().__init__()
         self.dataset = dataset
-        self.metadataroot = metadataroot
+        self.metadataroot = dataset.metadataroot
         if dataset.name is None:
             if not dataset.projects:
                 self.id = dataset.projects[0]
@@ -24,23 +30,26 @@ class Project(node.Node):
         self.report_path = None
         self.protocol = None
         self.probe = probe
-        try:
-            if Path(protocol).exists():
-                self.protocol = self.import_protocol(protocol)
-        except FileNotFoundError:
-            warnings.warn("Expected protocol reference not found on disk. Falling back to majority vote.")
 
-        if export:
-            self.export_protocol(protocol)
+        # try:
+        #     if Path(protocol).exists():
+        #         self.protocol = self.import_protocol(protocol)
+        # except FileNotFoundError:
+        #     warnings.warn("Expected protocol reference not found on disk. Falling back to majority vote.")
+        #
+        # if export:
+        #     self.export_protocol(protocol)
 
     def import_protocol(self, protopath):
+        """"""
+
         with open(protopath, 'r') as file:
             protocol = yaml.safe_load(file)
         return protocol
 
     def export_protocol(self, protopath):
         path = Path(protopath).parent
-        filepath = path/'criteria_{0}.yaml'.format(functional.timestamp())
+        filepath = path / 'criteria_{0}.yaml'.format(functional.timestamp())
         with open(filepath, 'w') as file:
             yaml.dump(self.fparams, file, default_flow_style=False)
 
@@ -83,7 +92,7 @@ class Project(node.Node):
                 return anchor, -1
             # Check until there are two dicom files, otherwise what is
             # the point choosing the single MRI file, as anchor
-            for i in range(len(session.children)-1):
+            for i in range(len(session.children) - 1):
                 anchor = session.children[i]
                 if not anchor:
                     success = anchor.load()
@@ -105,7 +114,7 @@ class Project(node.Node):
                                   "What to do?".format(sess.children[0].filepath.parent), stacklevel=2)
                     sess.error = True
                     continue
-                for dcm_node in sess.children[i+1:]:
+                for dcm_node in sess.children[i + 1:]:
                     # If Dicom is already populated
                     if not dcm_node:
                         dcm_node.load()
@@ -167,4 +176,4 @@ class Project(node.Node):
             '{0}_{1}.{2}'.format(self.dataset.name,
                                  functional.timestamp(),
                                  'html')
-            ), params=self)
+        ), params=self)

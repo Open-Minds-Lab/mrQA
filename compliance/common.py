@@ -7,7 +7,7 @@ def create_report(dataset, args):
     if isinstance(args, argparse.Namespace):
         args = vars(args)
     if isinstance(args, dict):
-        myproject = Project(dataset, **args)
+        myproject = Project(dataset=dataset)
         myproject.check_compliance()
         myproject.generate_report()
     else:
