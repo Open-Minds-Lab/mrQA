@@ -1,6 +1,6 @@
 import argparse
 import logging
-from compliance.elements.project import Project
+from compliance.elements import project
 from pathlib import Path
 
 
@@ -13,14 +13,19 @@ def create_report(dataset=None,
     if output_dir is None:
         output_dir = dataset.data_root
 
-    myproject = Project(dataset=dataset,
-                        strategy=strategy,
-                        output_dir=output_dir,
-                        reference_path=reference_path,
-                        reindex=reindex,
-                        verbose=verbose)
-    myproject.check_compliance()
-    myproject.generate_report()
+    # myproject = Project(dataset=dataset,
+    #                     strategy=strategy,
+    #                     output_dir=output_dir,
+    #                     reference_path=reference_path,
+    #                     reindex=reindex,
+    #                     verbose=verbose)
+    project.check_compliance(dataset=dataset,
+                             strategy=strategy,
+                             output_dir=output_dir,
+                             reference_path=reference_path,
+                             reindex=reindex,
+                             verbose=verbose)
+    # project.generate_report()
 
 
 def set_logging(metadata_root, level):
