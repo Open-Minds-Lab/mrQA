@@ -15,32 +15,29 @@ def main():
     optional = parser.add_argument_group('optional arguments')
 
     # Add help
-    required.add_argument('-i', '--dataroot', type=str,
+    required.add_argument('-i', '--data_root', type=str, required=True,
                           help='directory containing downloaded dataset with dicom '
                                'files, supports nested hierarchies')
-    required.add_argument('-n', '--name', type=str,
-                          help='provide a identifier/name for the dataset')
-
-    optional.add_argument('-m', '--metadataroot', type=str,
-                          help='directory to store metadata files')
-    optional.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS,
-                          help='show this help message and exit')
-    optional.add_argument('-r', '--reindex', action='store_true',
-                          help='recreate compliance report')
-    optional.add_argument('-v', '--verbose', action='store_true',
-                          help='allow verbose output on console')
-    optional.add_argument('-c', '--create', action='store_true',
-                          help='create directories if required')
     optional.add_argument('-s', '--style', type=str, default='xnat',
                           help='choose type of dataset, one of [xnat|bids|other]')
-    optional.add_argument('-p', '--protocol', type=str,
+    optional.add_argument('-n', '--name', type=str,
+                          help='provide a identifier/name for the dataset')
+    optional.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS,
+                          help='show this help message and exit')
+    # TODO: use this flag to store cache
+    optional.add_argument('-r', '--reindex', action='store_true',
+                          help='reindex dataset & regenerate compliance report')
+    optional.add_argument('-v', '--verbose', action='store_true',
+                          help='allow verbose output on console')
+    optional.add_argument('-ref', '--reference_path', type=str,
                           help='.yaml file containing protocol specification')
+    # Experimental features, not implemented yet.
     optional.add_argument('-l', '--logging', type=int, default=40,
                           help='set logging to appropriate level [0|10|20|30|40|50]')
-    optional.add_argument('--probe', type=str, default='first',
+    optional.add_argument('--strategy', type=str, default='first',
                           help='how to examine parameters ['
                                'reference|majority|first].'
-                               'Option --protocol is required if using reference ')
+                               'Option --reference_path is required if using reference ')
 
     if len(sys.argv) < 2:
         print('Too few arguments!')
@@ -48,26 +45,18 @@ def main():
         parser.exit(1)
 
     args = parser.parse_args()
-    # logging.basicConfig(filename=Path(args.metadataroot) / 'execution.log',
-    #                     format='%(asctime)s | %(levelname)s: %(message)s',
-    #                     level=args.logging)
-
-    if not Path(args.dataroot).is_dir():
-        raise OSError(
-            'Expected valid directory for --dataroot argument, Got {0}'.format(
-                args.dataroot))
-    # metadata_dir = Path(args.metadataroot)
-    # if not metadata_dir.is_dir():
-    #     if args.create:
-    #         metadata_dir.mkdir(parents=True, exist_ok=True)
-    #     else:
-    #         raise OSError(
-    #             'Expected valid directory for --metadata argument. Use -c flag to '
-    #             'create new directories automatically')
-
-    # dataset = create_dataset(args)
-    dataset = create_dataset(style=args.style, data_root=args.dataroot, verbose=args.verbose)
-    create_report(dataset, args)
+    if not Path(args.data_root).is_dir():
+        raise OSError('Expected valid directory for --data_root argument, Got {0}'.format(args.dataroot))
+    dataset = create_dataset(data_root=args.dataroot,
+                             style=args.style,
+                             name=args.name,
+                             reindex=args.reindex,
+                             verbose=args.verbose)
+    create_report(dataset=dataset,
+                  strategy=args.strategy,
+                  reference_path=args.reference_path,
+                  reindex=args.reindex,
+                  verbose=args.verbose)
     return 0
 
 

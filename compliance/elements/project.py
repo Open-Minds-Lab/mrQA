@@ -11,14 +11,16 @@ from compliance.utils import functional
 class Project(node.Node):
     def __init__(self,
                  dataset,
-                 probe='first',
-                 protocol=None,
+                 strategy='first',
+                 reference_path=None,
+                 reindex=False,
+                 verbose=False,
                  export=False):
         """constructor"""
 
         super().__init__()
         self.dataset = dataset
-        self.metadataroot = dataset.metadataroot
+        self.metadata_root = dataset.metadata_root
         if dataset.name is None:
             if not dataset.projects:
                 self.id = dataset.projects[0]
@@ -28,30 +30,30 @@ class Project(node.Node):
         self._construct_tree()
         self.report = None
         self.report_path = None
-        self.protocol = None
-        self.probe = probe
+        self.reference_path = reference_path
+        self.strategy = strategy
 
         # try:
-        #     if Path(protocol).exists():
-        #         self.protocol = self.import_protocol(protocol)
+        #     if Path(reference_path).exists():
+        #         self.reference_path= self.import_protocol(reference_path)
         # except FileNotFoundError:
         #     warnings.warn("Expected protocol reference not found on disk. Falling back to majority vote.")
         #
         # if export:
-        #     self.export_protocol(protocol)
+        #     self.export_protocol(reference_path)
 
-    def import_protocol(self, protopath):
-        """"""
+    # def import_protocol(self, protopath):
+    #     """"""
+    #
+    #     with open(protopath, 'r') as file:
+    #         protocol = yaml.safe_load(file)
+    #     return protocol
 
-        with open(protopath, 'r') as file:
-            protocol = yaml.safe_load(file)
-        return protocol
-
-    def export_protocol(self, protopath):
-        path = Path(protopath).parent
-        filepath = path / 'criteria_{0}.yaml'.format(functional.timestamp())
-        with open(filepath, 'w') as file:
-            yaml.dump(self.fparams, file, default_flow_style=False)
+    # def export_protocol(self, protopath):
+    #     path = Path(protopath).parent
+    #     filepath = path / 'criteria_{0}.yaml'.format(functional.timestamp())
+    #     with open(filepath, 'w') as file:
+    #         yaml.dump(self.fparams, file, default_flow_style=False)
 
     def _construct_tree(self):
         for mode in self.dataset.modalities:
@@ -160,11 +162,11 @@ class Project(node.Node):
     def check_compliance(self):
         # Generate complete report
         self.post_order_traversal()
-        if self.probe == 'first':
+        if self.strategy == 'first':
             self.partition_sessions_by_first()
-        elif self.probe == 'majority':
+        elif self.strategy == 'majority':
             self.partition_sessions_by_majority()
-        elif self.probe == 'reference':
+        elif self.strategy == 'reference':
             self.partition_sessions_by_reference()
         else:
             # Generate a different type of report
@@ -172,7 +174,7 @@ class Project(node.Node):
         pass
 
     def generate_report(self):
-        formatter.HtmlFormatter(filepath=Path(self.metadataroot) / (
+        formatter.HtmlFormatter(filepath=Path(self.metadata_root) / (
             '{0}_{1}.{2}'.format(self.dataset.name,
                                  functional.timestamp(),
                                  'html')

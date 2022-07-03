@@ -1,15 +1,24 @@
 import argparse
-
+import logging
 from compliance.elements.project import Project
+from pathlib import Path
 
 
-def create_report(dataset, args):
-    if isinstance(args, argparse.Namespace):
-        args = vars(args)
-    if isinstance(args, dict):
-        myproject = Project(dataset=dataset)
-        myproject.check_compliance()
-        myproject.generate_report()
-    else:
-        raise TypeError("Unsupported arguments. Expects either a Namespace or dict")
+def create_report(dataset=None,
+                  strategy='first',
+                  reference_path=None,
+                  reindex=False,
+                  verbose=False):
+    myproject = Project(dataset=dataset,
+                        strategy=strategy,
+                        reference_path=reference_path,
+                        reindex=reindex,
+                        verbose=verbose)
+    myproject.check_compliance()
+    myproject.generate_report()
 
+
+def set_logging(metadata_root, level):
+    logging.basicConfig(filename=Path(metadata_root) / 'execution.log',
+                        format='%(asctime)s | %(levelname)s: %(message)s',
+                        level=level)
