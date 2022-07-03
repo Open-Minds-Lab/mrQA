@@ -112,15 +112,11 @@
             {{sub.children|length}}
         </td>
         <td class="tg-0pky" colspan="2">
-            {{sub.good_sessions|length}}
-            {# If you want to list all the subjects, uncomment below #}
-            {# {% for sess in sub.good_sessions %} #}
-            {# {{ sess.id }} #}
-            {# {% endfor %} #}
+            {{sub.good_children|length}}
         </td>
         <td class="tg-0pky" colspan="2">
-            {% for sess in sub.bad_sessions %}
-            {{ sess.id }}
+            {% for i in sub.bad_children %}
+                    {{ i }}
             {% endfor %}
         </td>
     </tr>
@@ -131,43 +127,42 @@
 
 {% for sub in project.children %}
 
-<h2>Modality : {{sub.id}}</h2>
+<h2>Modality : {{sub.name}}</h2>
 <h4>Compliant: Reference</h4>
 
-{% if sub.good_sessions %}
+{% if sub.good_children %}
 <table class="tg" id="good_sessions">
 <thead>
   <tr>
-      {% for k in sub.good_sessions[0].keys()%}
+      {% for k in sub.children[0].params.keys()%}
         <th class="tg-0pky" colspan="2">{{k}}</th>
       {% endfor %}
   </tr>
 </thead>
 <tbody>
-{% set sess = sub.good_sessions[0] %}
   <tr>
-      {% for k in sess.keys()%}
-        <td class="tg-0pky" colspan="2">{{sess[k]}}</td>
+      {% for k in sub.params.keys()%}
+        <td class="tg-0pky" colspan="2">{{sub.params[k]}}</td>
       {% endfor %}
   </tr>
 </tbody>
 </table>
 <h4>Subjects</h4>
-{% for sess in sub.good_sessions %}
+{% for sess in sub.good_children %}
     <ul>
-    <li>{{ sess.id }}</li>
+    <li>{{ sess }}</li>
     </ul>
 {% endfor %}
 {% endif %}
 
 
-{% if sub.bad_sessions %}
+{% if sub.bad_children %}
 <hr>
 
 <h4>Non - Compliant</h4>
     <table class="tg" id="bad_sessions">
-    {% for sess in sub.bad_sessions %}
-        {% if not sess.error %}
+    {% for sess in sub.children %}
+        {% if not sess.consistent %}
             <thead>
             <tr>
             <th class="tg-c3ow" colspan="4">Subject</th>
@@ -179,7 +174,7 @@
             </thead>
             <tbody>
             <tr>
-            <td class="tg-0pky" colspan="4">{{sess.id}}</td>
+            <td class="tg-0pky" colspan="4">{{sess.name}}</td>
             {% for k in sess.delta %}
               <td class="tg-0pky" colspan="2">{{k[2][1]}}</td>
               <td class="tg-0pky" colspan="2">{{k[2][0]}}</td>

@@ -7,7 +7,6 @@ PARAMETER_TAGS = {
     "flip_angle": [0x18, 0x1314],
     "bwpx": [0x18, 0x95],
     "echo_train_length": [0x18, 0x91],
-    "comments": [0x20, 0x4000],
     "scanning_sequence": [0x18, 0x20],
     "sequence_variant": [0x18, 0x21],
     "mr_acquisition_type": [0x18, 0x23],
@@ -47,3 +46,4 @@ SVDict = {
     "NONE": "no sequence variant"
 }
 ATDict = ["2D", "3D"]
+# "comments": [0x20, 0x4000],
