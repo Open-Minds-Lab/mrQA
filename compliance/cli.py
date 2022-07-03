@@ -15,9 +15,12 @@ def main():
     optional = parser.add_argument_group('optional arguments')
 
     # Add help
-    required.add_argument('-i', '--data_root', type=str, required=True,
+    required.add_argument('-d', '--data_root', type=str, required=True,
                           help='directory containing downloaded dataset with dicom '
                                'files, supports nested hierarchies')
+    optional.add_argument('-o', '--output_dir', type=str,
+                          help='specify the directory where the report would be saved. '
+                          'By default, the --data_root directory will be used to save reports')
     optional.add_argument('-s', '--style', type=str, default='xnat',
                           help='choose type of dataset, one of [xnat|bids|other]')
     optional.add_argument('-n', '--name', type=str,
@@ -40,20 +43,21 @@ def main():
                                'Option --reference_path is required if using reference ')
 
     if len(sys.argv) < 2:
-        print('Too few arguments!')
+        print('\nToo few arguments!\n')
         parser.print_help()
         parser.exit(1)
 
     args = parser.parse_args()
     if not Path(args.data_root).is_dir():
         raise OSError('Expected valid directory for --data_root argument, Got {0}'.format(args.dataroot))
-    dataset = create_dataset(data_root=args.dataroot,
+    dataset = create_dataset(data_root=args.data_root,
                              style=args.style,
                              name=args.name,
                              reindex=args.reindex,
                              verbose=args.verbose)
     create_report(dataset=dataset,
                   strategy=args.strategy,
+                  output_dir=args.output_dir,
                   reference_path=args.reference_path,
                   reindex=args.reindex,
                   verbose=args.verbose)

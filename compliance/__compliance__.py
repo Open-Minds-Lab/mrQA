@@ -9,7 +9,6 @@ else:
 
 def main():
     """Entry point."""
-
     cli.main()
 
 

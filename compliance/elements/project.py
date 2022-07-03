@@ -12,6 +12,7 @@ class Project(node.Node):
     def __init__(self,
                  dataset,
                  strategy='first',
+                 output_dir=None,
                  reference_path=None,
                  reindex=False,
                  verbose=False,
@@ -29,7 +30,10 @@ class Project(node.Node):
 
         self._construct_tree()
         self.report = None
-        self.report_path = None
+        if Path(output_dir).exists():
+            self.report_path = output_dir
+        else:
+            raise FileNotFoundError("Directory specified for generating the report doesn't exist. Exiting.")
         self.reference_path = reference_path
         self.strategy = strategy
 
@@ -174,7 +178,7 @@ class Project(node.Node):
         pass
 
     def generate_report(self):
-        formatter.HtmlFormatter(filepath=Path(self.metadata_root) / (
+        formatter.HtmlFormatter(filepath=Path(self.report_path) / (
             '{0}_{1}.{2}'.format(self.dataset.name,
                                  functional.timestamp(),
                                  'html')
