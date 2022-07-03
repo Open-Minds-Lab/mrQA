@@ -15,15 +15,16 @@ def main():
     optional = parser.add_argument_group('optional arguments')
 
     # Add help
-    optional.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS,
-                          help='show this help message and exit')
     required.add_argument('-i', '--dataroot', type=str,
                           help='directory containing downloaded dataset with dicom '
                                'files, supports nested hierarchies')
-    optional.add_argument('-m', '--metadataroot', type=str,
-                          help='directory to store metadata files')
     required.add_argument('-n', '--name', type=str,
                           help='provide a identifier/name for the dataset')
+
+    optional.add_argument('-m', '--metadataroot', type=str,
+                          help='directory to store metadata files')
+    optional.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS,
+                          help='show this help message and exit')
     optional.add_argument('-r', '--reindex', action='store_true',
                           help='recreate compliance report')
     optional.add_argument('-v', '--verbose', action='store_true',
@@ -41,24 +42,31 @@ def main():
                                'reference|majority|first].'
                                'Option --protocol is required if using reference ')
 
+    if len(sys.argv) < 2:
+        print('Too few arguments!')
+        parser.print_help()
+        parser.exit(1)
+
     args = parser.parse_args()
-    logging.basicConfig(filename=Path(args.metadataroot) / 'execution.log',
-                        format='%(asctime)s | %(levelname)s: %(message)s',
-                        level=args.logging)
+    # logging.basicConfig(filename=Path(args.metadataroot) / 'execution.log',
+    #                     format='%(asctime)s | %(levelname)s: %(message)s',
+    #                     level=args.logging)
 
     if not Path(args.dataroot).is_dir():
         raise OSError(
             'Expected valid directory for --dataroot argument, Got {0}'.format(
                 args.dataroot))
-    metadata_dir = Path(args.metadataroot)
-    if not metadata_dir.is_dir():
-        if args.create:
-            metadata_dir.mkdir(parents=True, exist_ok=True)
-        else:
-            raise OSError(
-                'Expected valid directory for --metadata argument. Use -c flag to '
-                'create new directories automatically')
-    dataset = create_dataset(args)
+    # metadata_dir = Path(args.metadataroot)
+    # if not metadata_dir.is_dir():
+    #     if args.create:
+    #         metadata_dir.mkdir(parents=True, exist_ok=True)
+    #     else:
+    #         raise OSError(
+    #             'Expected valid directory for --metadata argument. Use -c flag to '
+    #             'create new directories automatically')
+
+    # dataset = create_dataset(args)
+    dataset = create_dataset(style=args.style, data_root=args.dataroot, verbose=args.verbose)
     create_report(dataset, args)
     return 0
 
