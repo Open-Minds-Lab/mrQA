@@ -30,10 +30,14 @@ def construct_tree(dataset, root_node):
         modality.name = mode
         for subject_id in dataset.modalities[mode]:
             data = dataset[subject_id, mode]
-            if len(data['files']) < 4:
+
+            # See github.com/icometrix/dicom2nifti
+            # https://bit.ly/3bKKMNW
+            if len(data['files']) < 3:
                 run_node = Node(path=None)
                 run_node.error = True
-                warnings.warn("Expected > 3 .dcm files. Got 0 for Subject : {0} and Modality : {1}".format(subject_id, mode))
+                warnings.warn("Expected atleast 3 .dcm files. "
+                              "Got 0 for Subject : {0} and Modality : {1}".format(subject_id, mode))
                 continue
             else:
                 run_node = parse(data['files'][0])
