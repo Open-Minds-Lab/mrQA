@@ -30,15 +30,18 @@ def construct_tree(dataset, root_node):
         modality.name = mode
         for subject_id in dataset.modalities[mode]:
             data = dataset[subject_id, mode]
-
-            # See github.com/icometrix/dicom2nifti
-            # https://bit.ly/3bKKMNW
-            if len(data['files']) < 3:
+            if len(data['files']) == 0:
                 run_node = Node(path=None)
                 run_node.error = True
-                warnings.warn("Expected atleast 3 .dcm files. "
-                              "Got 0 for Subject : {0} and Modality : {1}".format(subject_id, mode))
+                warnings.warn("Expected at least 1 .dcm files. "
+                              "Got 0 for Subject : {0} and Modality : {1}".format(subject_id, mode),
+                              stacklevel=2)
                 continue
+            elif len(data['files']) == 1:
+                run_node = Node(path=data['files'][0])
+                run_node.error = False
+                run_node.name = subject_id
+                modality.insert(run_node)
             else:
                 run_node = parse(data['files'][0])
                 flag = False
@@ -47,6 +50,10 @@ def construct_tree(dataset, root_node):
                     difference = list(dictdiffer.diff(dict(run_node.params), dict(temp_node.params)))
                     if difference:
                         flag = True
+                        warnings.warn("Expected all .dcm files to have same parameters. "
+                                      "Got different values in Subject : {0}"
+                                      " Modality : {1}".format(subject_id, mode),
+                                      stacklevel=2)
                         break
                 run_node.error = flag
                 run_node.path = Path(data['files'][0]).parent
@@ -59,13 +66,9 @@ def construct_tree(dataset, root_node):
 
 def partition_sessions_by_first(root_node):
     for mode in root_node.children:
-        # consistent_runs = []
-        # inconsistent_runs = []
-
         i = 0
         anchor = None
-        if len(mode.children) == 0:
-            warnings.warn("No consistent runs found for modality : {0}".format(mode.name))
+        if count_zero_children(mode):
             continue
         for i, c in enumerate(mode.children):
             if not c.error:
@@ -81,6 +84,25 @@ def partition_sessions_by_first(root_node):
                 sub.consistent = True
                 mode.good_children.append(sub.name)
     return root_node
+
+
+def count_zero_children(node):
+    """
+    Node has zero children
+    """
+    if len(node.children) == 0:
+        warnings.warn("No consistent runs found for node : {0}".format(node.name),
+                      stacklevel=2)
+        return True
+    return False
+
+
+def partition_sessions_by_majority(root_node):
+    for mode in root_node.children:
+        i = 0
+        anchor = None
+        if count_zero_children(mode):
+            continue
 
 
 def generate_report(root_node, output_dir, name):
