@@ -4,6 +4,7 @@ import dictdiffer
 from pathlib import Path
 from compliance.templates import formatter
 from compliance.utils import functional
+import pickle
 
 
 def check_compliance(dataset,
@@ -19,7 +20,21 @@ def check_compliance(dataset,
     else:
         root_node.name = dataset.name
 
-    root_node = construct_tree(dataset, root_node)
+    metadata_root = Path(dataset.metadata_root)
+    if not metadata_root.exists():
+        raise FileNotFoundError('Provide a valid /path/to/cache/dir')
+
+    cache_path = metadata_root / "{0}_tree.pkl".format(root_node.name)
+    indexed = cache_path.exists()
+
+    if not indexed or reindex:
+        root_node = construct_tree(dataset, root_node)
+        with open(cache_path, "wb") as f:
+            pickle.dump(root_node, f)
+    else:
+        with open(cache_path, "rb") as f:
+            root_node = pickle.load(f)
+
     root_node = partition_sessions_by_majority(root_node)
     generate_report(root_node, output_dir, dataset.name)
 
