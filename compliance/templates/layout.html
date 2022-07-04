@@ -102,6 +102,7 @@
         <th class="tg-0pky" colspan="2">Number of Subjects</th>
         <th class="tg-0pky" colspan="2">Compliant Subjects</th>
         <th class="tg-0pky" colspan="2">Non-compliant Subjects</th>
+        <th class="tg-0pky" colspan="2">Error</th>
     </tr>
     </thead>
     <tbody>
@@ -118,6 +119,9 @@
             {% for i in mode.bad_children %}
                     {{ i }}
             {% endfor %}
+        </td>
+        <td class="tg-0pky" colspan="2">
+            {{mode.error_children|length}}
         </td>
     </tr>
     {% endfor %}
@@ -162,6 +166,7 @@
 <h4>Non - Compliant</h4>
     <table class="tg" id="bad_sessions">
     {% for sess in mode.children %}
+        {% if not sess.error %}
         {% if not sess.consistent %}
             <thead>
             <tr>
@@ -180,6 +185,7 @@
               <td class="tg-0pky" colspan="2">{{k[2][0]}}</td>
             {% endfor %}
             </tr>
+        {% endif %}
         {% endif %}
     {% endfor %}
 </tbody>

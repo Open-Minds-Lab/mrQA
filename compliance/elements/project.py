@@ -122,15 +122,19 @@ def partition_sessions_by_majority(root_node):
         anchor = None
         if count_zero_children(mode):
             continue
-        mode.params = functional.majority_attribute_values(mode.children)
+        # Only parse for valid children
+        mode.params = functional.majority_attribute_values([child for child in mode.children if not child.error])
         for sub in mode.children:
-            sub.delta = diff(sub, mode)
-            if sub.delta:
-                sub.consistent = False
-                mode.bad_children.append(sub.name)
+            if not sub.error:
+                sub.delta = diff(sub, mode)
+                if sub.delta:
+                    sub.consistent = False
+                    mode.bad_children.append(sub.name)
+                else:
+                    sub.consistent = True
+                    mode.good_children.append(sub.name)
             else:
-                sub.consistent = True
-                mode.good_children.append(sub.name)
+                mode.error_children.append(sub.name)
     return root_node
 
 

@@ -18,6 +18,7 @@ class Node:
         self.delta = None
         self.good_children = []
         self.bad_children = []
+        self.error_children = []
 
     def insert(self, other):
         self.children.append(other)
