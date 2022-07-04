@@ -105,17 +105,17 @@
     </tr>
     </thead>
     <tbody>
-    {% for sub in project.children %}
+    {% for mode in project.children %}
     <tr>
-        <td class="tg-0pky" colspan="2">{{sub.name}}</td>
+        <td class="tg-0pky" colspan="2">{{mode.name}}</td>
         <td class="tg-0pky" colspan="2">
-            {{sub.children|length}}
+            {{mode.children|length}}
         </td>
         <td class="tg-0pky" colspan="2">
-            {{sub.good_children|length}}
+            {{mode.good_children|length}}
         </td>
         <td class="tg-0pky" colspan="2">
-            {% for i in sub.bad_children %}
+            {% for i in mode.bad_children %}
                     {{ i }}
             {% endfor %}
         </td>
@@ -125,30 +125,30 @@
 </table>
 
 
-{% for sub in project.children %}
+{% for mode in project.children %}
 
-<h2>Modality : {{sub.name}}</h2>
+<h2>Modality : {{mode.name}}</h2>
 <h4>Compliant: Reference</h4>
 
-{% if sub.good_children %}
+{% if mode.good_children %}
 <table class="tg" id="good_sessions">
 <thead>
   <tr>
-      {% for k in sub.params.keys()%}
+      {% for k in mode.params.keys()%}
         <th class="tg-0pky" colspan="2">{{k}}</th>
       {% endfor %}
   </tr>
 </thead>
 <tbody>
   <tr>
-      {% for k in sub.params.keys()%}
-        <td class="tg-0pky" colspan="2">{{sub.params[k]}}</td>
+      {% for k in mode.params.keys()%}
+        <td class="tg-0pky" colspan="2">{{mode.params[k]}}</td>
       {% endfor %}
   </tr>
 </tbody>
 </table>
 <h4>Subjects</h4>
-{% for sess in sub.good_children %}
+{% for sess in mode.good_children %}
     <ul>
     <li>{{ sess }}</li>
     </ul>
@@ -156,12 +156,12 @@
 {% endif %}
 
 
-{% if sub.bad_children %}
+{% if mode.bad_children %}
 <hr>
 
 <h4>Non - Compliant</h4>
     <table class="tg" id="bad_sessions">
-    {% for sess in sub.children %}
+    {% for sess in mode.children %}
         {% if not sess.consistent %}
             <thead>
             <tr>
