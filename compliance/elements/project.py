@@ -58,8 +58,8 @@ def construct_tree(dataset, root_node):
                 run_node.error = flag
                 run_node.path = Path(data['files'][0]).parent
                 run_node.name = subject_id
-                if not run_node.error:
-                    modality.insert(run_node)
+            if not run_node.error:
+                modality.insert(run_node)
         root_node.insert(modality)
     return root_node
 
