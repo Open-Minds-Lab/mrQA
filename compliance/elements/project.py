@@ -44,36 +44,38 @@ def construct_tree(dataset, root_node):
         modality = Node(path=None)
         modality.name = mode
         for subject_id in dataset.modalities[mode]:
-            data = dataset[subject_id, mode]
-            if len(data['files']) == 0:
-                run_node = Node(path=None)
-                run_node.error = True
-                warnings.warn("Expected at least 1 .dcm files. "
-                              "Got 0 for Subject : {0} and Modality : {1}".format(subject_id, mode),
-                              stacklevel=2)
-                continue
-            elif len(data['files']) == 1:
-                run_node = Node(path=data['files'][0])
-                run_node.error = False
-                run_node.name = subject_id
-                modality.insert(run_node)
-            else:
-                run_node = parse(data['files'][0])
-                flag = False
-                for f in data['files'][1:]:
-                    temp_node = parse(f)
-                    difference = list(dictdiffer.diff(dict(run_node.params), dict(temp_node.params)))
-                    if difference:
-                        flag = True
-                        warnings.warn("Expected all .dcm files to have same parameters. "
-                                      "Got different values in Subject : {0}"
-                                      " Modality : {1}".format(subject_id, mode),
-                                      stacklevel=2)
-                        break
-                run_node.error = flag
-                run_node.path = Path(data['files'][0]).parent
-                run_node.name = subject_id
-            if not run_node.error:
+            for series in dataset[subject_id, mode]:
+                files = dataset[subject_id, mode][series]
+                if len(files) == 0:
+                    run_node = Node(path=None)
+                    run_node.error = True
+                    warnings.warn("Expected at least 1 .dcm files. "
+                                  "Got 0 for Subject : {0} and Modality : {1}".format(subject_id, mode),
+                                  stacklevel=2)
+                    # Don't insert this run. Reject it
+                    continue
+                elif len(files) == 1:
+                    run_node = Node(path=files[0])
+                    run_node.error = False
+                    run_node.name = subject_id
+                    modality.insert(run_node)
+                else:
+                    run_node = parse(files[0])
+                    flag = False
+                    for f in files[1:]:
+                        temp_node = parse(f)
+                        difference = list(dictdiffer.diff(dict(run_node.params), dict(temp_node.params)))
+                        if difference:
+                            flag = True
+                            warnings.warn("Expected all .dcm files to have same parameters. "
+                                          "Got different values in Subject : {0}"
+                                          " Modality : {1}".format(subject_id, mode),
+                                          stacklevel=2)
+                            break
+                    run_node.error = flag
+                    run_node.path = Path(files[0]).parent
+                    run_node.name = subject_id
+                # if not run_node.error:
                 modality.insert(run_node)
         root_node.insert(modality)
     return root_node
