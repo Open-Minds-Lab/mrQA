@@ -23,8 +23,6 @@ class Node:
         self.children.append(other)
 
 
-
-
 def parse(dicom_path):
     filepath = Path(dicom_path)
     if not filepath.exists():
@@ -40,7 +38,12 @@ def parse(dicom_path):
         )
     node = Node(filepath)
     for k in config.PARAMETER_TAGS.keys():
-        node.params[k] = get_value(dicom, k)
+        value = get_value(dicom, k)
+        # the value should be hashable
+        # a dictionary will be used later to count the majority value
+        if not functional.is_hashable(value):
+            value = str(value)
+        node.params[k] = value
 
     csa_values = csa_parser(dicom)
     node.params["slice_order"] = config.SODict[csa_values['so']]
