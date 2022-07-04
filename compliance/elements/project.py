@@ -76,7 +76,7 @@ def partition_sessions_by_first(root_node):
                 break
         mode.params = anchor.params.copy()
         for sub in mode.children[i:]:
-            sub.delta = list(dictdiffer.diff(dict(anchor.params), dict(sub.params)))
+            sub.delta = diff(anchor, sub)
             if sub.delta:
                 sub.consistent = False
                 mode.bad_children.append(sub.name)
@@ -84,6 +84,10 @@ def partition_sessions_by_first(root_node):
                 sub.consistent = True
                 mode.good_children.append(sub.name)
     return root_node
+
+
+def diff(a, b):
+    return list(dictdiffer.diff(dict(a.params), dict(b.params)))
 
 
 def count_zero_children(node):
