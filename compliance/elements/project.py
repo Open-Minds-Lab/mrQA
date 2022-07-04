@@ -20,7 +20,7 @@ def check_compliance(dataset,
         root_node.name = dataset.name
 
     root_node = construct_tree(dataset, root_node)
-    root_node = partition_sessions_by_first(root_node)
+    root_node = partition_sessions_by_majority(root_node)
     generate_report(root_node, output_dir, dataset.name)
 
 
@@ -76,7 +76,7 @@ def partition_sessions_by_first(root_node):
                 break
         mode.params = anchor.params.copy()
         for sub in mode.children[i:]:
-            sub.delta = diff(anchor, sub)
+            sub.delta = diff(sub, anchor)
             if sub.delta:
                 sub.consistent = False
                 mode.bad_children.append(sub.name)
@@ -107,6 +107,16 @@ def partition_sessions_by_majority(root_node):
         anchor = None
         if count_zero_children(mode):
             continue
+        mode.params = functional.majority_attribute_values(mode.children)
+        for sub in mode.children:
+            sub.delta = diff(sub, mode)
+            if sub.delta:
+                sub.consistent = False
+                mode.bad_children.append(sub.name)
+            else:
+                sub.consistent = True
+                mode.good_children.append(sub.name)
+    return root_node
 
 
 def generate_report(root_node, output_dir, name):
