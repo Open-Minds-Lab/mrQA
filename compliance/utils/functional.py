@@ -35,24 +35,7 @@ def majority_attribute_values(iterable, missing=None):
     for k in counts.keys():
         params[k] = counts[k].most_common(1)[0][0]
     return params
-#
-# class AttributeValueCount:
-#     def __init__(self, iterable, *, missing=None):
-#         self._missing = missing
-#         self.length = 0
-#         self._counts = {}
-#         self.update(iterable)
-#
-#     def update(self, iterable):
-#         categories = set(self._counts)
-#         for length, element in enumerate(iterable, self.length):
-#             categories.update(element)
-#             for category in categories:
-#                 try:
-#                     counter = self._counts[category]
-#                 except KeyError:
-#                     self._counts[category] = counter = Counter({self._missing: length})
-#                 counter[element.get(category, self._missing)] += 1
+
 
 # try:
 #     if Path(reference_path).exists():
