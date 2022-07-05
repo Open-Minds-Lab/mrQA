@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 from MRdataset import create_dataset
 from compliance import create_report
-import logging
+# import logging
 
 
 def main():

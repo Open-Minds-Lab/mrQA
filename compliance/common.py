@@ -1,34 +1,44 @@
-import argparse
 import logging
-from compliance.elements import project
+from collections import defaultdict
+
 from pathlib import Path
-
-
-def create_report(dataset=None,
-                  strategy='first',
-                  output_dir=None,
-                  reference_path=None,
-                  reindex=False,
-                  verbose=False):
-    if output_dir is None:
-        output_dir = dataset.data_root
-
-    # myproject = Project(dataset=dataset,
-    #                     strategy=strategy,
-    #                     output_dir=output_dir,
-    #                     reference_path=reference_path,
-    #                     reindex=reindex,
-    #                     verbose=verbose)
-    project.check_compliance(dataset=dataset,
-                             strategy=strategy,
-                             output_dir=output_dir,
-                             reference_path=reference_path,
-                             reindex=reindex,
-                             verbose=verbose)
-    # project.generate_report()
 
 
 def set_logging(metadata_root, level):
     logging.basicConfig(filename=Path(metadata_root) / 'execution.log',
                         format='%(asctime)s | %(levelname)s: %(message)s',
                         level=level)
+
+
+class ModalityNode:
+    """
+    Class specifying and managing a modality.
+    Encapsulates all the details necessary for a single modality.
+    Maintains which subjects are compliant or not.
+    """
+    def __init__(self, path):
+        self.path = path
+        self.fully_compliant = False
+        self.name = None
+        self.error = False
+        self.subjects = list()
+        self.params = defaultdict()
+
+        self.delta = None
+
+        # various lists
+        self.compliant = list()
+        self.non_compliant = list()
+        self.error_children = list()
+
+    def add_subject(self, other):
+        self.subjects.append(other)
+
+
+class SubjectNode(object):
+    """Container to manage properties and issues at the subject level"""
+
+    def __init__(self, sub_path):
+        self.path = sub_path
+        self.issues = list()
+        self.params = dict()

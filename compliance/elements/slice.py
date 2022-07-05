@@ -1,27 +1,9 @@
 from pathlib import Path
-from compliance.utils import config, functional
+
 import pydicom
-import warnings
+from compliance.common import ModalityNode
+from compliance.utils import config, functional
 from nibabel.nicom import csareader
-from collections import defaultdict
-
-
-class Node:
-    def __init__(self, path):
-        self.path = path
-        self.consistent = False
-        self.name = None
-        self.error = False
-        self.children = []
-        self.params = defaultdict()
-
-        self.delta = None
-        self.good_children = []
-        self.bad_children = []
-        self.error_children = []
-
-    def insert(self, other):
-        self.children.append(other)
 
 
 def parse(dicom_path):
@@ -37,7 +19,7 @@ def parse(dicom_path):
         raise FileNotFoundError(
             "Unable to read dicom file from disk : {0}".format(filepath)
         )
-    node = Node(filepath)
+    node = ModalityNode(filepath)
     for k in config.PARAMETER_TAGS.keys():
         value = get_value(dicom, k)
         # the value should be hashable

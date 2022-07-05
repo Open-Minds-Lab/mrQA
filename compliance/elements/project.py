@@ -1,6 +1,8 @@
-from compliance.elements.slice import Node, parse
+from compliance.common import ModalityNode
+from compliance.elements.slice import parse
 import warnings
 import dictdiffer
+from dictdiffer import diff as dict_diff
 from pathlib import Path
 from compliance.templates import formatter
 from compliance.utils import functional
@@ -13,7 +15,7 @@ def check_compliance(dataset,
                      reference_path=None,
                      reindex=False,
                      verbose=False):
-    root_node = Node(dataset.data_root)
+    root_node = ModalityNode(dataset.data_root)
     if dataset.name is None:
         if dataset.projects:
             root_node.name = dataset.projects[0]
@@ -26,6 +28,9 @@ def check_compliance(dataset,
 
     cache_path = metadata_root / "{0}_tree.pkl".format(root_node.name)
     indexed = cache_path.exists()
+
+    # TODO delete this after debugging
+    root_node = construct_tree(dataset, root_node)
 
     if not indexed or reindex:
         root_node = construct_tree(dataset, root_node)
@@ -41,30 +46,35 @@ def check_compliance(dataset,
 
 def construct_tree(dataset, root_node):
     for mode in dataset.modalities:
-        modality = Node(path=None)
+        modality = ModalityNode(path=None)
         modality.name = mode
         for subject_id in dataset.modalities[mode]:
+            has_multi_series = len(dataset[subject_id, mode].keys()) > 1
             for series in dataset[subject_id, mode]:
                 files = dataset[subject_id, mode][series]
                 if len(files) == 0:
-                    run_node = Node(path=None)
+                    run_node = ModalityNode(path=None)
                     run_node.error = True
                     warnings.warn("Expected at least 1 .dcm files. "
-                                  "Got 0 for Subject : {0} and Modality : {1}".format(subject_id, mode),
-                                  stacklevel=2)
+                                  "Got 0 for Subject : {0} and Modality : {1}"
+                                  "".format(subject_id, mode), stacklevel=2)
                     # Don't insert this run. Reject it
                     continue
                 elif len(files) == 1:
-                    run_node = Node(path=files[0])
+                    run_node = parse(files[0])
                     run_node.error = False
-                    run_node.name = subject_id
-                    modality.insert(run_node)
+                    if has_multi_series:
+                        run_node.name = subject_id + '_' + series[-2:]
+                    else:
+                        run_node.name = subject_id
+                    modality.add_subject(run_node)
                 else:
                     run_node = parse(files[0])
                     flag = False
                     for f in files[1:]:
                         temp_node = parse(f)
-                        difference = list(dictdiffer.diff(dict(run_node.params), dict(temp_node.params)))
+                        difference = list(dict_diff(dict(run_node.params),
+                                                    dict(temp_node.params)))
                         if difference:
                             flag = True
                             warnings.warn("Expected all .dcm files to have same parameters. "
@@ -74,32 +84,35 @@ def construct_tree(dataset, root_node):
                             break
                     run_node.error = flag
                     run_node.path = Path(files[0]).parent
-                    run_node.name = subject_id
-                # if not run_node.error:
-                modality.insert(run_node)
-        root_node.insert(modality)
+                    if has_multi_series:
+                        run_node.name = subject_id + '_' + series[-2:]
+                    else:
+                        run_node.name = subject_id
+                    # if not run_node.error:
+                    modality.add_subject(run_node)
+        root_node.add_subject(modality)
     return root_node
 
 
 def partition_sessions_by_first(root_node):
-    for mode in root_node.children:
+    for mode in root_node.subjects:
         i = 0
         anchor = None
         if count_zero_children(mode):
             continue
-        for i, c in enumerate(mode.children):
+        for i, c in enumerate(mode.subjects):
             if not c.error:
                 anchor = c
                 break
         mode.params = anchor.params.copy()
-        for sub in mode.children[i:]:
+        for sub in mode.subjects[i:]:
             sub.delta = diff(sub, anchor)
             if sub.delta:
-                sub.consistent = False
-                mode.bad_children.append(sub.name)
+                sub.fully_compliant = False
+                mode.non_compliant.append(sub.name)
             else:
-                sub.consistent = True
-                mode.good_children.append(sub.name)
+                sub.fully_compliant = True
+                mode.compliant.append(sub.name)
     return root_node
 
 
@@ -109,34 +122,40 @@ def diff(a, b):
 
 def count_zero_children(node):
     """
-    Node has zero children
+    ModalityNode has zero subjects
     """
-    if len(node.children) == 0:
-        warnings.warn("No consistent runs found for node : {0}".format(node.name),
+    if len(node.subjects) == 0:
+        warnings.warn("No fully_compliant runs found for node : {0}".format(node.name),
                       stacklevel=2)
         return True
     return False
 
 
 def partition_sessions_by_majority(root_node):
-    for mode in root_node.children:
+    """Method checking compliance by first inferring the reference protocol/values, and
+    then identifying deviations
+
+    """
+
+    for mode in root_node.subjects:
         i = 0
         anchor = None
         if count_zero_children(mode):
             continue
-        # Only parse for valid children
-        mode.params = functional.majority_attribute_values([child for child in mode.children if not child.error])
-        for sub in mode.children:
+        # Only parse for valid subjects
+        mode.params = functional.majority_attribute_values([child for child in mode.subjects if not child.error])
+        for sub in mode.subjects:
             if not sub.error:
                 sub.delta = diff(sub, mode)
                 if sub.delta:
-                    sub.consistent = False
-                    mode.bad_children.append(sub.name)
+                    sub.fully_compliant = False
+                    mode.non_compliant.append(sub.name)
                 else:
-                    sub.consistent = True
-                    mode.good_children.append(sub.name)
+                    sub.fully_compliant = True
+                    mode.compliant.append(sub.name)
             else:
                 mode.error_children.append(sub.name)
+
     return root_node
 
 
@@ -146,3 +165,20 @@ def generate_report(root_node, output_dir, name):
                              functional.timestamp(),
                              'html')
     ), params=root_node)
+
+
+def create_report(dataset=None,
+                  strategy='first',
+                  output_dir=None,
+                  reference_path=None,
+                  reindex=False,
+                  verbose=False):
+    if output_dir is None:
+        output_dir = dataset.data_root
+
+    check_compliance(dataset=dataset,
+                     strategy=strategy,
+                     output_dir=output_dir,
+                     reference_path=reference_path,
+                     reindex=reindex,
+                     verbose=verbose)
