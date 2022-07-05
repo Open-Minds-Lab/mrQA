@@ -47,3 +47,29 @@ SVDict = {
 }
 ATDict = ["2D", "3D"]
 # "comments": [0x20, 0x4000],
+
+
+class ComplianceException(Exception):
+    """Library specific exception"""
+
+    pass
+
+
+class EmptySubject(ComplianceException):
+    """"""
+    pass
+
+
+class NonCompliantSubject(ComplianceException):
+    """"""
+
+class DifferingParametersWithinDicomFolderException(ComplianceException):
+    """Specific exception to identify one of the subtle issues with DICOM files"""
+
+    pass
+
+
+class ComplianceWarning(Warning):
+    """Library specific exception"""
+
+    pass
