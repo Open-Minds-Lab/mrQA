@@ -3,195 +3,177 @@
 <head lang="en">
     <meta charset="UTF-8">
     <style>
-        .tg  {border-collapse:collapse;border-spacing:0;}
-        .tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
-          overflow:hidden;padding:10px 5px;word-break:normal;}
-        .tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
-          font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
-        .tg .tg-c3ow{border-color:inherit;text-align:center;vertical-align:top}
-        .tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
-        .tg .tg-0lax{text-align:left;vertical-align:top}
-
-        .tg .tg-color{border-color:inherit;text-align:left;vertical-align:top;background:lightcoral}
-
-        #documentation{
-            margin-bottom:20px;
+        .tg {
+            border-collapse: collapse;
+            border-spacing: 0;
         }
-        #good_sessions{
-            margin-bottom:20px;
+
+        .tg td {
+            border-color: black;
+            border-style: solid;
+            border-width: 1px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            overflow: hidden;
+            padding: 10px 5px;
+            word-break: normal;
         }
-        #bad_sessions{
-            margin-bottom:20px;
+
+        .tg th {
+            border-color: black;
+            border-style: solid;
+            border-width: 1px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            font-weight: normal;
+            overflow: hidden;
+            padding: 10px 5px;
+            word-break: normal;
+        }
+
+        .tg .tg-c3ow {
+            border-color: inherit;
+            text-align: center;
+            vertical-align: top
+        }
+
+        .tg .tg-0pky {
+            border-color: inherit;
+            text-align: left;
+            vertical-align: top
+        }
+
+        .tg .tg-0lax {
+            text-align: left;
+            vertical-align: top
+        }
+
+        .tg .tg-color {
+            border-color: inherit;
+            text-align: left;
+            vertical-align: top;
+            background: lightcoral
+        }
+
+        #documentation {
+            margin-bottom: 20px;
+        }
+
+        #good_sessions {
+            margin-bottom: 20px;
+        }
+
+        #bad_sessions {
+            margin-bottom: 20px;
         }
     </style>
     <title> {{ title }} </title>
 </head>
 <body>
 
-{#<table class="tg" id="documentation">#}
-{#<thead>#}
-{#  <tr>#}
-{#    <th class="tg-c3ow" colspan="4">Report Documentation Page</th>#}
-{#    <th class="tg-0pky" colspan="2">No. </th>#}
-{#  </tr>#}
-{#</thead>#}
-{#<tbody>#}
-{#  <tr>#}
-{#    <td class="tg-0pky" colspan="2">1. REPORT DATE</td>#}
-{#    <td class="tg-0pky" colspan="2">2. REPORT TYPE</td>#}
-{#    <td class="tg-0pky" colspan="2">3.</td>#}
-{#  </tr>#}
-{#  <tr>#}
-{#    <td class="tg-0lax" colspan="4" rowspan="3">4. PROJECT TITLE {{project.id}}</td>#}
-{#    <td class="tg-0lax" colspan="2">5a. Project Properties</td>#}
-{#  </tr>#}
-{#  <tr>#}
-{#    <td class="tg-0pky" colspan="2">5b. Project Properties</td>#}
-{#  </tr>#}
-{#  <tr>#}
-{#    <td class="tg-0lax" colspan="2">5c. Project Properties</td>#}
-{#  </tr>#}
-{#  <tr>#}
-{#    <td class="tg-0lax" colspan="4" rowspan="2">6. PERFORMING ORGANIZATION</td>#}
-{#    <td class="tg-0lax" colspan="2">7. Org. Properties</td>#}
-{#  </tr>#}
-{#  <tr>#}
-{#    <td class="tg-0lax" colspan="2">8. Org. Properties</td>#}
-{#  </tr>#}
-{#  <tr>#}
-{#    <td class="tg-0lax" colspan="4">9. SPONSORING AGENCY</td>#}
-{#    <td class="tg-0lax" colspan="2">10. Sponsor Properties</td>#}
-{#  </tr>#}
-{#  <tr>#}
-{#    <td class="tg-0lax" colspan="4">11. DISTRIBUTION/AVAILABILITY STATEMENT</td>#}
-{#    <td class="tg-0lax" colspan="2"></td>#}
-{#  </tr>#}
-{#  <tr>#}
-{#    <td class="tg-0lax" colspan="4">12. SUPPLEMENTARY NOTES</td>#}
-{#    <td class="tg-0lax" colspan="2"></td>#}
-{#  </tr>#}
-{#  <tr>#}
-{#    <td class="tg-0lax" colspan="6">13. ADDITIONAL NOTE</td>#}
-{#  </tr>#}
-{#  <tr>#}
-{#    <td class="tg-0lax" colspan="6">14. ADDITIONAL NOTE</td>#}
-{#  </tr>#}
-{#  <tr>#}
-{#    <td class="tg-0lax" colspan="6">15. ADDITIONAL NOTE</td>#}
-{#  </tr>#}
-{#  <tr>#}
-{#    <td class="tg-0pky" colspan="3">16. SECURITY CLASSIFICATION OF</td>#}
-{#    <td class="tg-0pky" rowspan="2">17. LIMITATIONS</td>#}
-{#    <td class="tg-0pky" rowspan="2">18. NUMBER OF PAGES</td>#}
-{#    <td class="tg-0lax" rowspan="2">19. CONTACT </td>#}
-{#  </tr>#}
-{#  <tr>#}
-{#    <td class="tg-0lax">16a. REPORT</td>#}
-{#    <td class="tg-0lax">16b. THIS PAGE</td>#}
-{#    <td class="tg-0lax">16c. PROJECT#}
-{##}
-{#    </td>#}
-{#  </tr>#}
-{#</tbody>#}
-{#</table>#}
-<h2>Bird's eye View</h2>
+<h2>Summary of non-compliance:</h2>
 <table class="tg" id="good_sessions">
     <thead>
     <tr>
         <th class="tg-0pky" colspan="2">Modality</th>
-        <th class="tg-0pky" colspan="2">Number of Subjects</th>
-        <th class="tg-0pky" colspan="2">Compliant Subjects</th>
-        <th class="tg-0pky" colspan="2">Non-compliant Subjects</th>
-        <th class="tg-0pky" colspan="2">Error</th>
+        <th class="tg-0pky" colspan="2"># subjects</th>
+        <th class="tg-0pky" colspan="2"># compliant</th>
+        <th class="tg-0pky" colspan="2"># non-compliant</th>
+        <th class="tg-0pky" colspan="2">errors</th>
     </tr>
     </thead>
     <tbody>
-    {% for mode in project.children %}
-    <tr>
-        <td class="tg-0pky" colspan="2">{{mode.name}}</td>
-        <td class="tg-0pky" colspan="2">
-            {{mode.children|length}}
-        </td>
-        <td class="tg-0pky" colspan="2">
-            {{mode.good_children|length}}
-        </td>
-        <td class="tg-0pky" colspan="2">
-            {% for i in mode.bad_children %}
+    {% for mode in project.subjects %}
+        <tr>
+            <td class="tg-0pky" colspan="2">{{ mode.name }}</td>
+            <td class="tg-0pky" colspan="2">
+                {{ mode.subjects|length }}
+            </td>
+            <td class="tg-0pky" colspan="2">
+                {{ mode.compliant|length }}
+            </td>
+            <td class="tg-0pky" colspan="2">
+                {% for i in mode.non_compliant %}
                     {{ i }}
-            {% endfor %}
-        </td>
-        <td class="tg-0pky" colspan="2">
-            {{mode.error_children|length}}
-        </td>
-    </tr>
+                {% endfor %}
+            </td>
+            <td class="tg-0pky" colspan="2">
+                {{ mode.error_children|length }}
+            </td>
+        </tr>
     {% endfor %}
     </tbody>
 </table>
 
 
-{% for mode in project.children %}
+{% for mode in project.subjects %}
 
-<h2>Modality : {{mode.name}}</h2>
-<h4>Compliant: Reference</h4>
+    {% if mode.non_compliant %}
+        <h2>Modality : {{ mode.name }}</h2>
+        <hr>
+        <h4>Non-compliant</h4>
+        <table class="tg" id="bad_sessions">
+            {% for subj in mode.subjects %}
+                {% if not subj.error %}
+                    {% if not subj.fully_compliant %}
+                        <thead>
+                        <tr>
+                            <th class="tg-c3ow" colspan="4">Subject</th>
+                            {% for k in subj.delta %}
+                                <th class="" tg=-0pky" colspan="2">{{ "Ref. : "+k[1] }}</th>
+                                <th class="" tg=-0pky" colspan="2">{{ "Found: "+k[1] }}</th>
+                            {% endfor %}
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td class="tg-0pky" colspan="4">{{ subj.name }}</td>
+                            {% for k in subj.delta %}
+                                <td class="tg-0pky" colspan="2">{{ k[2][1] }}</td>
+                                <td class="tg-0pky" colspan="2">{{ k[2][0] }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+            </tbody>
+        </table>
 
-{% if mode.good_children %}
-<table class="tg" id="good_sessions">
-<thead>
-  <tr>
-      {% for k in mode.params.keys()%}
-        <th class="tg-0pky" colspan="2">{{k}}</th>
-      {% endfor %}
-  </tr>
-</thead>
-<tbody>
-  <tr>
-      {% for k in mode.params.keys()%}
-        <td class="tg-0pky" colspan="2">{{mode.params[k]}}</td>
-      {% endfor %}
-  </tr>
-</tbody>
-</table>
-<h4>Subjects</h4>
-{% for sess in mode.good_children %}
-    <ul>
-    <li>{{ sess }}</li>
-    </ul>
+    {% endif %}
 {% endfor %}
-{% endif %}
 
 
-{% if mode.bad_children %}
-<hr>
+{% for mode in project.subjects %}
 
-<h4>Non - Compliant</h4>
-    <table class="tg" id="bad_sessions">
-    {% for sess in mode.children %}
-        {% if not sess.error %}
-        {% if not sess.consistent %}
+    <h2>Modality : {{ mode.name }}</h2>
+    <h4>Compliant: Reference</h4>
+
+    {% if mode.compliant %}
+        <table class="tg" id="good_sessions">
             <thead>
             <tr>
-            <th class="tg-c3ow" colspan="4">Subject</th>
-                {% for k in sess.delta %}
-                <th class=""tg=-0pky" colspan="2">{{"Ref. : "+k[1]}}</th>
-                <th class=""tg=-0pky" colspan="2">{{"Found: "+k[1]}}</th>
+                {% for k in mode.params.keys() %}
+                    <th class="tg-0pky" colspan="2">{{ k }}</th>
                 {% endfor %}
             </tr>
             </thead>
             <tbody>
             <tr>
-            <td class="tg-0pky" colspan="4">{{sess.name}}</td>
-            {% for k in sess.delta %}
-              <td class="tg-0pky" colspan="2">{{k[2][1]}}</td>
-              <td class="tg-0pky" colspan="2">{{k[2][0]}}</td>
-            {% endfor %}
+                {% for k in mode.params.keys() %}
+                    <td class="tg-0pky" colspan="2">{{ mode.params[k] }}</td>
+                {% endfor %}
             </tr>
-        {% endif %}
-        {% endif %}
-    {% endfor %}
-</tbody>
-</table>
+            </tbody>
+        </table>
+        <h4>Subjects</h4>
+        {% for sess in mode.compliant %}
+            <ul>
+                <li>{{ sess }}</li>
+            </ul>
+        {% endfor %}
+    {% endif %}
 
-{% endif %}
 {% endfor %}
+
 </body>
 </html>
