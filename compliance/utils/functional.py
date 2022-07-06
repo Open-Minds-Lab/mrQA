@@ -1,11 +1,6 @@
 import functools
 import time
 from collections import Counter
-from collections.abc import Hashable
-
-
-def is_hashable(value):
-    return isinstance(value, Hashable)
 
 
 def safe_get(dictionary, keys, default=None):
