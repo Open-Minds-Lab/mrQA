@@ -12,7 +12,6 @@ def check_compliance(dataset,
                      reindex=False,
                      verbose=False):
     dataset = compare_with_majority(dataset)
-    dataset = partition_by_compliance(dataset)
     generate_report(dataset, output_dir)
 
 
@@ -38,42 +37,24 @@ def compare_with_majority(dataset):
             modality.set_reference(reference, echo_time)
 
         # Start calculating delta for each run
+        flag = True
         for subject in modality.subjects:
             for session in subject.sessions:
                 for run in session.runs:
                     reference = modality.get_reference(run.echo_time)
                     run.delta = param_difference(run.params, reference, ignore_params=['modality'])
                     if run.delta:
-                        session.compliant = False
-                        subject.compliant = False
-                        modality.compliant = False
-
-                # Run.delta was always empty, so session.compliant was never set
-                if session.compliant is None:
-                    session.compliant = True
-            if subject.compliant is None:
-                subject.compliant = True
-        if modality.compliant is None:
-            modality.compliant = True
-    return dataset
-
-
-def partition_by_compliance(dataset):
-    for modality in dataset.modalities:
-        for subject in modality.subjects:
-            for session in subject.sessions:
-                if session.compliant:
+                        subject.add_non_compliant_session(session.name)
+                        modality.add_non_compliant_subject(subject.name)
+                        dataset.add_non_compliant_modality(modality.name)
+                        flag = False
+                if flag:
                     subject.add_compliant_session(session.name)
-                else:
-                    subject.add_non_compliant_session(session.name)
-            if subject.compliant:
+            if flag:
                 modality.add_compliant_subject(subject.name)
-            else:
-                modality.add_non_compliant_subject(subject.name)
-        if modality.compliant:
+        if flag:
+            modality.compliant = flag
             dataset.add_compliant_modality(modality.name)
-        else:
-            dataset.add_non_compliant_modality(modality.name)
     return dataset
 
 
