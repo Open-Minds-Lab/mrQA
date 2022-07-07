@@ -3,7 +3,9 @@ import argparse
 import sys
 from pathlib import Path
 from MRdataset import create_dataset
-from compliance import create_report
+from compliance import check_compliance
+
+
 # import logging
 
 
@@ -20,7 +22,7 @@ def main():
                                'files, supports nested hierarchies')
     optional.add_argument('-o', '--output_dir', type=str,
                           help='specify the directory where the report would be saved. '
-                          'By default, the --data_root directory will be used to save reports')
+                               'By default, the --data_root directory will be used to save reports')
     optional.add_argument('-s', '--style', type=str, default='xnat',
                           help='choose type of dataset, one of [xnat|bids|other]')
     optional.add_argument('-n', '--name', type=str,
@@ -55,12 +57,11 @@ def main():
                              name=args.name,
                              reindex=args.reindex,
                              verbose=args.verbose)
-    create_report(dataset=dataset,
-                  strategy=args.strategy,
-                  output_dir=args.output_dir,
-                  reference_path=args.reference_path,
-                  reindex=args.reindex,
-                  verbose=args.verbose)
+    check_compliance(dataset=dataset,
+                     strategy=args.strategy,
+                     output_dir=args.output_dir,
+                     reference_path=args.reference_path,
+                     verbose=args.verbose)
     return 0
 
 

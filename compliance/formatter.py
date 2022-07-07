@@ -113,7 +113,7 @@ class HtmlFormatter(BaseFormatter):
         template = template_env.get_template(template_file)
         # print(params)
         output_text = template.render(
-            project=self.params
+            dataset=self.params
         )
         self.output = weasyprint.HTML(string=output_text)
         f = open(self.filepath, 'w')
