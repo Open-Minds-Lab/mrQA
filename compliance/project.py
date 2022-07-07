@@ -11,19 +11,10 @@ def check_compliance(dataset,
                      reference_path=None,
                      reindex=False,
                      verbose=False):
-    root_node = ModalityNode(dataset.data_root)
-    if dataset.name is None:
-        if dataset.projects:
-            root_node.name = dataset.projects[0]
-    else:
-        root_node.name = dataset.name
+    dataset = compare_with_majority(dataset)
+    dataset = partition_by_compliance(dataset)
+    generate_report(dataset, output_dir)
 
-    metadata_root = Path(dataset.metadata_root)
-    if not metadata_root.exists():
-        raise FileNotFoundError('Provide a valid /path/to/cache/dir')
-
-    cache_path = metadata_root / "{0}_tree.pkl".format(root_node.name)
-    indexed = cache_path.exists()
 
 # def construct_tree(dataset, root_node):
 #     for mode in dataset.modalities:
@@ -122,84 +113,65 @@ def check_compliance(dataset,
 #     return False
 
 
-
-def partition_sessions_by_first(root_node):
-    for mode in root_node.subjects:
-        i = 0
-        anchor = None
-        if count_zero_children(mode):
-            continue
-        for i, c in enumerate(mode.subjects):
-            if not c.error:
-                anchor = c
-                break
-        mode.params = anchor.params.copy()
-        for sub in mode.subjects[i:]:
-            sub.delta = param_diff(sub, anchor)
-            if sub.delta:
-                sub.fully_compliant = False
-                mode.non_compliant.append(sub.name)
-            else:
-                sub.fully_compliant = True
-                mode.compliant.append(sub.name)
-    return root_node
-
-
-def param_diff(sub_a, sub_b):
-    """"""
-
-    return list(dict_diff(dict(sub_a.params), dict(sub_b.params), ignore={'modality'}))
-
-
-def count_zero_children(node):
-    """
-    ModalityNode has zero subjects
-    """
-    if len(node.subjects) == 0:
-        warnings.warn("No fully_compliant runs found for node : {0}".format(node.name),
-                      stacklevel=2)
-        return True
-    return False
-
-
-def partition_sessions_by_majority(root_node):
+def compare_with_majority(dataset):
     """Method checking compliance by first inferring the reference protocol/values, and
     then identifying deviations
 
     """
 
-    for modality in root_node.subjects:
-        i = 0
-        anchor = None
-        if count_zero_children(modality):
-            continue
+    for modality in dataset.modalities:
+        # Calculate reference for comparing
+        run_by_echo = dict()
+        for subject in modality.subjects:
+            for session in subject.sessions:
+                for run in session.runs:
+                    # Use defaultdict instead?
+                    if run.echo_time not in run_by_echo.keys():
+                        run_by_echo[run.echo_time] = []
+                    run_by_echo[run.echo_time].append(run.params)
 
-        num_non_compliant = 0
+        for echo_time in run_by_echo.keys():
+            reference = majority_attribute_values(run_by_echo[echo_time])
+            modality.set_reference(reference, echo_time)
 
-        non_erroneous_subjects = list()
-        erroneous_subjects = list()
-        for subj in modality.subjects:
-            if not subj.error:
-                non_erroneous_subjects.append(subj)
+        # Start calculating delta for each run
+        for subject in modality.subjects:
+            for session in subject.sessions:
+                for run in session.runs:
+                    reference = modality.get_reference(run.echo_time)
+                    run.delta = param_difference(run.params, reference)
+                    if run.delta:
+                        session.compliant = False
+                        subject.compliant = False
+                        modality.compliant = False
+
+                # Run.delta was always empty, so session.compliant was never set
+                if session.compliant is None:
+                    session.compliant = True
+            if subject.compliant is None:
+                subject.compliant = True
+        if modality.compliant is None:
+            modality.compliant = True
+    return dataset
+
+
+def partition_by_compliance(dataset):
+    for modality in dataset.modalities:
+        if modality.compliant:
+            dataset.add_compliant_modality(modality.name)
+        else:
+            dataset.add_non_compliant_modality(modality.name)
+        for subject in modality.subjects:
+            if subject.compliant:
+                modality.add_compliant_subject(subject.name)
             else:
-                erroneous_subjects.append(subj.name)
-
-        modality.params = majority_attribute_values(non_erroneous_subjects)
-        for sub in non_erroneous_subjects:
-            sub_delta = param_diff(sub, modality)
-            if sub_delta:
-                num_non_compliant = num_non_compliant + 1
-                modality.fully_compliant = False
-                modality.non_compliant.append(sub.name)
-            else:
-                modality.compliant.append(sub.name)
-
-        modality.fully_compliant = num_non_compliant == 0
-
-    return root_node
-
-
-def generate_report(project, output_dir, project_name):
+                modality.add_non_compliant_subject(subject.name)
+            for session in subject.sessions:
+                if session.compliant:
+                    subject.add_compliant_session(session.name)
+                else:
+                    subject.add_non_compliant_session(session.name)
+    return dataset
 
 
 def generate_report(dataset, output_dir):
