@@ -82,13 +82,6 @@ def check_compliance(dataset,
 #             root_node.add_subject(modality)
 #     return root_node
 
-    if not indexed or reindex:
-        root_node = construct_tree(dataset, root_node)
-        with open(cache_path, "wb") as f:
-            pickle.dump(root_node, f)
-    else:
-        with open(cache_path, "rb") as f:
-            root_node = pickle.load(f)
 
 # def partition_sessions_by_first(root_node):
 #     for mode in root_node.subjects:
@@ -128,51 +121,6 @@ def check_compliance(dataset,
 #         return True
 #     return False
 
-        for subject_id in dataset.modalities[mode]:
-            has_multi_series = len(dataset[subject_id, mode].keys()) > 1
-            for series in dataset[subject_id][mode]:
-                files = dataset[subject_id][mode][series]
-                if len(files) == 0:
-                    run_node = SubjectNode(path=None)
-                    run_node.error = True
-                    warnings.warn("Expected at least 1 .dcm files. "
-                                  "Got 0 for Subject : {0} and Modality : {1}"
-                                  "".format(subject_id, mode), stacklevel=2)
-                    # Don't insert this run. Reject it
-                    continue
-                elif len(files) == 1:
-                    run_node = parse(files[0])
-                    run_node.error = False
-                    if has_multi_series:
-                        run_node.name = '_'.join([subject_id, mode.split('_')[0], series[-2:]])
-                    else:
-                        run_node.name = '_'.join([subject_id, mode.split('_')[0]])
-                    modality.add_subject(run_node)
-                else:
-                    run_node = parse(files[0])
-                    flag = False
-                    for f in files[1:]:
-                        temp_node = parse(f)
-                        difference = list(dict_diff(dict(run_node.params),
-                                                    dict(temp_node.params)))
-                        if difference:
-                            flag = True
-                            warnings.warn("Expected all .dcm files to have same parameters. "
-                                          "Got different values in Subject : {0}"
-                                          " Modality : {1}".format(subject_id, mode),
-                                          stacklevel=2)
-                            break
-                    run_node.error = flag
-                    run_node.path = Path(files[0]).parent
-                    if has_multi_series:
-                        run_node.name = '_'.join([subject_id, mode.split('_')[0], series[-2:]])
-                    else:
-                        run_node.name = '_'.join([subject_id, mode.split('_')[0]])
-                    # if not run_node.error:
-                    modality.add_subject(run_node)
-        if not reloaded:
-            root_node.add_subject(modality)
-    return root_node
 
 
 def partition_sessions_by_first(root_node):
@@ -253,19 +201,12 @@ def partition_sessions_by_majority(root_node):
 
 def generate_report(project, output_dir, project_name):
 
-    out_path = Path(output_dir) / '{}_{}.html'.format(project_name, timestamp())
 
-    HtmlFormatter(filepath=out_path, params=project)
-
-
-def create_report(dataset=None,
-                  strategy='first',
-                  output_dir=None,
-                  reference_path=None,
-                  reindex=False,
-                  verbose=False):
+def generate_report(dataset, output_dir):
     if output_dir is None:
         output_dir = dataset.data_root
+    out_path = Path(output_dir) / '{}_{}.html'.format(dataset.name, timestamp())
+    HtmlFormatter(filepath=out_path, params=dataset)
 
 
 # def create_report(dataset=None,
