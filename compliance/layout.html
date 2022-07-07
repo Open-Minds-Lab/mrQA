@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head lang="en">
+    <meta charset="UTF-8">
+    <style>
+        .tg {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        .tg td {
+            border-color: black;
+            border-style: solid;
+            border-width: 1px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            overflow: hidden;
+            padding: 10px 5px;
+            word-break: normal;
+        }
+
+        .tg th {
+            border-color: black;
+            border-style: solid;
+            border-width: 1px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            font-weight: normal;
+            overflow: hidden;
+            padding: 10px 5px;
+            word-break: normal;
+        }
+
+        .tg .tg-c3ow {
+            border-color: inherit;
+            text-align: center;
+            vertical-align: top
+        }
+
+        .tg .tg-0pky {
+            border-color: inherit;
+            text-align: left;
+            vertical-align: top
+        }
+
+        .tg .tg-0lax {
+            text-align: left;
+            vertical-align: top
+        }
+
+        .tg .tg-color {
+            border-color: inherit;
+            text-align: left;
+            vertical-align: top;
+            background: lightcoral
+        }
+
+        #with_margin {
+            margin-bottom: 20px;
+        }
+
+    </style>
+    <title> {{ title }} </title>
+</head>
+<body>
+
+<h2>Summary of non-compliance:</h2>
+<table class="tg">
+    <thead>
+    <tr>
+        <th class="tg-0pky" colspan="2">Modality</th>
+        <th class="tg-0pky" colspan="2"># non-compliant (%)</th>
+        <th class="tg-0pky" colspan="2">Non-compliant subjects</th>
+        <th class="tg-0pky" colspan="2"># compliant (%)</th>
+        <th class="tg-0pky" colspan="2"># subjects</th>
+
+        {#        <th class="tg-0pky" colspan="2">errors</th>#}
+    </tr>
+    </thead>
+    <tbody>
+    {% for modality in dataset.modalities %}
+        <tr>
+            <td class="tg-0pky" colspan="2">{{ modality.name }}</td>
+            <td class="tg-0pky" colspan="2">
+                {{ modality.non_compliant_subjects|length }}
+                ({{ 100 * modality.non_compliant_subjects|length|float / modality.subjects|length|float }} %)
+            </td>
+            <td class="tg-0pky" colspan="2">
+                {% for i in modality.non_compliant_subjects %}
+                    {{ i }}
+                {% endfor %}
+            </td>
+            <td class="tg-0pky" colspan="2">
+                {{ modality.compliant_subjects|length }}
+                ({{ 100 * modality.compliant_subjects|length|float / modality.subjects|length|float }} %)
+            </td>
+            <td class="tg-0pky" colspan="2">
+                {{ modality.subjects|length }}
+            </td>
+            {#            <td class="tg-0pky" colspan="2">#}
+            {#                {{ mode.error_children|length }}#}
+            {#            </td>#}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+
+{% for modality in dataset.modalities %}
+
+    {% if not modality.compliant %}
+        <h2>Modality : {{ modality.name }}</h2>
+        <h4>Reference</h4>
+
+        {% for echo_time in modality.reference.keys() %}
+            <table class="tg" id="with_margin">
+                <thead>
+                <tr>
+                    {% for parameter_name in modality.reference[echo_time].keys() %}
+                        <th class="tg-0pky" colspan="2">{{ parameter_name }}</th>
+                    {% endfor %}
+                </tr>
+
+                </thead>
+                <tbody>
+                <tr>
+                    {% for parameter_name in modality.reference[echo_time].keys() %}
+                        <td class="tg-0pky" colspan="2">{{ modality.reference[echo_time][parameter_name] }}</td>
+                    {% endfor %}
+                </tr>
+                </tbody>
+            </table>
+
+
+            <table class="tg">
+                {% for subject in modality.subjects %}
+                    {% if not subject.compliant %}
+                        {% for session in subject.sessions %}
+                            {% if not session.compliant %}
+                                {% for run in session.runs %}
+                                    {% if not run.compliant %}
+                                        <thead>
+                                        <tr>
+                                            <th class="tg-c3ow" colspan="4">Subject</th>
+                                            <th class="tg-c3ow" colspan="4">Session</th>
+                                            {% for item in run.delta %}
+                                                <th class="" tg=-0pky" colspan="2">{{ "Ref. : "+item[1] }}</th>
+                                                <th class="" tg=-0pky" colspan="2">{{ "Found: "+item[1] }}</th>
+                                            {% endfor %}
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr>
+                                            <td class="tg-0pky" colspan="4">{{ subject.name }}</td>
+                                            <td class="tg-0pky" colspan="4">{{ session.name }}</td>
+                                            {% for item in run.delta %}
+                                                <td class="tg-0pky" colspan="2">{{ item[2][1] }}</td>
+                                                <td class="tg-0pky" colspan="2">{{ item[2][0] }}</td>
+                                            {% endfor %}
+                                        </tr>
+                                        </tbody>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                {% endfor %}
+            </table>
+        {% endfor %}
+    {% endif %}
+{% endfor %}
+
+
+{% for modality in dataset.modalities %}
+
+    {% if modality.compliant %}
+        <h2>Modality : {{ modality.name }}</h2>
+        <h4>Reference</h4>
+
+        {% for echo_time in modality.reference.keys() %}
+            <table class="tg" id="with_margin">
+                <thead>
+                <tr>
+                    {% for parameter_name in modality.reference[echo_time].keys() %}
+                        <th class="tg-0pky" colspan="2">{{ parameter_name }}</th>
+                    {% endfor %}
+                </tr>
+
+                </thead>
+                <tbody>
+                <tr>
+                    {% for parameter_name in modality.reference[echo_time].keys() %}
+                        <td class="tg-0pky" colspan="2">{{ modality.reference[echo_time][parameter_name] }}</td>
+                    {% endfor %}
+                </tr>
+                </tbody>
+            </table>
+        {% endfor %}
+    {% endif %}
+{% endfor %}
+
+
+</body>
+</html>

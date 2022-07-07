@@ -15,27 +15,6 @@ def check_compliance(dataset,
     dataset = partition_by_compliance(dataset)
     generate_report(dataset, output_dir)
 
-# def partition_sessions_by_first(root_node):
-#     for mode in root_node.subjects:
-#         i = 0
-#         anchor = None
-#         if count_zero_children(mode):
-#             continue
-#         for i, c in enumerate(mode.subjects):
-#             if not c.error:
-#                 anchor = c
-#                 break
-#         mode.params = anchor.params.copy()
-#         for sub in mode.subjects[i:]:
-#             sub.delta = param_diff(sub, anchor)
-#             if sub.delta:
-#                 sub.fully_compliant = False
-#                 mode.non_compliant.append(sub.name)
-#             else:
-#                 sub.fully_compliant = True
-#                 mode.compliant.append(sub.name)
-#     return root_node
-
 
 def compare_with_majority(dataset):
     """Method checking compliance by first inferring the reference protocol/values, and
@@ -63,7 +42,7 @@ def compare_with_majority(dataset):
             for session in subject.sessions:
                 for run in session.runs:
                     reference = modality.get_reference(run.echo_time)
-                    run.delta = param_difference(run.params, reference)
+                    run.delta = param_difference(run.params, reference, ignore_params=['modality'])
                     if run.delta:
                         session.compliant = False
                         subject.compliant = False
