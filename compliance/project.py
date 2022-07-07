@@ -157,20 +157,20 @@ def compare_with_majority(dataset):
 
 def partition_by_compliance(dataset):
     for modality in dataset.modalities:
-        if modality.compliant:
-            dataset.add_compliant_modality(modality.name)
-        else:
-            dataset.add_non_compliant_modality(modality.name)
         for subject in modality.subjects:
-            if subject.compliant:
-                modality.add_compliant_subject(subject.name)
-            else:
-                modality.add_non_compliant_subject(subject.name)
             for session in subject.sessions:
                 if session.compliant:
                     subject.add_compliant_session(session.name)
                 else:
                     subject.add_non_compliant_session(session.name)
+            if subject.compliant:
+                modality.add_compliant_subject(subject.name)
+            else:
+                modality.add_non_compliant_subject(subject.name)
+        if modality.compliant:
+            dataset.add_compliant_modality(modality.name)
+        else:
+            dataset.add_non_compliant_modality(modality.name)
     return dataset
 
 
