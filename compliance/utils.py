@@ -19,13 +19,13 @@ def majority_attribute_values(iterable, missing=None):
     counts = {}
     categories = set(counts)
     for length, element in enumerate(iterable):
-        categories.update(element.params)
+        categories.update(element)
         for cat in categories:
             try:
                 counter = counts[cat]
             except KeyError:
                 counts[cat] = counter = Counter({missing: 0})
-            counter[element.params.get(cat, missing)] += 1
+            counter[element.get(cat, missing)] += 1
     params = {}
     for k in counts.keys():
         params[k] = counts[k].most_common(1)[0][0]
