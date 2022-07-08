@@ -1,8 +1,9 @@
 from pathlib import Path
-
+import MRdataset
 from MRdataset.utils import param_difference
 from compliance.formatter import HtmlFormatter
 from compliance.utils import timestamp, majority_attribute_values
+from typing import Union
 
 
 def check_compliance(dataset: MRdataset.base.Project,
@@ -20,12 +21,11 @@ def check_compliance(dataset: MRdataset.base.Project,
     generate_report(dataset, output_dir)
 
 
-def compare_with_majority(dataset):
-    """Method checking compliance by first inferring the reference protocol/values, and
-    then identifying deviations
-
+def compare_with_majority(dataset: "MRdataset.base.Project") -> MRdataset.base.Project:
     """
-
+    Method checking compliance by first inferring the reference protocol/values, and
+    then identifying deviations
+    """
     for modality in dataset.modalities:
         # Calculate reference for comparing
         run_by_echo = dict()
@@ -62,7 +62,8 @@ def compare_with_majority(dataset):
     return dataset
 
 
-def generate_report(dataset, output_dir):
+def generate_report(dataset: MRdataset.base.Project, output_dir: Union[Path, str]) -> None:
+
     if output_dir is None:
         output_dir = dataset.data_root
     out_path = Path(output_dir) / '{}_{}.html'.format(dataset.name, timestamp())
