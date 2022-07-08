@@ -37,24 +37,23 @@ def compare_with_majority(dataset):
             modality.set_reference(reference, echo_time)
 
         # Start calculating delta for each run
-        flag = True
+        flag_modality = True
         for subject in modality.subjects:
+            flag_subject = True
             for session in subject.sessions:
                 for run in session.runs:
                     reference = modality.get_reference(run.echo_time)
                     run.delta = param_difference(run.params, reference, ignore_params=['modality'])
                     if run.delta:
-                        subject.add_non_compliant_session(session.name)
-                        modality.add_non_compliant_subject(subject.name)
-                        dataset.add_non_compliant_modality(modality.name)
-                        flag = False
-                if flag:
-                    subject.add_compliant_session(session.name)
-            if flag:
-                modality.add_compliant_subject(subject.name)
-        if flag:
-            modality.compliant = flag
-            dataset.add_compliant_modality(modality.name)
+                        modality.add_non_compliant_subject_name(subject.name)
+                        dataset.add_non_compliant_modality_name(modality.name)
+                        flag_subject = False
+                        flag_modality = False
+            if flag_subject:
+                modality.add_compliant_subject_name(subject.name)
+        if flag_modality:
+            modality.compliant = flag_modality
+            dataset.add_compliant_modality_name(modality.name)
     return dataset
 
 

@@ -81,21 +81,21 @@
     {% for modality in dataset.modalities %}
         <tr>
             <td class="tg-0pky" colspan="2">{{ modality.name }}</td>
-            {% set percent_non_compliant = 100 * modality.non_compliant_subjects|length|float / modality.subjects|length|float %}
-            {% set percent_compliant = 100 * modality.compliant_subjects|length|float / modality.subjects|length|float %}
+            {% set percent_non_compliant = 100 * modality.non_compliant_subject_names|length|float / modality.subjects|length|float %}
+            {% set percent_compliant = 100 * modality.compliant_subject_names|length|float / modality.subjects|length|float %}
 
             <td class="tg-0pky" colspan="2">
-                {{ modality.non_compliant_subjects|length }}
+                {{ modality.non_compliant_subject_names|length }}
                 ({{ percent_non_compliant|round(2, 'floor') }} %)
             </td>
 
             <td class="tg-0pky" colspan="2">
-                {% for i in modality.non_compliant_subjects %}
+                {% for i in modality.non_compliant_subject_names %}
                     {{ i }}
                 {% endfor %}
             </td>
             <td class="tg-0pky" colspan="2">
-                {{ modality.compliant_subjects|length }}
+                {{ modality.compliant_subject_names|length }}
                 ( {{ percent_compliant|round(2, 'floor') }} %)
             </td>
             <td class="tg-0pky" colspan="2">
