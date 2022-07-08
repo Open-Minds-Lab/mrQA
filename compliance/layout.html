@@ -114,9 +114,13 @@
 
     {% if not modality.compliant %}
         <h2>Modality : {{ modality.name }}</h2>
-        <h4>Reference</h4>
-
         {% for echo_time in modality.reference.keys() %}
+            {% if modality.is_multi_echo() %}
+                <h4>Multi-Echo Modality : Reference {{ loop.index }}</h4>
+            {% else %}
+                <h4>Reference</h4>
+            {% endif %}
+
             <table class="tg" id="with_margin">
                 <thead>
                 <tr>
@@ -177,9 +181,12 @@
 
     {% if modality.compliant %}
         <h2>Modality : {{ modality.name }}</h2>
-        <h4>Reference</h4>
-
         {% for echo_time in modality.reference.keys() %}
+            {% if modality.is_multi_echo() %}
+                <h4>Mult-Echo Modality : Reference {{ loop.index }}</h4>
+            {% else %}
+                <h4>Reference</h4>
+            {% endif %}
             <table class="tg" id="with_margin">
                 <thead>
                 <tr>
