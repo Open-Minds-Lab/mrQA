@@ -5,13 +5,18 @@ from compliance.formatter import HtmlFormatter
 from compliance.utils import timestamp, majority_attribute_values
 
 
-def check_compliance(dataset,
-                     strategy='first',
+def check_compliance(dataset: MRdataset.base.Project,
+                     strategy='majority',
                      output_dir=None,
-                     reference_path=None,
-                     reindex=False,
-                     verbose=False):
-    dataset = compare_with_majority(dataset)
+                     reference_path=None):
+    """
+
+    @type strategy: object
+    """
+    if strategy == 'majority':
+        dataset = compare_with_majority(dataset)
+    else:
+        raise NotImplementedError
     generate_report(dataset, output_dir)
 
 
