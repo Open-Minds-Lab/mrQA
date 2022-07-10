@@ -60,6 +60,9 @@ def compare_with_majority(dataset: "Project") -> Project:
                     if run.delta:
                         modality.add_non_compliant_subject_name(subject.name)
                         dataset.add_non_compliant_modality_name(modality.name)
+                        reasons = extract_reasons(run.delta)
+                        modality.reasons_non_compliance.update(reasons)
+
                         flag_subject = False
                         flag_modality = False
             if flag_subject:
@@ -68,6 +71,10 @@ def compare_with_majority(dataset: "Project") -> Project:
             modality.compliant = flag_modality
             dataset.add_compliant_modality_name(modality.name)
     return dataset
+
+
+def extract_reasons(data):
+    return list(zip(*data))[1]
 
 
 def generate_report(dataset: Project, output_dir: Union[Path, str]) -> None:

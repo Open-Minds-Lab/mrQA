@@ -71,6 +71,7 @@
         <th class="tg-0pky" colspan="2">Modality</th>
         <th class="tg-0pky" colspan="2"># non-compliant (%)</th>
         <th class="tg-0pky" colspan="2">Non-compliant subjects</th>
+        <th class="tg-0pky" colspan="2">Reasons</th>
         <th class="tg-0pky" colspan="2"># compliant (%)</th>
         <th class="tg-0pky" colspan="2"># subjects</th>
 
@@ -90,8 +91,13 @@
             </td>
 
             <td class="tg-0pky" colspan="2">
-                {% for i in modality.non_compliant_subject_names %}
-                    {{ i }}
+                {% for name in modality.non_compliant_subject_names %}
+                    {{ name }}
+                {% endfor %}
+            </td>
+            <td class="tg-0pky" colspan="2">
+                {% for reason in modality.reasons_non_compliance %}
+                    {{ reason }}
                 {% endfor %}
             </td>
             <td class="tg-0pky" colspan="2">
