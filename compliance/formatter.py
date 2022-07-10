@@ -1,11 +1,12 @@
-import jinja2
-import weasyprint
 import smtplib
 import ssl
 from abc import ABC, abstractmethod
-from email.mime import base, multipart, text
 from email import encoders
+from email.mime import base, multipart, text
 from pathlib import Path
+
+import jinja2
+import weasyprint
 
 
 class Formatter(ABC):
@@ -32,7 +33,8 @@ class BaseFormatter(Formatter):
 
     def _make_message(self):
         subject = "Dummy subject"
-        body = "Regarding your project {0} for protocol compliance".format(self.params.name)
+        body = "Regarding your project {0} for protocol compliance" \
+               "".format(self.params.name)
 
         message = multipart.MIMEMultipart()
         message["From"] = self.sender_email
@@ -89,7 +91,7 @@ class BaseFormatter(Formatter):
             server.quit()
 
     def render(self, *args, **kwargs):
-        raise NotImplementedError("BaseFormatter doesn't provide an implementation for formatting.")
+        raise NotImplementedError
 
 
 class HtmlFormatter(BaseFormatter):
@@ -106,12 +108,13 @@ class HtmlFormatter(BaseFormatter):
         :param
         :return:
         """
-        template_loader = jinja2.FileSystemLoader(searchpath=self.template_folder)
-        template_env = jinja2.Environment(loader=template_loader,
-                                          extensions=['jinja2.ext.loopcontrols'])
+        fs_loader = jinja2.FileSystemLoader(searchpath=self.template_folder)
+        extn = ['jinja2.ext.loopcontrols']
+        template_env = jinja2.Environment(loader=fs_loader, extensions=extn)
+
         template_file = "layout.html"
         template = template_env.get_template(template_file)
-        # print(params)
+
         output_text = template.render(
             dataset=self.params
         )

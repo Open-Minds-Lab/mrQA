@@ -1,13 +1,5 @@
-import functools
 import time
 from collections import Counter
-
-
-def safe_get(dictionary, keys, default=None):
-    return functools.reduce(
-        lambda d, key: d.get(key, default) if isinstance(d, dict) else default, keys.split("."),
-        dictionary
-    )
 
 
 def timestamp():
@@ -31,12 +23,12 @@ def majority_attribute_values(iterable, missing=None):
         params[k] = counts[k].most_common(1)[0][0]
     return params
 
-
 # try:
 #     if Path(reference_path).exists():
 #         self.reference_path= self.import_protocol(reference_path)
 # except FileNotFoundError:
-#     warnings.warn("Expected protocol reference not found on disk. Falling back to majority vote.")
+#     warnings.warn("Expected protocol reference not found on disk.
+#     Falling back to majority vote.")
 #
 # if export:
 #     self.export_protocol(reference_path)

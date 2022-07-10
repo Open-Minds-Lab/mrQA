@@ -125,7 +125,8 @@
                 <thead>
                 <tr>
                     {% for parameter_name in modality.reference[echo_time].keys() %}
-                        <th class="tg-0pky" colspan="2">{{ parameter_name }}</th>
+                        <th class="tg-0pky"
+                            colspan="2">{{ parameter_name }}</th>
                     {% endfor %}
                 </tr>
 
@@ -133,7 +134,8 @@
                 <tbody>
                 <tr>
                     {% for parameter_name in modality.reference[echo_time].keys() %}
-                        <td class="tg-0pky" colspan="2">{{ modality.reference[echo_time][parameter_name] }}</td>
+                        <td class="tg-0pky"
+                            colspan="2">{{ modality.reference[echo_time][parameter_name] }}</td>
                     {% endfor %}
                 </tr>
                 </tbody>
@@ -150,18 +152,24 @@
                                     <th class="tg-c3ow" colspan="4">Subject</th>
                                     <th class="tg-c3ow" colspan="4">Session</th>
                                     {% for item in run.delta %}
-                                        <th class="" tg=-0pky" colspan="2">{{ "Ref. : "+item[1] }}</th>
-                                        <th class="" tg=-0pky" colspan="2">{{ "Found: "+item[1] }}</th>
+                                        <th class="" tg=-0pky"
+                                            colspan="2">{{ "Ref. : "+item[1] }}</th>
+                                        <th class="" tg=-0pky"
+                                            colspan="2">{{ "Found: "+item[1] }}</th>
                                     {% endfor %}
                                 </tr>
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td class="tg-0pky" colspan="4">{{ subject.name }}</td>
-                                    <td class="tg-0pky" colspan="4">{{ session.name }}</td>
+                                    <td class="tg-0pky"
+                                        colspan="4">{{ subject.name }}</td>
+                                    <td class="tg-0pky"
+                                        colspan="4">{{ session.name }}</td>
                                     {% for item in run.delta %}
-                                        <td class="tg-0pky" colspan="2">{{ item[2][1] }}</td>
-                                        <td class="tg-0pky" colspan="2">{{ item[2][0] }}</td>
+                                        <td class="tg-0pky"
+                                            colspan="2">{{ item[2][1] }}</td>
+                                        <td class="tg-0pky"
+                                            colspan="2">{{ item[2][0] }}</td>
                                     {% endfor %}
                                 </tr>
                                 </tbody>
@@ -191,7 +199,8 @@
                 <thead>
                 <tr>
                     {% for parameter_name in modality.reference[echo_time].keys() %}
-                        <th class="tg-0pky" colspan="2">{{ parameter_name }}</th>
+                        <th class="tg-0pky"
+                            colspan="2">{{ parameter_name }}</th>
                     {% endfor %}
                 </tr>
 
@@ -199,7 +208,8 @@
                 <tbody>
                 <tr>
                     {% for parameter_name in modality.reference[echo_time].keys() %}
-                        <td class="tg-0pky" colspan="2">{{ modality.reference[echo_time][parameter_name] }}</td>
+                        <td class="tg-0pky"
+                            colspan="2">{{ modality.reference[echo_time][parameter_name] }}</td>
                     {% endfor %}
                 </tr>
                 </tbody>

@@ -1,18 +1,22 @@
 from pathlib import Path
-import MRdataset
-from MRdataset.utils import param_difference
-from compliance.formatter import HtmlFormatter
-from compliance.utils import timestamp, majority_attribute_values
 from typing import Union
 
+from MRdataset.base import Project
+from MRdataset.utils import param_difference
 
-def check_compliance(dataset: MRdataset.base.Project,
-                     strategy='majority',
-                     output_dir=None,
-                     reference_path=None):
+from compliance.formatter import HtmlFormatter
+from compliance.utils import timestamp, majority_attribute_values
+
+
+def check_compliance(dataset: Project,
+                     strategy: str = 'majority',
+                     output_dir: Union[Path, str] = None,
+                     reference_path: Union[Path, str] = None) -> None:
     """
-
-    @type strategy: object
+    @param dataset
+    @param output_dir
+    @param strategy
+    @param reference_path
     """
     if strategy == 'majority':
         dataset = compare_with_majority(dataset)
@@ -21,10 +25,12 @@ def check_compliance(dataset: MRdataset.base.Project,
     generate_report(dataset, output_dir)
 
 
-def compare_with_majority(dataset: "MRdataset.base.Project") -> MRdataset.base.Project:
+def compare_with_majority(dataset: "Project") -> Project:
     """
-    Method checking compliance by first inferring the reference protocol/values, and
-    then identifying deviations
+    Method checking compliance by first inferring the reference protocol/values,
+    and then identifying deviations
+    @param dataset
+
     """
     for modality in dataset.modalities:
         # Calculate reference for comparing
@@ -48,7 +54,9 @@ def compare_with_majority(dataset: "MRdataset.base.Project") -> MRdataset.base.P
             for session in subject.sessions:
                 for run in session.runs:
                     reference = modality.get_reference(run.echo_time)
-                    run.delta = param_difference(run.params, reference, ignore_params=['modality'])
+                    run.delta = param_difference(run.params,
+                                                 reference,
+                                                 ignore=['modality'])
                     if run.delta:
                         modality.add_non_compliant_subject_name(subject.name)
                         dataset.add_non_compliant_modality_name(modality.name)
@@ -62,8 +70,7 @@ def compare_with_majority(dataset: "MRdataset.base.Project") -> MRdataset.base.P
     return dataset
 
 
-def generate_report(dataset: MRdataset.base.Project, output_dir: Union[Path, str]) -> None:
-
+def generate_report(dataset: Project, output_dir: Union[Path, str]) -> None:
     if output_dir is None:
         output_dir = dataset.data_root
     out_path = Path(output_dir) / '{}_{}.html'.format(dataset.name, timestamp())
