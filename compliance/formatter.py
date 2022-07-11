@@ -6,7 +6,6 @@ from email.mime import base, multipart, text
 from pathlib import Path
 
 import jinja2
-import weasyprint
 
 
 class Formatter(ABC):
@@ -118,10 +117,9 @@ class HtmlFormatter(BaseFormatter):
         output_text = template.render(
             dataset=self.params
         )
-        self.output = weasyprint.HTML(string=output_text)
+        # self.output = weasyprint.HTML(string=output_text)
         f = open(self.filepath, 'w')
         f.write(output_text)
-        return self.output
 
 
 class PdfFormatter(HtmlFormatter):

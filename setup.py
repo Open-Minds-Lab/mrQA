@@ -17,7 +17,6 @@ requirements = [
     "pyyaml",
     "dictdiffer",
     "jinja2",
-    "weasyprint",
 ]
 
 test_requirements = ['pytest>=3', ]
