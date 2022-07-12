@@ -49,6 +49,9 @@ def main():
     optional.add_argument('--strategy', type=str, default='majority',
                           help='how to examine parameters [majority|reference].'
                                '--reference_path required if using reference')
+    optional.add_argument('--include_phantom', action='store_true',
+                          help='whether to include phantom, localizer, '
+                               'aahead_scout')
 
     if len(sys.argv) < 2:
         print('\nToo few arguments!\n')
@@ -63,7 +66,8 @@ def main():
                              style=args.style,
                              name=args.name,
                              reindex=args.reindex,
-                             verbose=args.verbose)
+                             verbose=args.verbose,
+                             include_phantom=args.include_phantom)
     check_compliance(dataset=dataset,
                      strategy=args.strategy,
                      output_dir=args.output_dir,
