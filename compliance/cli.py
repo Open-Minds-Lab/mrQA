@@ -3,7 +3,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from MRdataset import create_dataset
+from MRdataset import import_dataset
 
 from compliance import check_compliance
 
@@ -62,7 +62,7 @@ def main():
     if not Path(args.data_root).is_dir():
         raise OSError('Expected valid directory for --data_root argument, '
                       'Got {0}'.format(args.dataroot))
-    dataset = create_dataset(data_root=args.data_root,
+    dataset = import_dataset(data_root=args.data_root,
                              style=args.style,
                              name=args.name,
                              reindex=args.reindex,
