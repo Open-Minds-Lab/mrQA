@@ -1,3 +1,14 @@
+PARAMETER_NAMES = [
+    'Manufacturer',
+    'BodyPartExamined',
+    'RepetitionTime',
+    'MagneticFieldStrength',
+    'FlipAngle',
+    'EchoTrainLength',
+    'PixelBandwidth',
+    'NumberOfPhaseEncodingSteps',
+]
+
 class ComplianceException(Exception):
     """
     Custom error that is raised when some critical properties are not
