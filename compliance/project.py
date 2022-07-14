@@ -11,7 +11,7 @@ from compliance.utils import timestamp, majority_attribute_values
 def check_compliance(dataset: Project,
                      strategy: str = 'majority',
                      output_dir: Union[Path, str] = None,
-                     reference_path: Union[Path, str] = None) -> None:
+                     reference_path: Union[Path, str] = None) -> Project:
     """
     @param dataset
     @param output_dir
@@ -23,6 +23,8 @@ def check_compliance(dataset: Project,
     else:
         raise NotImplementedError
     generate_report(dataset, output_dir)
+
+    return dataset
 
 
 def compare_with_majority(dataset: "Project") -> Project:
