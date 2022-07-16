@@ -4,7 +4,7 @@ from hypothesis import given, settings, assume
 
 from MRdataset import import_dataset
 from MRdataset.simulate import make_compliant_test_dataset, \
-    make_non_compliant_test_dataset_w_info
+    make_test_dataset
 from compliance import check_compliance
 from pathlib import Path
 from collections import defaultdict
@@ -30,10 +30,10 @@ def test_compliance_all_clean(num_subjects,
     checked_dataset = check_compliance(dataset=fake_mrd_dataset)
 
     sub_names_by_modality = defaultdict(list)
-    for subject_path in Path(dest_dir).iterdir():
-        if subject_path.is_dir() and ('.mrdataset' not in str(subject_path)):
-            for modality_path in subject_path.iterdir():
-                sub_names_by_modality[modality_path.name].append(
+    for modality_pat in Path(dest_dir).iterdir():
+        if modality_pat.is_dir() and ('.mrdataset' not in str(modality_pat)):
+            for subject_path in modality_pat.iterdir():
+                sub_names_by_modality[modality_pat.name].append(
                     subject_path.name)
 
     for modality in checked_dataset.modalities:
@@ -80,13 +80,13 @@ def assert_list(list1, list2):
     return False
 
 
-#     @settings(max_examples=100, deadline=None)
-#     @given(st.lists(st.integers(min_value=0, max_value=3), min_size=15,
-#                     max_size=15),
-#            st.floats(allow_nan=False, allow_infinity=False),
-#            st.integers(min_value=-10000000, max_value=10000000),
-#            st.floats(allow_nan=False, allow_infinity=False)
-#            )
+@settings(max_examples=100, deadline=None)
+@given(st.lists(st.integers(min_value=0, max_value=3), min_size=15,
+                max_size=15),
+       st.floats(allow_nan=False, allow_infinity=False),
+       st.integers(min_value=-10000000, max_value=10000000),
+       st.floats(allow_nan=False, allow_infinity=False)
+       )
 def test_non_compliance(num_noncompliant_subjects,
                         repetition_time,
                         echo_train_length,
@@ -97,10 +97,10 @@ def test_non_compliance(num_noncompliant_subjects,
     assume(flip_angle != 80)
 
     fake_ds_dir, dataset_info = \
-        make_non_compliant_test_dataset_w_info(num_noncompliant_subjects,
-                                               repetition_time,
-                                               echo_train_length,
-                                               flip_angle)
+        make_test_dataset(num_noncompliant_subjects,
+                          repetition_time,
+                          echo_train_length,
+                          flip_angle)
     mrd = import_dataset(fake_ds_dir, include_phantom=True)
     checked_dataset = check_compliance(dataset=mrd)
 
@@ -148,7 +148,7 @@ def test_non_compliance(num_noncompliant_subjects,
                     if run.delta:
                         assert run.params['tr'] == repetition_time
                         assert run.params[
-                               'echo_train_length'] == echo_train_length
+                                   'echo_train_length'] == echo_train_length
                         assert run.params['flip_angle'] == flip_angle
                     else:
                         assert run.params['tr'] == 200
@@ -158,5 +158,6 @@ def test_non_compliance(num_noncompliant_subjects,
 
 
 if __name__ == '__main__':
-    test_non_compliance([0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 1.3, 53, 43)
+    test_non_compliance([0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 1.3, 53,
+                        43)
     #     # test_compliance_all_clean(5, 0.0, echo_train_length=0, flip_angle=0)
