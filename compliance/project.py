@@ -56,9 +56,13 @@ def compare_with_majority(dataset: "Project") -> Project:
             for session in subject.sessions:
                 for run in session.runs:
                     reference = modality.get_reference(run.echo_time)
+                    # run.delta = param_difference(run.params,
+                    #                              reference,
+                    #                              ignore=['modality'])
                     run.delta = param_difference(run.params,
                                                  reference,
-                                                 ignore=['modality'])
+                                                 ignore=['modality',
+                                                         'phase_encoding_direction'])
                     if run.delta:
                         modality.add_non_compliant_subject_name(subject.name)
                         dataset.add_non_compliant_modality_name(modality.name)
