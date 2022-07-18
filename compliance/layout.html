@@ -120,7 +120,8 @@
 
     {% if not modality.compliant %}
         <h2>Modality : {{ modality.name }}</h2>
-        {% for echo_time in modality.reference.keys() %}
+        {% for echo_time in modality.get_echo_times() %}
+            {% set reference = modality.get_reference(echo_time) %}
             {% if modality.is_multi_echo() %}
                 <h4>Multi-Echo Modality : Reference {{ loop.index }}</h4>
             {% else %}
@@ -130,7 +131,7 @@
             <table class="tg" id="with_margin">
                 <thead>
                 <tr>
-                    {% for parameter_name in modality.reference[echo_time].keys() %}
+                    {% for parameter_name in reference.keys() %}
                         <th class="tg-0pky"
                             colspan="2">{{ parameter_name }}</th>
                     {% endfor %}
@@ -139,9 +140,9 @@
                 </thead>
                 <tbody>
                 <tr>
-                    {% for parameter_name in modality.reference[echo_time].keys() %}
+                    {% for parameter_name in reference.keys() %}
                         <td class="tg-0pky"
-                            colspan="2">{{ modality.reference[echo_time][parameter_name] }}</td>
+                            colspan="2">{{ reference[parameter_name] }}</td>
                     {% endfor %}
                 </tr>
                 </tbody>
@@ -156,7 +157,8 @@
                                 <thead>
                                 <tr>
                                     <th class="tg-c3ow" colspan="4">Subject</th>
-                                    <th class="tg-c3ow" colspan="4">Session</th>
+                                    <th class="tg-c3ow"
+                                        colspan="4">SeriesNumber</th>
                                     {% for item in run.delta %}
                                         <th class="" tg=-0pky"
                                             colspan="2">{{ "Ref. : "+item[1] }}</th>
@@ -195,7 +197,8 @@
 
     {% if modality.compliant %}
         <h2>Modality : {{ modality.name }}</h2>
-        {% for echo_time in modality.reference.keys() %}
+        {% for echo_time in modality.get_echo_times() %}
+            {% set reference = modality.get_reference(echo_time) %}
             {% if modality.is_multi_echo() %}
                 <h4>Mult-Echo Modality : Reference {{ loop.index }}</h4>
             {% else %}
@@ -204,7 +207,7 @@
             <table class="tg" id="with_margin">
                 <thead>
                 <tr>
-                    {% for parameter_name in modality.reference[echo_time].keys() %}
+                    {% for parameter_name in reference.keys() %}
                         <th class="tg-0pky"
                             colspan="2">{{ parameter_name }}</th>
                     {% endfor %}
@@ -213,9 +216,9 @@
                 </thead>
                 <tbody>
                 <tr>
-                    {% for parameter_name in modality.reference[echo_time].keys() %}
+                    {% for parameter_name in reference.keys() %}
                         <td class="tg-0pky"
-                            colspan="2">{{ modality.reference[echo_time][parameter_name] }}</td>
+                            colspan="2">{{ reference[parameter_name] }}</td>
                     {% endfor %}
                 </tr>
                 </tbody>
