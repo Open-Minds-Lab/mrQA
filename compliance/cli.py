@@ -43,6 +43,12 @@ def main():
                           help='allow verbose output on console')
     optional.add_argument('-ref', '--reference_path', type=str,
                           help='.yaml file containing protocol specification')
+    optional.add_argument('--strategy', type=str, default='majority',
+                          help='how to examine parameters [majority|reference].'
+                               '--reference_path required if using reference')
+    optional.add_argument('--include_phantom', action='store_true',
+                          help='whether to include phantom, localizer, '
+                               'aahead_scout')
     # Experimental features, not implemented yet.
     optional.add_argument('-l', '--logging', type=int, default=40,
                           help='set logging to appropriate level')
@@ -61,7 +67,7 @@ def main():
     args = parser.parse_args()
     if not Path(args.data_root).is_dir():
         raise OSError('Expected valid directory for --data_root argument, '
-                      'Got {0}'.format(args.dataroot))
+                      'Got {0}'.format(args.data_root))
     dataset = import_dataset(data_root=args.data_root,
                              style=args.style,
                              name=args.name,
