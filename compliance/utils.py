@@ -1,5 +1,5 @@
 import time
-from collections import Counter
+from collections import Counter, defaultdict
 
 
 def timestamp():
@@ -59,3 +59,7 @@ def majority_attribute_values(iterable, missing=None):
 #         # Generate a different type of report
 #         raise NotImplementedError("Report <style> not found.")
 #     pass
+
+
+def extract_reasons(data):
+    return list(zip(*data))[1]

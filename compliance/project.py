@@ -5,7 +5,8 @@ from MRdataset.base import Project
 from MRdataset.utils import param_difference
 
 from compliance.formatter import HtmlFormatter
-from compliance.utils import timestamp, majority_attribute_values
+from compliance.utils import timestamp, majority_attribute_values, \
+    extract_reasons
 
 
 def check_compliance(dataset: Project,
@@ -57,8 +58,11 @@ def compare_with_majority(dataset: "Project") -> Project:
                 for run in session.runs:
                     reference = modality.get_reference(run.echo_time)
                     run.delta = param_difference(run.params,
-                                                 reference,
-                                                 ignore=['modality'])
+                                                 reference)
+                    # run.delta = param_difference(run.params,
+                    #                              reference,
+                    #                              ignore=['modality',
+                    #                                      'phase_encoding_direction'])
                     if run.delta:
                         modality.add_non_compliant_subject_name(subject.name)
                         dataset.add_non_compliant_modality_name(modality.name)
@@ -73,10 +77,6 @@ def compare_with_majority(dataset: "Project") -> Project:
             modality.compliant = flag_modality
             dataset.add_compliant_modality_name(modality.name)
     return dataset
-
-
-def extract_reasons(data):
-    return list(zip(*data))[1]
 
 
 def generate_report(dataset: Project, output_dir: Union[Path, str]) -> None:
