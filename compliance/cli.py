@@ -52,13 +52,8 @@ def main():
     # Experimental features, not implemented yet.
     optional.add_argument('-l', '--logging', type=int, default=40,
                           help='set logging to appropriate level')
-    optional.add_argument('--strategy', type=str, default='majority',
-                          help='how to examine parameters [majority|reference].'
-                               '--reference_path required if using reference')
-    optional.add_argument('--include_phantom', action='store_true',
-                          help='whether to include phantom, localizer, '
-                               'aahead_scout')
-
+    optional.add_argument('--skip', nargs='+',
+                          help='skip these parameters')
     if len(sys.argv) < 2:
         print('\nToo few arguments!\n')
         parser.print_help()
