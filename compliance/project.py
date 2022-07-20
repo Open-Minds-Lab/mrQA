@@ -74,6 +74,7 @@ def compare_with_majority(dataset: "Project") -> Project:
 
                         flag_subject = False
                         flag_modality = False
+                        modality.compliant = False
             if flag_subject:
                 modality.add_compliant_subject_name(subject.name)
         if flag_modality:
