@@ -131,18 +131,18 @@
             <table class="tg" id="with_margin">
                 <thead>
                 <tr>
-                    {% for parameter_name in reference.keys() %}
+                    {% for key in reference.keys() %}
                         <th class="tg-0pky"
-                            colspan="2">{{ parameter_name }}</th>
+                            colspan="2">{{ key }}</th>
                     {% endfor %}
                 </tr>
 
                 </thead>
                 <tbody>
                 <tr>
-                    {% for parameter_name in reference.keys() %}
+                    {% for key in reference.keys() %}
                         <td class="tg-0pky"
-                            colspan="2">{{ reference[parameter_name] }}</td>
+                            colspan="2">{{ reference[key] }}</td>
                     {% endfor %}
                 </tr>
                 </tbody>
@@ -158,7 +158,7 @@
                                 <tr>
                                     <th class="tg-c3ow" colspan="4">Subject</th>
                                     <th class="tg-c3ow"
-                                        colspan="4">SeriesNumber</th>
+                                        colspan="4">Session</th>
                                     {% for item in run.delta %}
                                         <th class="" tg=-0pky"
                                             colspan="2">{{ "Ref. : "+item[1] }}</th>
@@ -207,18 +207,18 @@
             <table class="tg" id="with_margin">
                 <thead>
                 <tr>
-                    {% for parameter_name in reference.keys() %}
+                    {% for key in reference.keys() %}
                         <th class="tg-0pky"
-                            colspan="2">{{ parameter_name }}</th>
+                            colspan="2">{{ key }}</th>
                     {% endfor %}
                 </tr>
 
                 </thead>
                 <tbody>
                 <tr>
-                    {% for parameter_name in reference.keys() %}
+                    {% for key in reference.keys() %}
                         <td class="tg-0pky"
-                            colspan="2">{{ reference[parameter_name] }}</td>
+                            colspan="2">{{ reference[key] }}</td>
                     {% endfor %}
                 </tr>
                 </tbody>
