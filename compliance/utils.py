@@ -1,5 +1,6 @@
 import time
 from collections import Counter, defaultdict
+from MRdataset.utils import is_hashable
 
 
 def timestamp():
@@ -17,7 +18,10 @@ def majority_attribute_values(iterable, missing=None):
                 counter = counts[cat]
             except KeyError:
                 counts[cat] = counter = Counter({missing: 0})
-            counter[element.get(cat, missing)] += 1
+            value = element.get(cat, missing)
+            if not is_hashable(value):
+                value = str(value)
+            counter[value] += 1
     params = {}
     for k in counts.keys():
         params[k] = counts[k].most_common(1)[0][0]
