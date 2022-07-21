@@ -2,7 +2,8 @@ from pathlib import Path
 from typing import Union
 
 from MRdataset.base import Project
-from MRdataset.utils import param_difference
+from MRdataset.utils import param_difference, is_hashable
+from MRdataset.base import Reason
 
 from compliance.formatter import HtmlFormatter
 from compliance.utils import timestamp, majority_attribute_values, \
@@ -71,7 +72,7 @@ def compare_with_majority(dataset: "Project") -> Project:
                         dataset.add_non_compliant_modality_name(modality.name)
                         reasons = extract_reasons(run.delta)
                         modality.reasons_non_compliance.update(reasons)
-
+                        store_reasons(modality, run, subject.name, session.name)
                         flag_subject = False
                         flag_modality = False
                         modality.compliant = False
@@ -81,6 +82,22 @@ def compare_with_majority(dataset: "Project") -> Project:
             modality.compliant = flag_modality
             dataset.add_compliant_modality_name(modality.name)
     return dataset
+
+
+def store_reasons(modality, run, subject_name, session_name):
+    for entry in run.delta:
+        if entry[0] != 'change':
+            continue
+        _, parameter, [new_value, ref_value] = entry
+
+        if not is_hashable(parameter):
+            parameter = str(parameter)
+
+        reason_obj = modality.delta.get(parameter, None)
+        if reason_obj is None:
+            reason_obj = Reason(parameter, ref_value, new_value)
+        reason_obj.add('{}_{}'.format(subject_name, session_name))
+        modality.delta[parameter] = reason_obj
 
 
 def generate_report(dataset: Project, output_dir: Union[Path, str]) -> None:
