@@ -84,7 +84,9 @@ def compare_with_majority(dataset: "Project") -> Project:
 
 
 def generate_report(dataset: Project, output_dir: Union[Path, str]) -> None:
-    if output_dir is None:
-        output_dir = Path().absolute()
-    out_path = Path(output_dir) / '{}_{}.html'.format(dataset.name, timestamp())
+    output_path = Path(output_dir).resolve()
+    if not Path(output_path).is_dir():
+        raise OSError('Expected valid output_directory, '
+                      'Got {0}'.format(output_dir))
+    out_path = output_path / '{}_{}.html'.format(dataset.name, timestamp())
     HtmlFormatter(filepath=out_path, params=dataset)

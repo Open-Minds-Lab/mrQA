@@ -68,6 +68,17 @@ def main():
     if not Path(args.data_root).is_dir():
         raise OSError('Expected valid directory for --data_root argument, '
                       'Got {0}'.format(args.data_root))
+    if args.output_dir is None:
+        logger.info('Use --output_dir to specify dir for final directory. '
+                    'By default, report will be at current working dir')
+        args.output_dir = Path().cwd()
+    else:
+        if not Path(args.output_dir).is_dir():
+            try:
+                Path(args.output_dir).mkdir(parents=True, exist_ok=True)
+            except OSError as exc:
+                raise exc
+
     dataset = import_dataset(data_root=args.data_root,
                              style=args.style,
                              name=args.name,
