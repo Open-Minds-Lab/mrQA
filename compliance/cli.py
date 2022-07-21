@@ -8,7 +8,7 @@ from MRdataset import import_dataset
 from compliance import check_compliance
 
 
-# import logging
+import logging
 
 
 def main():
@@ -56,8 +56,11 @@ def main():
                           help='set logging to appropriate level')
     optional.add_argument('--skip', nargs='+',
                           help='skip these parameters')
+
+    logger = logging.getLogger('root')
+
     if len(sys.argv) < 2:
-        print('\nToo few arguments!\n')
+        logger.critical('Too few arguments!')
         parser.print_help()
         parser.exit(1)
 
