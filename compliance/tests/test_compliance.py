@@ -176,13 +176,12 @@ def test_non_compliance_bids(num_noncompliant_subjects,
     assume(magnetic_field_strength != const_bids['b0'])
     assume(flip_angle != const_bids['fa'])
 
-    fake_ds_dir, dataset_info = \
-        make_bids_test_dataset(num_noncompliant_subjects,
-                          repetition_time,
-                          magnetic_field_strength,
-                          flip_angle)
-    mrd = import_dataset(fake_ds_dir, include_phantom=True)
-    checked_dataset = check_compliance(dataset=mrd)
+    fake_dir, dataset_info = make_bids_test_dataset(num_noncompliant_subjects,
+                                                    repetition_time,
+                                                    magnetic_field_strength,
+                                                    flip_angle)
+    mrd = import_dataset(fake_dir, include_phantom=True, style='bids')
+    checked_dataset = check_compliance(dataset=mrd, output_dir=mrd.data_root)
 
     # Check on disk, basically the truth
     layout =
