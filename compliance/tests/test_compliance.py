@@ -1,14 +1,17 @@
-import shutil
-import hypothesis.strategies as st
-from hypothesis import given, settings, assume
+from collections import defaultdict
+from pathlib import Path
 
+import MRdataset.config
+import hypothesis.strategies as st
 from MRdataset import import_dataset
 from MRdataset.simulate import make_compliant_test_dataset, \
     make_test_dataset, make_bids_test_dataset
-from compliance import check_compliance
-from pathlib import Path
-from collections import defaultdict
 from bids import BIDSLayout
+from hypothesis import given, settings, assume
+
+from compliance import check_compliance
+from compliance.tests.config import const_bids
+
 
 @settings(max_examples=50, deadline=None)
 @given(st.integers(min_value=0, max_value=10),
