@@ -160,9 +160,9 @@ def test_non_compliance(num_noncompliant_subjects,
                         assert run.params['flip_angle'] == 80
 
 
-@settings(max_examples=100, deadline=None)
-@given(st.lists(st.integers(min_value=0, max_value=3), min_size=5,
-                max_size=5),
+@settings(max_examples=30, deadline=None)
+@given(st.lists(st.integers(min_value=0, max_value=2), min_size=11,
+                max_size=11),
        st.floats(allow_nan=False, allow_infinity=False),
        st.floats(allow_nan=False, allow_infinity=False),
        st.floats(allow_nan=False, allow_infinity=False)
