@@ -245,6 +245,8 @@ def test_non_compliance_bids(num_noncompliant_subjects,
 
 
 if __name__ == '__main__':
-    test_non_compliance([0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 1.3, 53,
-                        43)
-    #     # test_compliance_all_clean(5, 0.0, echo_train_length=0, flip_angle=0)
+    test_non_compliance_bids(num_noncompliant_subjects=[1, 0, 0, 2, 0, 0, 1, 0,
+                                                        0, 2, 2],
+                             repetition_time=0.0,
+                             magnetic_field_strength=0.0,
+                             flip_angle=0.0)
