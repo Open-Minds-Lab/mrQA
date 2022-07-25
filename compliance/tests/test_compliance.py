@@ -172,9 +172,9 @@ def test_non_compliance_bids(num_noncompliant_subjects,
                              magnetic_field_strength,
                              flip_angle):
     """pass non-compliant ds, and ensure library recognizes them as such"""
-    assume(repetition_time != 2.0)
-    assume(magnetic_field_strength != 3.0)
-    assume(flip_angle != 80.0)
+    assume(repetition_time != const_bids['tr'])
+    assume(magnetic_field_strength != const_bids['b0'])
+    assume(flip_angle != const_bids['fa'])
 
     fake_ds_dir, dataset_info = \
         make_bids_test_dataset(num_noncompliant_subjects,
@@ -212,24 +212,26 @@ def test_non_compliance_bids(num_noncompliant_subjects,
         assert assert_list(compliant_subjects, modality.compliant_subject_names)
 
         # Check if reference has the right values
-        echo_time = list(modality.reference.keys())[0]
-        assert modality.reference[echo_time]['tr'] == 200
-        assert modality.reference[echo_time]['echo_train_length'] == 4000
-        assert modality.reference[echo_time]['flip_angle'] == 80
+        echo_times = modality.get_echo_times()
+        for te in echo_times:
+            reference = modality.get_reference(te)
+            assert reference['RepetitionTime'] == const_bids['tr']
+            assert reference['MagneticFieldStrength'] == const_bids['b0']
+            assert reference['FlipAngle'] == const_bids['fa']
 
         for subject in modality.subjects:
             for session in subject.sessions:
                 for run in session.runs:
                     if run.delta:
-                        assert run.params['tr'] == repetition_time
-                        assert run.params[
-                                   'echo_train_length'] == echo_train_length
-                        assert run.params['flip_angle'] == flip_angle
+                        assert run.params['RepetitionTime'] == repetition_time
+                        assert run.params['MagneticFieldStrength'] == \
+                               magnetic_field_strength
+                        assert run.params['FlipAngle'] == flip_angle
                     else:
-                        assert run.params['tr'] == 200
-                        assert run.params[
-                                   'echo_train_length'] == 4000
-                        assert run.params['flip_angle'] == 80
+                        assert run.params['RepetitionTime'] == const_bids['tr']
+                        assert run.params['MagneticFieldStrength'] == \
+                               const_bids['b0']
+                        assert run.params['FlipAngle'] == const_bids['fa']
 
 
 if __name__ == '__main__':
