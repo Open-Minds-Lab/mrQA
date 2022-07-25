@@ -184,7 +184,18 @@ def test_non_compliance_bids(num_noncompliant_subjects,
     checked_dataset = check_compliance(dataset=mrd, output_dir=mrd.data_root)
 
     # Check on disk, basically the truth
-    layout =
+    layout = BIDSLayout(fake_dir)
+    sub_names_by_modality = defaultdict(set)
+    subjects = layout.get_subjects()
+
+    for modality in MRdataset.config.datatypes:
+        for sub in subjects:
+            filters = {'datatype': modality,
+                       'subject': sub,
+                       'extension': 'json'}
+            files = layout.get(**filters)
+            if files:
+                sub_names_by_modality[modality].add(sub)
 
     # Check if modalities are equal
     non_compliant_modality_names = [m for m in dataset_info if dataset_info[m]]
