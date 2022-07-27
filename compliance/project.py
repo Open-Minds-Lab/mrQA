@@ -3,7 +3,6 @@ from typing import Union
 
 from MRdataset.base import Project
 from MRdataset.utils import param_difference, is_hashable
-from MRdataset.base import Reason
 
 from compliance.formatter import HtmlFormatter
 from compliance.utils import timestamp, majority_attribute_values, \
@@ -93,11 +92,8 @@ def store_reasons(modality, run, subject_name, session_name):
         if not is_hashable(parameter):
             parameter = str(parameter)
 
-        reason_obj = modality.delta.get(parameter, None)
-        if reason_obj is None:
-            reason_obj = Reason(parameter, ref_value, new_value)
-        reason_obj.add('{}_{}'.format(subject_name, session_name))
-        modality.delta[parameter] = reason_obj
+        modality.update_reason(parameter, run.echo_time, ref_value, new_value,
+                               '{}_{}'.format(subject_name, session_name))
 
 
 def generate_report(dataset: Project, output_dir: Union[Path, str]) -> None:
