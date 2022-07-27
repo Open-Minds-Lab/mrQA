@@ -121,6 +121,7 @@
     {% if not modality.compliant %}
         <h2>Modality : {{ modality.name }}</h2>
         {% for echo_time in modality.get_echo_times() %}
+            {% set te = echo_time %}
             {% set reference = modality.get_reference(echo_time) %}
             {% if modality.is_multi_echo() %}
                 <h4>Multi-Echo Modality : Reference {{ loop.index }}</h4>
