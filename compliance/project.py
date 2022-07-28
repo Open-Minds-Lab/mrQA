@@ -44,7 +44,8 @@ def compare_with_majority(dataset: "Project") -> Project:
                     # Use defaultdict instead?
                     if run.echo_time not in run_by_echo.keys():
                         run_by_echo[run.echo_time] = []
-                    run_by_echo[run.echo_time].append(run.params)
+                    if run.params:
+                        run_by_echo[run.echo_time].append(run.params)
 
         for echo_time in run_by_echo.keys():
             reference = majority_attribute_values(run_by_echo[echo_time])
