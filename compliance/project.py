@@ -70,8 +70,8 @@ def compare_with_majority(dataset: "Project") -> Project:
                     if run.delta:
                         modality.add_non_compliant_subject_name(subject.name)
                         dataset.add_non_compliant_modality_name(modality.name)
-                        reasons = extract_reasons(run.delta)
-                        modality.reasons_non_compliance.update(reasons)
+                        # reasons = extract_reasons(run.delta)
+                        # modality.reasons_non_compliance.update(reasons)
                         store_reasons(modality, run, subject.name, session.name)
                         flag_subject = False
                         flag_modality = False
