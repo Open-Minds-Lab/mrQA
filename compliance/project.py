@@ -48,11 +48,12 @@ def compare_with_majority(dataset: "Project") -> Project:
                         run_by_echo[run.echo_time].append(run.params)
 
         for echo_time in run_by_echo.keys():
-            reference = majority_attribute_values(run_by_echo[echo_time])
-            if echo_time is None:
-                modality.set_reference(reference, force=True)
-            else:
-                modality.set_reference(reference, echo_time)
+            if run_by_echo[echo_time]:
+                reference = majority_attribute_values(run_by_echo[echo_time])
+                if echo_time is None:
+                    modality.set_reference(reference, force=True)
+                else:
+                    modality.set_reference(reference, echo_time)
 
         # Start calculating delta for each run
         flag_modality = True
@@ -61,6 +62,8 @@ def compare_with_majority(dataset: "Project") -> Project:
             for session in subject.sessions:
                 for run in session.runs:
                     reference = modality.get_reference(run.echo_time)
+                    if not reference:
+                        continue
                     run.delta = param_difference(run.params,
                                                  reference)
                     # run.delta = param_difference(run.params,
