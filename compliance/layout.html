@@ -148,8 +148,8 @@
                 </tr>
                 </tbody>
             </table>
-
-            <table class="tg" id="with_margin">
+            {% if modality.reasons_non_compliance(te).any() %}
+                <table class="tg" id="with_margin">
                 <thead>
                 <tr>
                     <th class="tg-c3ow"
