@@ -133,8 +133,7 @@
                 <thead>
                 <tr>
                     {% for key in reference.keys() %}
-                        <th class="tg-0pky"
-                            colspan="2">{{ key }}</th>
+                        <th class="tg-0pky" colspan="2">{{ key }}</th>
                     {% endfor %}
                 </tr>
 
@@ -167,29 +166,31 @@
                 </tr>
                 </thead>
                 <tbody>
-                {% for parameter in modality.reasons_non_compliance %}
-                    {# {% set reasons = modality.query_reason(parameter, te) %}#}
-                    <tr>
-                        <td class="tg-0pky" colspan="4">{{ parameter }}</td>
-                        <td class="tg-0pky" colspan="4">
-                            {{ modality.query_reason(parameter, te, 'ref_value') }}
-                        </td>
-                        <td class="tg-0pky" colspan="4">
-                            {% for value in modality.query_reason
-                            (parameter, te, 'new_value') %}
-                                {{ value }},
-                            {% endfor %}
-                        </td>
-                        <td class="tg-0pky" colspan="2">
-                            {% for subject in modality.query_reason
+            {% endif %}
+        {% for parameter in modality.reasons_non_compliance(te) %}
+            {# {% set reasons = modality.query_reason(parameter, te) %}#}
+            <tr>
+                <td class="tg-0pky" colspan="4">{{ parameter }}</td>
+                <td class="tg-0pky" colspan="4">
+                    {% for value in modality.query_reason(parameter, te, 'ref_value') %}
+                        {{ value }},
+                    {% endfor %}
+                </td>
+                <td class="tg-0pky" colspan="4">
+                    {% for value in modality.query_reason(parameter, te, 'new_value') %}
+                        {{ value }},
+                    {% endfor %}
+                </td>
+                <td class="tg-0pky" colspan="2">
+                    {% for subject in modality.query_reason
                             (parameter, te, 'subjects') %}
-                                {{ subject }},
-                            {% endfor %}
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+                        {{ subject }},
+                    {% endfor %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+        </table>
 
             {##}
             {#            <table class="tg" id="with_margin">#}
