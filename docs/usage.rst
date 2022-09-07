@@ -2,6 +2,6 @@
 Usage
 =====
 
-To use Compliance in a project::
+To use ImagingQA in a project::
 
-    import compliance
+    import imagingqa

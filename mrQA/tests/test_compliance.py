@@ -9,8 +9,8 @@ from MRdataset.simulate import make_compliant_test_dataset, \
 from bids import BIDSLayout
 from hypothesis import given, settings, assume
 
-from compliance import check_compliance
-from compliance.tests.config import const_bids
+from mrQA import check_compliance
+from mrQA.tests.config import const_bids
 
 
 @settings(max_examples=50, deadline=None)

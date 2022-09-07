@@ -4,8 +4,8 @@ from typing import Union
 from MRdataset.base import Project
 from MRdataset.utils import param_difference, is_hashable
 
-from compliance.formatter import HtmlFormatter
-from compliance.utils import timestamp, majority_attribute_values, \
+from mrQA.formatter import HtmlFormatter
+from mrQA.utils import timestamp, majority_attribute_values, \
     extract_reasons
 
 
@@ -14,6 +14,7 @@ def check_compliance(dataset: Project,
                      output_dir: Union[Path, str] = None,
                      reference_path: Union[Path, str] = None) -> Project:
     """
+    Checks mrQA
     @param dataset
     @param output_dir
     @param strategy
@@ -30,7 +31,7 @@ def check_compliance(dataset: Project,
 
 def compare_with_majority(dataset: "Project") -> Project:
     """
-    Method checking compliance by first inferring the reference protocol/values,
+    Method checking mrQA by first inferring the reference protocol/values,
     and then identifying deviations
     @param dataset
 

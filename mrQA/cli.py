@@ -1,18 +1,18 @@
-"""Console script for compliance."""
+"""Console script for mrQA."""
 import argparse
 import sys
 from pathlib import Path
 
 from MRdataset import import_dataset
 
-from compliance import check_compliance
+from mrQA import check_compliance
 
 
 import logging
 
 
 def main():
-    """Console script for compliance."""
+    """Console script for mrQA."""
     parser = argparse.ArgumentParser(
         description='Protocol Compliance of MRI scans',
         add_help=False
@@ -38,7 +38,7 @@ def main():
                           help='show this help message and exit')
     # TODO: use this flag to store cache
     optional.add_argument('-r', '--reindex', action='store_true',
-                          help='reindex dataset & regenerate compliance report')
+                          help='reindex dataset & regenerate mrQA report')
     optional.add_argument('-v', '--verbose', action='store_true',
                           help='allow verbose output on console')
     optional.add_argument('-ref', '--reference_path', type=str,

@@ -1,1 +1,1 @@
-"""Unit test package for compliance."""
+"""Unit test package for mrQA."""

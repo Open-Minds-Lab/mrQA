@@ -32,7 +32,7 @@ class BaseFormatter(Formatter):
 
     def _make_message(self):
         subject = "Dummy subject"
-        body = "Regarding your project {0} for protocol compliance" \
+        body = "Regarding your project {0} for protocol mrQA" \
                "".format(self.params.name)
 
         message = multipart.MIMEMultipart()

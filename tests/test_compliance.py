@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-"""Tests for `compliance` package."""
+"""Tests for `mrQA` package."""
 
 import pytest
 
 
-from compliance import compliance
+from mrQA import compliance
 
 
 @pytest.fixture
