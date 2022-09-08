@@ -117,7 +117,8 @@ def generate_report(dataset: Project, output_dir: Union[Path, str]) -> None:
     if not Path(output_path).is_dir():
         raise OSError('Expected valid output_directory, '
                       'Got {0}'.format(output_dir))
-    out_path = output_path / '{}_{}.html'.format(dataset.name, timestamp())
+    filename = '{}_{}.html'.format(dataset.name, timestamp())
+    out_path = output_path / filename
     HtmlFormatter(filepath=out_path, params=dataset)
     print(otg_report(dataset, filename))
 
