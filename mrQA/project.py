@@ -164,6 +164,20 @@ def generate_report(dataset: Project, output_dir: Union[Path, str]) -> None:
 
 
 def otg_report(dataset, report_name):
+    """
+    Generate a single line report for the dataset
+
+    Parameters
+    ----------
+    dataset : Project
+        MRdataset.base.Project instance for the dataset which is to be checked
+    report_name : str
+        Filename for the report
+
+    Returns
+    -------
+
+    """
     result = {}
     for modality in dataset.modalities:
         percent_non_compliant = len(modality.non_compliant_subject_names) \
