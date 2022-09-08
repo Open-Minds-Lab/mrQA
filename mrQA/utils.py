@@ -83,4 +83,17 @@ def majority_attribute_values(iterable, missing=None):
 
 
 def extract_reasons(data):
+    """
+    Given a list of tuples, extract all the elements at index 1, and return
+    as a list
+
+    Parameters
+    ----------
+    data : List of tuples
+
+    Returns
+    -------
+    list
+        List of values at index 1
+    """
     return list(zip(*data))[1]
