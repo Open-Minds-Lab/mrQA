@@ -102,6 +102,17 @@ def store_reasons(modality, run, subject_name, session_name):
 
 
 def generate_report(dataset: Project, output_dir: Union[Path, str]) -> None:
+    """
+    Generates an HTML report aggregating and summarizing the non-compliance
+    discovered in the dataset.
+
+    Parameters
+    ----------
+    dataset : Project
+        MRdataset.base.Project instance for the dataset which is to be checked
+    output_dir : Union[Path, str]
+        Directory in which the generated report should be stored.
+    """
     output_path = Path(output_dir).resolve()
     if not Path(output_path).is_dir():
         raise OSError('Expected valid output_directory, '
