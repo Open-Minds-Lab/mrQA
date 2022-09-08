@@ -2,10 +2,10 @@
 mrQA Protocol Compliance
 ==============================
 
-.. image:: https://img.shields.io/pypi/v/imagingqa.svg
+.. image:: https://img.shields.io/pypi/v/mrQA.svg
         :target: https://pypi.python.org/pypi/mrQA
 
-.. image:: https://img.shields.io/travis/Open-Minds-Lab/imagingqa.svg
+.. image:: https://img.shields.io/travis/Open-Minds-Lab/mrQA.svg
         :target: https://travis-ci.com/Open-Minds-Lab/mrQA
 
 

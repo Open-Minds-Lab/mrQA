@@ -2,6 +2,6 @@
 Usage
 =====
 
-To use ImagingQA in a project::
+To use  mrQA in a project::
 
-    import imagingqa
+    import  mrQA
