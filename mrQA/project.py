@@ -14,11 +14,26 @@ def check_compliance(dataset: Project,
                      output_dir: Union[Path, str] = None,
                      reference_path: Union[Path, str] = None) -> Project:
     """
-    Checks mrQA
-    @param dataset
-    @param output_dir
-    @param strategy
-    @param reference_path
+    Main function for checking compliance. Calls individual functions for
+    inferring the most frequent values and then generating the report
+
+    Parameters
+    ----------
+    dataset : Project
+        MRdataset.base.Project instance for the dataset which is to be checked
+        for compliance
+    strategy : str
+        How to get the reference protocol, whether should take most common
+        values as reference or something else
+    output_dir: Union[Path, str]
+        Path to save the report
+    return_dataset: bool
+        return checked MRdataset.base.Project instance
+    Returns
+    -------
+    dataset : Project
+        MRdataset.base.Project instance for the dataset which was checked
+        for compliance
     """
     if strategy == 'majority':
         dataset = compare_with_majority(dataset)
