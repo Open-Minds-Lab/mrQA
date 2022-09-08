@@ -1,4 +1,4 @@
-Welcome to Compliance's documentation!
+Welcome to mrQA's documentation!
 ======================================
 
 .. toctree::

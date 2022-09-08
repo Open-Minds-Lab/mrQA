@@ -1,4 +1,4 @@
-"""Top-level package for Compliance."""
+"""Top-level package for mrQA."""
 
 __author__ = """Harsh Sinha"""
 __email__ = 'harsh.sinha@pitt.edu'

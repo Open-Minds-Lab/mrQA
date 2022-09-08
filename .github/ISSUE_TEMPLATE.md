@@ -1,4 +1,4 @@
-* Compliance version:
+* mrQA version:
 * Python version:
 * Operating System:
 

@@ -46,7 +46,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'Compliance'
+project = 'mrQA'
 copyright = "2022, Harsh Sinha"
 author = "Harsh Sinha"
 
