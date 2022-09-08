@@ -35,7 +35,8 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
     ],
-    description="Temporary container for library",
+    description="mrQA suite of tools offering automatic evaluation of "
+                "protocol compliance",
     entry_points={
         'console_scripts': [
             'protocol_compliance=mrQA.cli:main',
@@ -51,7 +52,7 @@ setup(
     packages=find_packages(include=['mrQA', 'mrQA.*']),
     test_suite='tests',
     tests_require=test_requirements,
-    url='https://github.com/openmindslab/compliance',
+    url='https://github.com/Open-Minds-Lab/mrQA',
     version='0.1.0',
     zip_safe=False,
 )
