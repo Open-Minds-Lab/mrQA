@@ -19,7 +19,7 @@ requirements = [
     "jinja2",
 ]
 
-test_requirements = ['pytest>=3', ]
+test_requirements = ['pytest>=3', 'hypothesis']
 
 setup(
     author="Pradeep Raamana",
