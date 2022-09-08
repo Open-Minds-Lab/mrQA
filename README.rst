@@ -1,5 +1,5 @@
 ==============================
-mrQA Protocol Compliance
+Quickstart
 ==============================
 
 .. image:: https://img.shields.io/pypi/v/mrQA.svg
