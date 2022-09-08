@@ -99,6 +99,21 @@ def compare_with_majority(dataset: "Project") -> Project:
 
 
 def store_reasons(modality, run, subject_name, session_name):
+    """
+    Store the sources of non-compliance like flip angle, ped, tr, te
+
+    Parameters
+    ----------
+    modality : MRdataset.base.Modality
+        The modality node, in which these sources of non-compliance were found
+        so that these values can be stored
+    run : MRdataset.base.Run
+        Non-compliant which was found to be non-compliant w.r.t. the reference
+    subject_name : str
+        Non-compliant subject's name
+    session_name : str
+        Non-compliant session name
+    """
     for entry in run.delta:
         if entry[0] != 'change':
             continue
