@@ -5,8 +5,7 @@ from MRdataset.base import Project
 from MRdataset.utils import param_difference, is_hashable
 
 from mrQA.formatter import HtmlFormatter
-from mrQA.utils import timestamp, majority_attribute_values, \
-    extract_reasons
+from mrQA.utils import timestamp, majority_attribute_values
 
 
 def check_compliance(dataset: Project,
