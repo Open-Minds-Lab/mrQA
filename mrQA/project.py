@@ -119,3 +119,19 @@ def generate_report(dataset: Project, output_dir: Union[Path, str]) -> None:
                       'Got {0}'.format(output_dir))
     out_path = output_path / '{}_{}.html'.format(dataset.name, timestamp())
     HtmlFormatter(filepath=out_path, params=dataset)
+    print(otg_report(dataset, filename))
+
+
+def otg_report(dataset, report_name):
+    result = {}
+    for modality in dataset.modalities:
+        percent_non_compliant = len(modality.non_compliant_subject_names) \
+                                / len(modality.subjects)
+        if percent_non_compliant > 0:
+            result[modality.name] = str(100*percent_non_compliant)
+
+    ret_string = 'In {0} dataset, modalities "{1}" are non-compliant. ' \
+                 'See {2} for report'.format(dataset.name,
+                                                ", ".join(result.keys()),
+                                             report_name)
+    return ret_string
