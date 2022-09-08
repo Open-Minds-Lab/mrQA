@@ -4,6 +4,7 @@ from MRdataset.utils import is_hashable
 
 
 def timestamp():
+    """Generate a timestamp as a string"""
     time_string = time.strftime("%m_%d_%Y_%H_%M")
     return time_string
 
