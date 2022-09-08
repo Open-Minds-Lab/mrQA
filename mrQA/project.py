@@ -12,7 +12,7 @@ from mrQA.utils import timestamp, majority_attribute_values, \
 def check_compliance(dataset: Project,
                      strategy: str = 'majority',
                      output_dir: Union[Path, str] = None,
-                     reference_path: Union[Path, str] = None) -> Project:
+                     return_dataset: bool = False) -> Union[Project, None]:
     """
     Main function for checking compliance. Calls individual functions for
     inferring the most frequent values and then generating the report
