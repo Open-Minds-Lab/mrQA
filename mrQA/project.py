@@ -31,10 +31,20 @@ def check_compliance(dataset: Project,
 
 def compare_with_majority(dataset: "Project") -> Project:
     """
-    Method checking mrQA by first inferring the reference protocol/values,
-    and then identifying deviations
-    @param dataset
+    Method for post-acquisition compliance. Infers the reference protocol/values
+    by looking for the most frequent values, and then identifying deviations
 
+    Parameters
+    ----------
+    dataset : Project
+        MRdataset.base.Project instance for the dataset which is to be checked
+        for compliance
+
+    Returns
+    -------
+    dataset : Project
+        Adds the non-compliance information to the same Project instance and
+        returns it.
     """
     for modality in dataset.modalities:
         # Calculate reference for comparing
