@@ -9,6 +9,22 @@ def timestamp():
 
 
 def majority_attribute_values(iterable, missing=None):
+    """
+    Given a list of dictionaries, it generates the most common
+    values for each key
+
+    Parameters
+    ----------
+    iterable : list
+        a list of dictionaries
+    missing : python object, default None
+        a default value if the key is missing in any dictionary
+
+    Returns
+    -------
+    dict
+        Key-value pairs specifying the most common values for each key
+    """
     counts = {}
     categories = set(counts)
     for length, element in enumerate(iterable):
