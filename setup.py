@@ -16,7 +16,6 @@ requirements = [
     "mrdataset",
     "pydicom",
     "nibabel",
-    "pyyaml",
     "dictdiffer",
     "jinja2",
 ]

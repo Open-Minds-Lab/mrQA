@@ -1,7 +1,6 @@
 mrdataset
 pydicom
 nibabel
-pyyaml
 dictdiffer
 jinja2
 weasyprint
