@@ -35,6 +35,8 @@ def check_compliance(dataset: Project,
         MRdataset.base.Project instance for the dataset which was checked
         for compliance
     """
+    if not dataset.modalities:
+        raise EOFError("Dataset is empty.")
     if strategy == 'majority':
         dataset = compare_with_majority(dataset)
     else:
