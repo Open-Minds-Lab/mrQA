@@ -6,7 +6,7 @@ from pathlib import Path
 from MRdataset import import_dataset
 
 from mrQA import check_compliance
-
+from mrQA.common import set_logging
 
 import logging
 
@@ -57,7 +57,7 @@ def main():
     optional.add_argument('--skip', nargs='+',
                           help='skip these parameters')
 
-    logger = logging.getLogger('root')
+    logger = set_logging('root')
 
     if len(sys.argv) < 2:
         logger.critical('Too few arguments!')
@@ -68,9 +68,11 @@ def main():
     if not Path(args.data_root).is_dir():
         raise OSError('Expected valid directory for --data_root argument, '
                       'Got {0}'.format(args.data_root))
+
     if args.output_dir is None:
         logger.info('Use --output_dir to specify dir for final directory. '
-                    'By default, report will be at current working dir')
+                    'By default, report will be saved at present working '
+                    'directory')
         args.output_dir = Path().cwd()
     else:
         if not Path(args.output_dir).is_dir():
