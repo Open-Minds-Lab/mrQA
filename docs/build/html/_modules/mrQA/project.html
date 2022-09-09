@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>mrQA.project &mdash; mrQA 0.1.0+0.g1872ddd.dirty documentation</title>
+  <title>mrQA.project &mdash; mrQA 0.1.0+5.gd48e91a documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -27,7 +27,7 @@
             <a href="../../index.html" class="icon icon-home"> mrQA
           </a>
               <div class="version">
-                0.1.0+0.g1872ddd.dirty
+                0.1.0+5.gd48e91a
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -94,7 +94,8 @@
 <div class="viewcode-block" id="check_compliance"><a class="viewcode-back" href="../../mrQA.html#mrQA.project.check_compliance">[docs]</a><span class="k">def</span> <span class="nf">check_compliance</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">Project</span><span class="p">,</span>
                      <span class="n">strategy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;majority&#39;</span><span class="p">,</span>
                      <span class="n">output_dir</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                     <span class="n">return_dataset</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Project</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+                     <span class="n">return_dataset</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                     <span class="n">reference_path</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Project</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Main function for checking compliance. Calls individual functions for</span>
 <span class="sd">    inferring the most frequent values and then generating the report</span>
@@ -117,6 +118,8 @@
 <span class="sd">        MRdataset.base.Project instance for the dataset which was checked</span>
 <span class="sd">        for compliance</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">dataset</span><span class="o">.</span><span class="n">modalities</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">EOFError</span><span class="p">(</span><span class="s2">&quot;Dataset is empty.&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">strategy</span> <span class="o">==</span> <span class="s1">&#39;majority&#39;</span><span class="p">:</span>
         <span class="n">dataset</span> <span class="o">=</span> <span class="n">compare_with_majority</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
