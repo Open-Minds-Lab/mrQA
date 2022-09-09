@@ -57,6 +57,5 @@ setup(
     url='https://github.com/Open-Minds-Lab/mrQA',
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
-    zip_safe=False,
-    package_data={'mrQA': ['resources/*.html']}
+    zip_safe=False
 )
