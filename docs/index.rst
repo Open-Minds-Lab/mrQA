@@ -18,7 +18,7 @@ Welcome to mrQA's documentation!
    :maxdepth: 2
    :caption: Reference
 
-   modules
+   mrQA
 
 .. toctree::
    :maxdepth: 2
