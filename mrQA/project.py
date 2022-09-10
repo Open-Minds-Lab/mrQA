@@ -186,9 +186,13 @@ def otg_report(dataset, report_name):
                                 / len(modality.subjects)
         if percent_non_compliant > 0:
             result[modality.name] = str(100 * percent_non_compliant)
-
-    ret_string = 'In {0} dataset, modalities "{1}" are non-compliant. ' \
+    if result:
+        ret_string = 'In {0} dataset, modalities "{1}" are non-compliant. ' \
                  'See {2} for report'.format(dataset.name,
                                              ", ".join(result.keys()),
+                                             report_name)
+    else:
+        ret_string = 'In {0} dataset, all modalities are compliant. ' \
+                 'See {1} for report'.format(dataset.name,
                                              report_name)
     return ret_string
