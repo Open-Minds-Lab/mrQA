@@ -8,12 +8,24 @@ Quickstart
 .. image:: https://img.shields.io/travis/Open-Minds-Lab/mrQA.svg
         :target: https://travis-ci.com/Open-Minds-Lab/mrQA
 
-* Documentation: https://open-minds-lab.github.io/mrQA/
-
-mrQA suite of tools offering
+mrQA suite of tools
+-------------------
  - automatic evaluation of protocol compliance
+ - Documentation: https://open-minds-lab.github.io/mrQA/
 
+CLI usage
+---------
+A protocol compliance report can be generated directly from the command line
+interface. For a DICOM dataset::
 
+    mr_proto_compl --data_root /path/to/dataset --style xnat
+
+For a BIDS dataset::
+
+    mr_proto_compl --data_root /path/to/dataset --style bids
+
+Python usage
+------------
 To use  mrQA in a project::
 
     import  mrQA
