@@ -19,7 +19,7 @@ To use  mrQA in a project::
     import  mrQA
 
 The most important methods for checking protocol compliance is
-``mrQA.project.check_compliance``. It calls all the required functions.
+``check_compliance``. It calls all the required functions.
 
 * To infer the most frequent values for each acquisition parameter
 * Aggregate the non-compliance information to generate an HTML report
