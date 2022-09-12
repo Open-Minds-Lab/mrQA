@@ -15,7 +15,7 @@ mrQA suite of tools
 -------------------
  - automatic evaluation of protocol compliance
  - Documentation: https://open-minds-lab.github.io/mrQA/
- - Tutorial:
+ - Tutorial: https://nbviewer.org/github/Open-Minds-Lab/mrQA/blob/master/examples/usage.ipynb
 
 CLI usage
 ---------
