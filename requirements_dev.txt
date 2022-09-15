@@ -1,7 +1,0 @@
-mrdataset
-pydicom
-nibabel
-dictdiffer
-jinja2
-weasyprint
-
