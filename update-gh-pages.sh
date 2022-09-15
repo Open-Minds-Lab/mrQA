@@ -1,4 +1,5 @@
 #!/bin/bash
+# git clone -b gh-pages --single-branch git@github.com:Open-Minds-Lab/mrQA.git .
 cd docs
 make clean
 make html
