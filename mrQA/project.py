@@ -63,6 +63,9 @@ def compare_with_majority(dataset: "Project") -> Project:
         Adds the non-compliance information to the same Project instance and
         returns it.
     """
+    # TODO: Check for subset, if incomplete dataset throw error and stop
+
+
     for modality in dataset.modalities:
         # Calculate reference for comparing
         run_by_echo = dict()
