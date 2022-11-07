@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Reference &mdash; mrQA 0.1.7 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Credits" href="authors.html" />
+    <link rel="prev" title="Contributing" href="contributing.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> mrQA
+          </a>
+              <div class="version">
+                0.1.7
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readme.html">Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">How-to Guides &amp; Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#high-level-api">High level API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-mrQA.project">mrQA.project module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-mrQA.utils">mrQA.utils module</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Background</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">History</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">mrQA</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>API Reference</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/Open-Minds-Lab/mrQA/blob/master/docs/mrQA.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="api-reference">
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline"></a></h1>
+<p>This page hold mrQA’s API documentation, which might be helpful for the
+neuroimaging community. For the sake of brevity, we highlight the high level
+API of mrQA. The high-level API would allow your to do the most common tasks.</p>
+<p>The most important methods are <code class="docutils literal notranslate"><span class="pre">mrQA.project.check_compliance</span></code>. Here is a
+summarized reference of commonly used methods.</p>
+<section id="high-level-api">
+<h2>High level API<a class="headerlink" href="#high-level-api" title="Permalink to this headline"></a></h2>
+</section>
+<section id="module-mrQA.project">
+<span id="mrqa-project-module"></span><h2>mrQA.project module<a class="headerlink" href="#module-mrQA.project" title="Permalink to this headline"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="mrQA.project.check_compliance">
+<span class="sig-prename descclassname"><span class="pre">mrQA.project.</span></span><span class="sig-name descname"><span class="pre">check_compliance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">MRdataset.base.Project</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'majority'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">MRdataset.base.Project</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/mrQA/project.html#check_compliance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mrQA.project.check_compliance" title="Permalink to this definition"></a></dt>
+<dd><p>Main function for checking compliance. Calls individual functions for
+inferring the most frequent values and then generating the report</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> (<em>Project</em>) – MRdataset.base.Project instance for the dataset which is to be checked
+for compliance</p></li>
+<li><p><strong>strategy</strong> (<em>str</em>) – How to get the reference protocol, whether should take most common
+values as reference or something else</p></li>
+<li><p><strong>output_dir</strong> (<em>Union</em><em>[</em><em>Path</em><em>, </em><em>str</em><em>]</em>) – Path to save the report</p></li>
+<li><p><strong>return_dataset</strong> (<em>bool</em>) – return checked MRdataset.base.Project instance</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>dataset</strong> – MRdataset.base.Project instance for the dataset which was checked
+for compliance</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Project</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mrQA.project.compare_with_majority">
+<span class="sig-prename descclassname"><span class="pre">mrQA.project.</span></span><span class="sig-name descname"><span class="pre">compare_with_majority</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">MRdataset.base.Project</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">MRdataset.base.Project</span></span></span><a class="reference internal" href="_modules/mrQA/project.html#compare_with_majority"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mrQA.project.compare_with_majority" title="Permalink to this definition"></a></dt>
+<dd><p>Method for post-acquisition compliance. Infers the reference protocol/values
+by looking for the most frequent values, and then identifying deviations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dataset</strong> (<em>Project</em>) – MRdataset.base.Project instance for the dataset which is to be checked
+for compliance</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>dataset</strong> – Adds the non-compliance information to the same Project instance and
+returns it.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Project</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mrQA.project.generate_report">
+<span class="sig-prename descclassname"><span class="pre">mrQA.project.</span></span><span class="sig-name descname"><span class="pre">generate_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">MRdataset.base.Project</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/mrQA/project.html#generate_report"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mrQA.project.generate_report" title="Permalink to this definition"></a></dt>
+<dd><p>Generates an HTML report aggregating and summarizing the non-compliance
+discovered in the dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> (<em>Project</em>) – MRdataset.base.Project instance for the dataset which is to be checked</p></li>
+<li><p><strong>output_dir</strong> (<em>Union</em><em>[</em><em>Path</em><em>, </em><em>str</em><em>]</em>) – Directory in which the generated report should be stored.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mrQA.project.otg_report">
+<span class="sig-prename descclassname"><span class="pre">mrQA.project.</span></span><span class="sig-name descname"><span class="pre">otg_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mrQA/project.html#otg_report"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mrQA.project.otg_report" title="Permalink to this definition"></a></dt>
+<dd><p>Generate a single line report for the dataset</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> (<em>Project</em>) – MRdataset.base.Project instance for the dataset which is to be checked</p></li>
+<li><p><strong>report_name</strong> (<em>str</em>) – Filename for the report</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mrQA.project.store_reasons">
+<span class="sig-prename descclassname"><span class="pre">mrQA.project.</span></span><span class="sig-name descname"><span class="pre">store_reasons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modality</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subject_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mrQA/project.html#store_reasons"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mrQA.project.store_reasons" title="Permalink to this definition"></a></dt>
+<dd><p>Store the sources of non-compliance like flip angle, ped, tr, te</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>modality</strong> (<em>MRdataset.base.Modality</em>) – The modality node, in which these sources of non-compliance were found
+so that these values can be stored</p></li>
+<li><p><strong>run</strong> (<em>MRdataset.base.Run</em>) – Non-compliant which was found to be non-compliant w.r.t. the reference</p></li>
+<li><p><strong>subject_name</strong> (<em>str</em>) – Non-compliant subject’s name</p></li>
+<li><p><strong>session_name</strong> (<em>str</em>) – Non-compliant session name</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-mrQA.utils">
+<span id="mrqa-utils-module"></span><h2>mrQA.utils module<a class="headerlink" href="#module-mrQA.utils" title="Permalink to this headline"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="mrQA.utils.extract_reasons">
+<span class="sig-prename descclassname"><span class="pre">mrQA.utils.</span></span><span class="sig-name descname"><span class="pre">extract_reasons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mrQA/utils.html#extract_reasons"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mrQA.utils.extract_reasons" title="Permalink to this definition"></a></dt>
+<dd><p>Given a list of tuples, extract all the elements at index 1, and return
+as a list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>List of tuples</em>) – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of values at index 1</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mrQA.utils.majority_attribute_values">
+<span class="sig-prename descclassname"><span class="pre">mrQA.utils.</span></span><span class="sig-name descname"><span class="pre">majority_attribute_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">missing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mrQA/utils.html#majority_attribute_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mrQA.utils.majority_attribute_values" title="Permalink to this definition"></a></dt>
+<dd><p>Given a list of dictionaries, it generates the most common
+values for each key</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>iterable</strong> (<em>list</em>) – a list of dictionaries</p></li>
+<li><p><strong>missing</strong> (<em>python object</em><em>, </em><em>default None</em>) – a default value if the key is missing in any dictionary</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Key-value pairs specifying the most common values for each key</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mrQA.utils.timestamp">
+<span class="sig-prename descclassname"><span class="pre">mrQA.utils.</span></span><span class="sig-name descname"><span class="pre">timestamp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mrQA/utils.html#timestamp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mrQA.utils.timestamp" title="Permalink to this definition"></a></dt>
+<dd><p>Generate a timestamp as a string</p>
+</dd></dl>
+
+<span class="target" id="module-mrQA"></span><p>Top-level package for mrQA.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="contributing.html" class="btn btn-neutral float-left" title="Contributing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="authors.html" class="btn btn-neutral float-right" title="Credits" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Harsh Sinha.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
