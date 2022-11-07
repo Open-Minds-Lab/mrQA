@@ -40,7 +40,7 @@ setup(
                 "protocol compliance",
     entry_points={
         'console_scripts': [
-            'protocol_compliance=mrQA.cli:main',
+            'mrpc=mrQA.cli:main',
             'mr_proto_compl=mrQA.cli:main',
         ],
     },
