@@ -43,7 +43,8 @@ def parallel_dataset(data_root=None,
             stacklevel=2)
         name = random_name()
 
-    num_sets = create_index(data_root, metadata_root, name, reindex)
+    num_sets = create_index(data_root, metadata_root, name,
+                            reindex, subjects_per_job)
 
     for i in range(num_sets):
         # create slurm script to call run_subset.py
@@ -91,4 +92,5 @@ def create_slurm_script(filename, dataset_name, seq_no, env='mrqa'):
 if __name__ == '__main__':
     parallel_dataset(data_root='/media/sinhah/extremessd/ABCD-375/dicom-baseline',
                      name='abcd-375',
-                     reindex=True)
+                     reindex=False,
+                     subjects_per_job=50)
