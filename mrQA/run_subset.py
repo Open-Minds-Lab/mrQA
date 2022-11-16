@@ -1,6 +1,7 @@
 import pickle
 
 from MRdataset import import_dataset
+from MRdataset.config import CACHE_DIR
 
 """Console script for mrQA."""
 import argparse
