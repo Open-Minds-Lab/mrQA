@@ -108,7 +108,7 @@ def merge_subset(parent, name):
 
 def merge_from_disk(metadata_root, name):
     chunks = []
-    for file in metadata_root.rglob(name + '_master*'):
+    for file in metadata_root.rglob(name + '_master*.pkl'):
         if file.is_file():
             # chunks.append(file)
             with open(file, 'rb') as f:
