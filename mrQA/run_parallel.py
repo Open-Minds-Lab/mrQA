@@ -50,7 +50,7 @@ def parallel_dataset(data_root=None,
         s_folderpath = metadata_root/f'scripts_{name}'
         s_folderpath.mkdir(parents=True)
         s_filename = s_folderpath/f's_{name}_{i}.sh'
-        create_slurm_script(s_filename, name, i)
+        create_slurm_script(s_filename, name, i, 'mrcheck')
         # submit job or run with bash
         if submit_job:
             subprocess.call(['bash', s_filename])
@@ -62,7 +62,7 @@ def parallel_dataset(data_root=None,
     return
 
 
-def create_slurm_script(filename, dataset_name, seq_no, name):
+def create_slurm_script(filename, dataset_name, seq_no, env='mrqa'):
     with open(filename, 'w') as fp:
         fp.writelines("\n".join([
             '#!/bin/bash',
