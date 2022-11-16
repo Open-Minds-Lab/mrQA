@@ -17,7 +17,7 @@ def parallel_dataset(data_root=None,
                      verbose=False,
                      metadata_root=None,
                      include_nifti_header=False,
-                     workers=None,
+                     subjects_per_job=None,
                      submit_job=False):
     if style != 'dicom':
         raise NotImplementedError(f'Expects dicom, Got {style}')
@@ -51,7 +51,7 @@ def parallel_dataset(data_root=None,
         s_folderpath = metadata_root/f'scripts_{name}'
         s_folderpath.mkdir(parents=True, exist_ok=True)
         s_filename = s_folderpath/f's_{name}_{i}.sh'
-        create_slurm_script(s_filename, name, i, 'mrcheck')
+        create_slurm_script(s_filename, name, i, 'mrcheck', subjects_per_job)
         # submit job or run with bash
         if not submit_job:
             subprocess.call(['bash', s_filename])
@@ -63,13 +63,15 @@ def parallel_dataset(data_root=None,
     return
 
 
-def create_slurm_script(filename, dataset_name, seq_no, env='mrqa'):
+def create_slurm_script(filename, dataset_name, seq_no, env='mrqa',
+                        subjects_per_job=50):
     with open(filename, 'w') as fp:
         fp.writelines("\n".join([
             '#!/bin/bash',
             '#SBATCH -A med220005p',
             '#SBATCH -N 1',
             '#SBATCH -p RM-shared',
+            f'#SBATCH --mem-per-cpu={subjects_per_job*10}M #memory per cpu-core',
             '#SBATCH --time=01:05:00',
             '#SBATCH --ntasks-per-node=1',
             f'#SBATCH --error={dataset_name}.master{seq_no}.%J.err',
