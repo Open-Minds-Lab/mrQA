@@ -62,50 +62,27 @@ def parallel_dataset(data_root=None,
     return
 
 
-def read_subset(subset, name, seq_num, style, reindex, verbose, include_phantom,
-                metadata_root):
-    parent_set = []
-    for j, folder in enumerate(subset):
-        identifier = name + f'_part{seq_num + j}'
-        child_set = import_dataset(data_root=folder,
-                                       style=style,
-                                       name=identifier,
-                                       reindex=reindex,
-                                       verbose=verbose,
-                                       include_phantom=include_phantom,
-                                       metadata_root=metadata_root,
-                                       save=False)
-        parent_set.append(child_set)
-    return parent_set
+def create_slurm_script(filename, dataset_name, seq_no, name):
+    with open(filename, 'w') as fp:
+        fp.write('# !/bin/bash')
+        fp.write('# SBATCH -A med220005p')
+        fp.write('# SBATCH -N 1')
+        fp.write('# SBATCH -p RM-shared')
+        fp.write('# SBATCH --time=01:05:00')
+        fp.write('# SBATCH --ntasks-per-node=1')
+        fp.write(f'# SBATCH --error={dataset_name}.master{seq_no}.%J.err')
+        fp.write(f'# SBATCH --output={dataset_name}.master{seq_no}.%J.out')
 
+        fp.write('# Clear the environment from any previously loaded modules')
+        fp.write('# module purge > /dev/null 2>&1')
 
-def save2pickle(dataset):
-    if not dataset.modalities:
-        raise EOFError('Dataset is empty!')
-    with open(dataset.cache_path, "wb") as f:
-        pickle.dump(dataset, f)
-
-
-def merge_subset(parent, name):
-    master = None
-    if len(parent) < 1:
-        raise EOFError('Cannot merge an empty list!')
-    master = parent[0]
-    for child in parent[1:]:
-        master.merge(child)
-    master.name = name
-    return master
-
-
-def merge_from_disk(metadata_root, name):
-    chunks = []
-    for file in metadata_root.rglob(name+'_master*'):
-        if file.is_file():
-            # chunks.append(file)
-            with open(file, 'rb') as f:
-                temp_dict = pickle.load(f)
-                chunks.append(temp_dict)
-    return merge_subset(chunks, name)
+        # fp.write(' Use '&' to start the first job in the background')
+        fp.write('source ${HOME}/.bashrc')
+        fp.write('conda activate mrqa')
+        fp.write(f'mrpc_subset  -i {seq_no} --style dicom --name {name} &)')
+        fp.write('wait')
+        fp.write('date')
+        fp.write('echo - e "\n\n\n\n--------------------------------\nDownload completed"')
 
 
 if __name__ == '__main__':
