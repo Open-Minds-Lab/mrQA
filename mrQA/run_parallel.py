@@ -90,5 +90,5 @@ def create_slurm_script(filename, dataset_name, seq_no, env='mrqa'):
 
 if __name__ == '__main__':
     parallel_dataset(data_root='/media/sinhah/extremessd/ABCD-375/dicom-baseline',
-                 name='abcd-375',
+                     name='abcd-375',
                      reindex=True)
