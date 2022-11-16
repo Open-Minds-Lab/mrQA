@@ -1,12 +1,12 @@
-import pickle
 import warnings
 from pathlib import Path
-from itertools import repeat
 from MRdataset.utils import random_name
 from MRdataset.config import CACHE_DIR
-from MRdataset import import_dataset
+from mrQA.run_subset import read_subset, merge_subset, merge_from_disk
 
-from mrQA.utils import split_index, create_index
+from mrQA.utils import split_index, create_index, save2pickle, list2txt
+import subprocess
+import pickle
 
 
 def parallel_dataset(data_root=None,
@@ -18,7 +18,7 @@ def parallel_dataset(data_root=None,
                      metadata_root=None,
                      include_nifti_header=False,
                      workers=None,
-                     subjects_per_job=50):
+                     submit_job=False):
     if style != 'dicom':
         raise NotImplementedError(f'Expects dicom, Got {style}')
 
@@ -43,22 +43,22 @@ def parallel_dataset(data_root=None,
             stacklevel=2)
         name = random_name()
 
-    dir_index = create_index(data_root, metadata_root, name, reindex)
+    num_sets = create_index(data_root, metadata_root, name, reindex)
 
-    if workers is None:
-        workers = len(dir_index) // subjects_per_job
-
-    index_subsets = split_index(dir_index, num_chunks=workers)
-    for i, subset in enumerate(index_subsets):
-        sub_dataset = read_subset(subset, name, i, style, reindex, verbose,
-                    include_phantom, metadata_root)
-        master = merge_subset(sub_dataset, name+f'_master{i}')
-        master.set_cache_path()
-        save2pickle(master)
-        # TODO: Debugging code, remove later
-        if i > 1:
-            break
-    complete_data = merge_from_disk(metadata_root, name)
+    for i in range(num_sets):
+        # create slurm script to call run_subset.py
+        s_folderpath = metadata_root/f'scripts_{name}'
+        s_folderpath.mkdir(parents=True)
+        s_filename = s_folderpath/f's_{name}_{i}.sh'
+        create_slurm_script(s_filename, name, i)
+        # submit job or run with bash
+        if submit_job:
+            subprocess.call(['bash', s_filename])
+        else:
+            subprocess.call(['sbatch', s_filename])
+    complete_dataset = merge_from_disk(metadata_root, name)
+    with open(metadata_root/f'{name}.pickle', "wb") as f:
+        pickle.dump(complete_dataset.__dict__, f)
     return
 
 
