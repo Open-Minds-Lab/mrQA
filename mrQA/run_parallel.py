@@ -82,8 +82,7 @@ def create_slurm_script(filename, dataset_name, seq_no, env='mrqa',
             '#Clear the environment from any previously loaded modules',
             '#module purge > /dev/null 2>&1',
 
-            'source ${HOME}/.bashrc',
-            'conda init bash'
+            'source  ${HOME}/anaconda3/etc/profile.d/conda.sh',
             f'conda activate {env}',
             f'mrpc_subset  -i {seq_no} --style dicom --name {dataset_name} &',
             'wait',
