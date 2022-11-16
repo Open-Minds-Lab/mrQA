@@ -57,7 +57,7 @@ def main():
     #     raise OSError('Expected valid directory for --data_root argument, '
     #                   'Got {0}'.format(args.data_root))
 
-    sub_dataset = read_subset(args.name, args.seq_num, args.style,
+    sub_dataset = read_subset(args.name, args.seq_num, 'dicom',
                               args.reindex, args.verbose,
                               args.include_phantom, args.metadata_root)
     master = merge_subset(sub_dataset, args.name + f'_master{args.seq_num}')
