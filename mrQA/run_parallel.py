@@ -74,7 +74,9 @@ def create_slurm_script(filename, dataset_name, seq_no, env='mrqa'):
             '#SBATCH --ntasks-per-node=1',
             f'#SBATCH --error={dataset_name}.master{seq_no}.%J.err',
             f'#SBATCH --output={dataset_name}.master{seq_no}.%J.out',
-
+            '#SBATCH --mail-type=end          # send email when job ends',
+            '#SBATCH --mail-type=fail         # send email if job fails',
+            '#SBATCH --mail-user=harsh.sinha@pitt.edu',
             '#Clear the environment from any previously loaded modules',
             '#module purge > /dev/null 2>&1',
 
