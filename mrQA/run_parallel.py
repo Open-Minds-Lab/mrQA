@@ -64,25 +64,28 @@ def parallel_dataset(data_root=None,
 
 def create_slurm_script(filename, dataset_name, seq_no, name):
     with open(filename, 'w') as fp:
-        fp.write('# !/bin/bash')
-        fp.write('# SBATCH -A med220005p')
-        fp.write('# SBATCH -N 1')
-        fp.write('# SBATCH -p RM-shared')
-        fp.write('# SBATCH --time=01:05:00')
-        fp.write('# SBATCH --ntasks-per-node=1')
-        fp.write(f'# SBATCH --error={dataset_name}.master{seq_no}.%J.err')
-        fp.write(f'# SBATCH --output={dataset_name}.master{seq_no}.%J.out')
+        fp.writelines("\n".join([
+            '#!/bin/bash',
+            '#SBATCH -A med220005p',
+            '#SBATCH -N 1',
+            '#SBATCH -p RM-shared',
+            '#SBATCH --time=01:05:00',
+            '#SBATCH --ntasks-per-node=1',
+            f'#SBATCH --error={dataset_name}.master{seq_no}.%J.err',
+            f'#SBATCH --output={dataset_name}.master{seq_no}.%J.out',
 
-        fp.write('# Clear the environment from any previously loaded modules')
-        fp.write('# module purge > /dev/null 2>&1')
+            '#Clear the environment from any previously loaded modules',
+            '#module purge > /dev/null 2>&1',
 
-        # fp.write(' Use '&' to start the first job in the background')
-        fp.write('source ${HOME}/.bashrc')
-        fp.write('conda activate mrqa')
-        fp.write(f'mrpc_subset  -i {seq_no} --style dicom --name {name} &)')
-        fp.write('wait')
-        fp.write('date')
-        fp.write('echo - e "\n\n\n\n--------------------------------\nDownload completed"')
+            'source ${HOME}/.bashrc',
+            'conda init bash'
+            f'conda activate {env}',
+            f'mrpc_subset  -i {seq_no} --style dicom --name {dataset_name} &',
+            'wait',
+            'date',
+            'echo - e Download_completed',
+            ])
+        )
 
 
 if __name__ == '__main__':
