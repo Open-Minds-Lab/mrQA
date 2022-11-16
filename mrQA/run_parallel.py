@@ -46,6 +46,7 @@ def parallel_dataset(data_root=None,
     num_sets = create_index(data_root, metadata_root, name,
                             reindex, subjects_per_job)
 
+    processes = []
     for i in range(num_sets):
         # create slurm script to call run_subset.py
         s_folderpath = metadata_root/f'scripts_{name}'
@@ -53,13 +54,23 @@ def parallel_dataset(data_root=None,
         s_filename = s_folderpath/f's_{name}_{i}.sh'
         create_slurm_script(s_filename, name, i, 'mrcheck', subjects_per_job)
         # submit job or run with bash
-        if not submit_job:
-            subprocess.call(['bash', s_filename])
-        else:
-            subprocess.call(['sbatch', s_filename])
-    complete_dataset = merge_from_disk(metadata_root, name)
-    with open(metadata_root/f'{name}.pickle', "wb") as f:
-        pickle.dump(complete_dataset.__dict__, f)
+        if not s_filename.exists() or reindex:
+            if not submit_job:
+                # subprocess.call([
+                #     '/usr/bin/time',  '-f'
+                #     '"File system outputs: %O\nMaximum RSS size: %M\nCPU percentage used: %P\n%E real,\n%U user,\n%S sys"',
+                #     'bash',
+                #     s_filename
+                # ])
+                output = subprocess.Popen(['bash', s_filename])
+                processes.append(output)
+            else:
+                subprocess.call(['sbatch', s_filename])
+    if not submit_job:
+        exit_codes = [p.wait() for p in processes]
+        complete_dataset = merge_from_disk(metadata_root, name)
+        with open(metadata_root/f'{name}.pickle', "wb") as f:
+            pickle.dump(complete_dataset.__dict__, f)
     return
 
 
