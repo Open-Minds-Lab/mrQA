@@ -89,7 +89,3 @@ if __name__ == '__main__':
     parallel_dataset(data_root='/media/sinhah/extremessd/ABCD-375/dicom-baseline',
                  name='abcd-375',
                      reindex=True)
-    # metadata_root = Path.home() / CACHE_DIR
-    # create_index(data_root='/home/sinhah/datasets/TCIA_REMBRANDT_06-22-2015',
-    #              metadata_root=metadata_root,
-    #              name='rembrandt_debug')
