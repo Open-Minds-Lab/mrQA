@@ -42,6 +42,7 @@ setup(
         'console_scripts': [
             'protocol_compliance=mrQA.cli:main',
             'mr_proto_compl=mrQA.cli:main',
+            'mrpc_subset=mrQA.run_subset:main'
         ],
     },
     install_requires=requirements,
