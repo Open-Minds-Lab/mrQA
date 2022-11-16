@@ -67,7 +67,18 @@ def main():
 
 def read_subset(name, seq_num, style, reindex, verbose, include_phantom,
                 metadata_root):
-    subset = txt2list(Path(metadata_root) / (name + f'_master{seq_num}.txt'))
+    if not metadata_root:
+        metadata_root = Path.home() / CACHE_DIR
+        metadata_root.mkdir(exist_ok=True)
+
+    if not Path(metadata_root).is_dir():
+        raise OSError('Expected valid directory for --metadata_root argument,'
+                      ' Got {0}'.format(metadata_root))
+
+    metadata_root = Path(metadata_root).resolve()
+    filepath = Path(metadata_root) / (name + f'_master{seq_num}.txt')
+
+    subset = txt2list(filepath)
     parent_set = []
     for j, folder in enumerate(subset):
         identifier = name + f'_part{seq_num + j}'
