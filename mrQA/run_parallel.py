@@ -48,11 +48,11 @@ def parallel_dataset(data_root=None,
     for i in range(num_sets):
         # create slurm script to call run_subset.py
         s_folderpath = metadata_root/f'scripts_{name}'
-        s_folderpath.mkdir(parents=True)
+        s_folderpath.mkdir(parents=True, exist_ok=True)
         s_filename = s_folderpath/f's_{name}_{i}.sh'
         create_slurm_script(s_filename, name, i, 'mrcheck')
         # submit job or run with bash
-        if submit_job:
+        if not submit_job:
             subprocess.call(['bash', s_filename])
         else:
             subprocess.call(['sbatch', s_filename])
