@@ -131,7 +131,7 @@ def create_index(data_root, metadata_root: pathlib.Path, name, reindex=False,
     index_subsets = split_index(dir_index, num_chunks=workers)
     for i, subset in enumerate(index_subsets):
         list2txt(metadata_root/(name+f'_master{i}.txt'), subset)
-    return i
+    return i+1
 
 
 def save2pickle(dataset):
