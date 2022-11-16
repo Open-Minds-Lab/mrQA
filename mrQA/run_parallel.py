@@ -84,10 +84,9 @@ def create_slurm_script(filename, dataset_name, seq_no, env='mrqa',
 
             'source  ${HOME}/anaconda3/etc/profile.d/conda.sh',
             f'conda activate {env}',
-            f'mrpc_subset  -i {seq_no} --style dicom --name {dataset_name} &',
+            f'mrpc_subset  -i {seq_no} --name {dataset_name} &',
             'wait',
             'date',
-            'echo - e Download_completed',
             ])
         )
 
