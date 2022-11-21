@@ -109,14 +109,17 @@ def merge_subset(parent, final_name):
     return master
 
 
-def merge_from_disk(metadata_root, name):
+def merge_from_disk(metadata_root, name, txt_path_list):
     chunks = []
-    for file in metadata_root.rglob(name + '_master*.pkl'):
+    pkl_file_list = [filepath.with_suffix('.pkl') for filepath in txt_path_list]
+    for file in pkl_file_list:
         if file.is_file():
-            # chunks.append(file)
-            with open(file, 'rb') as f:
-                temp_dict = pickle.load(f)
-                chunks.append(temp_dict)
+            try:
+                with open(file, 'rb') as f:
+                    temp_dict = pickle.load(f)
+                    chunks.append(temp_dict)
+            except OSError:
+                print(f"Unable to read file: {file}")
     return merge_subset(chunks, name)
 
 
