@@ -103,7 +103,9 @@ def create_slurm_script(filename, dataset_name, seq_no, env='mrqa',
             'module purge > /dev/null 2>&1',
             'source  ${HOME}/anaconda3/etc/profile.d/conda.sh',
             f'conda activate {env}',
-            f'mrpc_subset  -i {seq_no} --name {dataset_name} ',
+            'mrpc_subset -m {} -name {} -b {}'.format(metadata_root,
+                                                      dataset_name,
+                                                      txt_batch_filepath),
             'date',
             ])
         )

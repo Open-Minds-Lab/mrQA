@@ -26,10 +26,13 @@ def main():
     required = parser.add_argument_group('required arguments')
     optional = parser.add_argument_group('optional arguments')
 
-    required.add_argument('-i', '--seq_num', type=int, required=True)
-    # Add help
-    optional.add_argument('-n', '--name', type=str,
+    required.add_argument('-m', '--metadata_root', type=str, required=True,
+                          help='directory containing pickle files for each '
+                               'part')
+    required.add_argument('-n', '--name', type=str,
                           help='provide a identifier/name for the dataset')
+    required.add_argument('-b', '--batch_txt_file', type=str, required=True,
+                          help='text file path specifying the directories')
     optional.add_argument('-h', '--help', action='help',
                           default=argparse.SUPPRESS,
                           help='show this help message and exit')
