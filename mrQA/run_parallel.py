@@ -69,7 +69,7 @@ def parallel_dataset(data_root=None,
     if not submit_job:
         exit_codes = [p.wait() for p in processes]
         complete_dataset = merge_from_disk(metadata_root, name)
-        with open(metadata_root/f'{name}.pickle', "wb") as f:
+        with open(metadata_root/f'{name}.pkl', "wb") as f:
             pickle.dump(complete_dataset.__dict__, f)
     return
 
