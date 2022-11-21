@@ -29,8 +29,8 @@ def main():
                           help='specify the directory where the report'
                                ' would be saved. By default, the --data_root '
                                'directory will be used to save reports')
-    optional.add_argument('-s', '--style', type=str, default='xnat',
-                          help='type of dataset, one of [xnat|bids|other]')
+    optional.add_argument('-s', '--style', type=str, default='dicom',
+                          help='type of dataset, one of [dicom|bids|other]')
     optional.add_argument('-n', '--name', type=str,
                           help='provide a identifier/name for the dataset')
     optional.add_argument('-h', '--help', action='help',
