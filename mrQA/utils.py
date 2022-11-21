@@ -125,7 +125,7 @@ def create_index(data_root, metadata_root: pathlib.Path, name, reindex=False,
         for root, dirs, files in os.walk(data_root):
             if 'sub-' in Path(root).name:
                 dir_index.append(root)
-        list2txt(output_path, dir_index)
+        list2txt(output_path, list(set(dir_index)))
 
     workers = len(dir_index) // subjects_per_job
     index_subsets = split_index(dir_index, num_chunks=workers)
