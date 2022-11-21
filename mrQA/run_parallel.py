@@ -19,7 +19,8 @@ def parallel_dataset(data_root=None,
                      metadata_root=None,
                      include_nifti_header=False,
                      subjects_per_job=None,
-                     submit_job=False):
+                     submit_job=False,
+                     conda_env=None):
     if style != 'dicom':
         raise NotImplementedError(f'Expects dicom, Got {style}')
 
@@ -53,7 +54,14 @@ def parallel_dataset(data_root=None,
         s_folderpath = metadata_root/f'scripts_{name}'
         s_folderpath.mkdir(parents=True, exist_ok=True)
         s_filename = s_folderpath/f's_{name}_{i}.sh'
-        create_slurm_script(s_filename, name, i, 'mrcheck', subjects_per_job)
+
+        if not conda_env:
+            if submit_job:
+                env = 'mrqa'
+            else:
+                env = 'mrcheck'
+
+        create_slurm_script(s_filename, name, i, env, subjects_per_job)
         # submit job or run with bash
         if not s_filename.exists() or reindex:
             if not submit_job:
