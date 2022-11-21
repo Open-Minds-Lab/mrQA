@@ -95,14 +95,14 @@ def read_subset(name, seq_num, style, reindex, verbose, include_phantom,
     return parent_set
 
 
-def merge_subset(parent, name):
+def merge_subset(parent, final_name):
     master = None
     if len(parent) < 1:
         raise EOFError('Cannot merge an empty list!')
     master = parent[0]
     for child in parent[1:]:
         master.merge(child)
-    master.name = name
+    master.name = final_name
     return master
 
 
