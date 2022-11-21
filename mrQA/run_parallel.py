@@ -7,6 +7,7 @@ from mrQA.run_subset import read_subset, merge_subset, merge_from_disk
 from mrQA.utils import split_index, create_index, save2pickle, list2txt
 import subprocess
 import pickle
+import math
 
 
 def parallel_dataset(data_root=None,
