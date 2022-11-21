@@ -119,6 +119,7 @@ def list2txt(path, data):
 def create_index(data_root, metadata_root: pathlib.Path, name, reindex=False,
                  subjects_per_job=50):
     output_path = metadata_root / (name+'_index.txt')
+    batch_txt_path_list = []
     if output_path.exists() or not reindex:
         dir_index = txt2list(output_path)
     else:
@@ -131,8 +132,10 @@ def create_index(data_root, metadata_root: pathlib.Path, name, reindex=False,
     workers = len(dir_index) // subjects_per_job
     index_subsets = split_index(dir_index, num_chunks=workers)
     for i, subset in enumerate(index_subsets):
-        list2txt(metadata_root/(name+f'_master{i}.txt'), subset)
-    return i+1
+        batch_filename = metadata_root/(name+f'_batch{i}.txt')
+        list2txt(batch_filename, subset)
+        batch_txt_path_list.append(batch_filename)
+    return batch_txt_path_list
 
 
 def save2pickle(dataset):
