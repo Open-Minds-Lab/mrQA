@@ -75,7 +75,13 @@ def parallel_dataset(data_root=None,
 
 
 def create_slurm_script(filename, dataset_name, seq_no, env='mrqa',
-                        subjects_per_job=50):
+                        num_subj_per_job=50):
+
+    mem_reqd = 4096  # MB; fixed because we process only 1 subject at any time
+    num_mins_per_subject = 1  # minutes
+    num_hours = int(math.ceil(num_subj_per_job * num_mins_per_subject / 60))
+    time_limit = min(3, num_hours)
+
     with open(filename, 'w') as fp:
         fp.writelines("\n".join([
             '#!/bin/bash',
@@ -95,8 +101,7 @@ def create_slurm_script(filename, dataset_name, seq_no, env='mrqa',
 
             'source  ${HOME}/anaconda3/etc/profile.d/conda.sh',
             f'conda activate {env}',
-            f'mrpc_subset  -i {seq_no} --name {dataset_name} &',
-            'wait',
+            f'mrpc_subset  -i {seq_no} --name {dataset_name} ',
             'date',
             ])
         )
