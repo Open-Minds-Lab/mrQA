@@ -45,15 +45,15 @@ def parallel_dataset(data_root=None,
             stacklevel=2)
         name = random_name()
 
-    num_sets = create_index(data_root, metadata_root, name,
+    batch_txt_path_list = create_index(data_root, metadata_root, name,
                             reindex, subjects_per_job)
 
     processes = []
-    for i in range(num_sets):
+    for txt_filepath in batch_txt_path_list:
         # create slurm script to call run_subset.py
         s_folderpath = metadata_root/f'scripts_{name}'
         s_folderpath.mkdir(parents=True, exist_ok=True)
-        s_filename = s_folderpath/f's_{name}_{i}.sh'
+        s_filename = txt_filepath.name.with_suffix('.sh')
 
         if not conda_env:
             if submit_job:
@@ -61,7 +61,7 @@ def parallel_dataset(data_root=None,
             else:
                 env = 'mrcheck'
 
-        create_slurm_script(s_filename, name, i, env, subjects_per_job)
+        create_slurm_script(s_filename, name, metadata_root, txt_filepath, env, subjects_per_job)
         # submit job or run with bash
         if not s_filename.exists() or reindex:
             if not submit_job:
@@ -77,7 +77,8 @@ def parallel_dataset(data_root=None,
     return
 
 
-def create_slurm_script(filename, dataset_name, seq_no, env='mrqa',
+def create_slurm_script(filename, dataset_name, metadata_root,
+                        txt_batch_filepath, env='mrqa',
                         num_subj_per_job=50):
 
     mem_reqd = 4096  # MB; fixed because we process only 1 subject at any time
@@ -94,8 +95,8 @@ def create_slurm_script(filename, dataset_name, seq_no, env='mrqa',
             f'#SBATCH --mem-per-cpu={mem_reqd}M #memory per cpu-core',
             f'#SBATCH --time={time_limit}:00:00',
             '#SBATCH --ntasks-per-node=1',
-            f'#SBATCH --error={dataset_name}.master{seq_no}.%J.err',
-            f'#SBATCH --output={dataset_name}.master{seq_no}.%J.out',
+            f'#SBATCH --error={txt_batch_filepath.name}.%J.err',
+            f'#SBATCH --output={txt_batch_filepath.name}.%J.out',
             '#SBATCH --mail-type=end          # send email when job ends',
             '#SBATCH --mail-type=fail         # send email if job fails',
             '#SBATCH --mail-user=harsh.sinha@pitt.edu',
