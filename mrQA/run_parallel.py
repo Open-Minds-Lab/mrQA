@@ -4,7 +4,7 @@ from MRdataset.utils import random_name
 from MRdataset.config import CACHE_DIR
 from mrQA.run_subset import read_subset, merge_subset, merge_from_disk
 
-from mrQA.utils import split_index, create_index, save2pickle, list2txt
+from mrQA.utils import split_index, create_index, save2pickle, list2txt, execute_local
 import subprocess
 import pickle
 import math
@@ -57,13 +57,7 @@ def parallel_dataset(data_root=None,
         # submit job or run with bash
         if not s_filename.exists() or reindex:
             if not submit_job:
-                # subprocess.call([
-                #     '/usr/bin/time',  '-f'
-                #     '"File system outputs: %O\nMaximum RSS size: %M\nCPU percentage used: %P\n%E real,\n%U user,\n%S sys"',
-                #     'bash',
-                #     s_filename
-                # ])
-                output = subprocess.Popen(['bash', s_filename])
+                output = execute_local(s_filename)
                 processes.append(output)
             else:
                 subprocess.call(['sbatch', s_filename])

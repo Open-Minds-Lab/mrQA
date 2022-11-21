@@ -4,7 +4,7 @@ import time, os
 import warnings
 from collections import Counter, defaultdict
 from pathlib import Path
-from typing import Union, List, Any, Generator
+import subprocess
 
 from MRdataset.utils import is_hashable
 
@@ -73,26 +73,17 @@ def default_thread_count():
     return workers
 
 
-def split_index(dir_index: list, num_chunks: int) -> Generator[List[str]]:
+def split_index(dir_index, num_chunks):
     """
-    Adapted from https://stackoverflow.com/questions/2130016/splitting-a-list-into-n-parts-of-approximately-equal-length
-
-    Given a list of n elements, split it into k parts, where k = num_chunks.
-    Each part has atleast n/k elements. And the remaining elements
-    n % k are distributed uniformly among the sub-parts such that
-    each part has almost same number of elements. The first n % k will have
-    floor(n/k) + 1 elements.
-
+    https://stackoverflow.com/questions/2130016/splitting-a-list-into-n-parts-of-approximately-equal-length
     Parameters
     ----------
-    dir_index : list
-        list to split
-    num_chunks : int
-        number of parts
+    dir_index
+    num_chunks
 
     Returns
     -------
-    tuple of all subsets
+
     """
     if num_chunks == 0:
         raise RuntimeError("Cannot divide list into chunks of size 0")
@@ -103,26 +94,11 @@ def split_index(dir_index: list, num_chunks: int) -> Generator[List[str]]:
                              f"Expected num_chunks < list_size")
         num_chunks = len(dir_index)
     k, m = divmod(len(dir_index), num_chunks)
-    #  k, m = (len(dir_index)//num_chunks, len(dir_index)%num_chunks)
     return (dir_index[i * k + min(i, m):(i + 1) * k + min(i + 1, m)]
             for i in range(num_chunks))
 
 
-def txt2list(path: Union[str, Path]) -> list:
-    """
-    Given a filepath to a text file, read all the lines and return as a list
-    of lines.
-
-    Parameters
-    ----------
-    path: str or pathlib.Path
-        valid filepath to a text file
-
-    Returns
-    -------
-    list of lines in the text file
-
-    """
+def txt2list(path):
     if not isinstance(path, Path):
         path = Path(path)
     if not path.exists():
@@ -132,18 +108,7 @@ def txt2list(path: Union[str, Path]) -> list:
     return data
 
 
-def list2txt(path: Union[str, Path], data: list) -> None:
-    """
-    Given a list of values, dump all the lines to a text file. Each element of
-    the list is on a separate line.
-
-    Parameters
-    ----------
-    path : pathlib.Path
-        output path of the final text file
-    data : list
-        values to be exported in a text file
-    """
+def list2txt(path, data):
     if Path(path).exists():
         warnings.warn("Overwriting pre-existing index on disk.")
     with open(path, 'w') as fp:
@@ -175,3 +140,19 @@ def save2pickle(dataset):
         raise EOFError('Dataset is empty!')
     with open(dataset.cache_path, "wb") as f:
         pickle.dump(dataset, f)
+
+
+def execute_local(filename):
+    format_params = "\n".join(['"File system outputs: %O',
+                               'Maximum RSS size: %M',
+                               'CPU percentage used: %P',
+                               'Real Time: %E',
+                               'User Time: %U',
+                               'Sys Time: %S"'])
+    return subprocess.Popen([
+            '/usr/bin/time',
+            '-f',
+            format_params,
+            'bash',
+            filename
+        ])
