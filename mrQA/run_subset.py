@@ -54,9 +54,6 @@ def main():
         parser.exit(1)
 
     args = parser.parse_args()
-    # if not Path(args.data_root).is_dir():
-    #     raise OSError('Expected valid directory for --data_root argument, '
-    #                   'Got {0}'.format(args.data_root))
 
     partial_dataset = read_subset(args.metadata_root,
                                   args.batch_txt_file, 'dicom',
