@@ -1,12 +1,11 @@
 import warnings
 from pathlib import Path
 from MRdataset.utils import random_name
-from MRdataset.config import CACHE_DIR
+from MRdataset.config import CACHE_DIR, MRDS_EXT
 from mrQA.run_subset import read_subset, merge_subset, merge_from_disk
-
-from mrQA.utils import split_index, create_index, save2pickle, list2txt, execute_local
+from MRdataset.base import save_mr_dataset
+from mrQA.utils import create_index, execute_local
 import subprocess
-import pickle
 import math
 
 
@@ -53,9 +52,9 @@ def parallel_dataset(data_root=None,
     processes = []
     for txt_filepath in txt_path_list:
         # create slurm script to call run_subset.py
-        s_folderpath = metadata_root/f'scripts_{name}'
+        s_folderpath = metadata_root / f'scripts_{name}'
         s_folderpath.mkdir(parents=True, exist_ok=True)
-        s_filename = s_folderpath / (txt_filepath.stem+'.sh')
+        s_filename = s_folderpath / (txt_filepath.stem + '.sh')
         if not conda_env:
             env = 'mrqa' if submit_job else 'mrcheck'
         create_slurm_script(s_filename, name, metadata_root, txt_filepath,
@@ -96,7 +95,6 @@ def run_single(debug, metadata_root, txt_filepath, reindex, verbose,
 def create_slurm_script(filename, dataset_name, metadata_root,
                         txt_batch_filepath, env='mrqa',
                         num_subj_per_job=50):
-
     mem_reqd = 4096  # MB; fixed because we process only 1 subject at any time
     num_mins_per_subject = 1  # minutes
     num_hours = int(math.ceil(num_subj_per_job * num_mins_per_subject / 60))
@@ -124,13 +122,14 @@ def create_slurm_script(filename, dataset_name, metadata_root,
                                                       dataset_name,
                                                       txt_batch_filepath),
             'date',
-            ])
+        ])
         )
 
 
 if __name__ == '__main__':
-    parallel_dataset(data_root='/media/sinhah/extremessd/ABCD-375/dicom-baseline',
-                     name='abcd-375',
-                     reindex=False,
-                     subjects_per_job=5,
-                     debug=True)
+    parallel_dataset(
+        data_root='/media/sinhah/extremessd/ABCD-375/dicom-baseline',
+        name='abcd-375',
+        reindex=False,
+        subjects_per_job=5,
+        debug=True)
