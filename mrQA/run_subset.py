@@ -93,15 +93,14 @@ def read_subset(metadata_root, batch_txt_file, style, reindex, verbose,
     return partial_dataset
 
 
-def merge_subset(parent, final_name):
-    master = None
-    if len(parent) < 1:
+def merge_subset(list_, final_name):
+    if len(list_) < 1:
         raise EOFError('Cannot merge an empty list!')
-    master = parent[0]
-    for child in parent[1:]:
-        master.merge(child)
-    master.name = final_name
-    return master
+    head = list_[0]
+    for next in list_[1:]:
+        head.merge(next)
+    head.name = final_name
+    return head
 
 
 def merge_from_disk(name, txt_path_list):
