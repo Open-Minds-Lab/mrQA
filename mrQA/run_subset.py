@@ -80,22 +80,19 @@ def read_subset(name, seq_num, style, reindex, verbose, include_phantom,
                       ' Got {0}'.format(metadata_root))
 
     metadata_root = Path(metadata_root).resolve()
-    filepath = Path(metadata_root) / (name + f'_master{seq_num}.txt')
 
-    subset = txt2list(filepath)
-    parent_set = []
-    for j, folder in enumerate(subset):
-        identifier = name + f'_part{seq_num + j}'
-        child_set = import_dataset(data_root=folder,
-                                   style=style,
-                                   name=identifier,
-                                   reindex=reindex,
-                                   verbose=verbose,
-                                   include_phantom=include_phantom,
-                                   metadata_root=metadata_root,
-                                   save=False)
-        parent_set.append(child_set)
-    return parent_set
+    subset = txt2list(batch_txt_file)
+    # for j, folder in enumerate(subset):
+    identifier = batch_txt_file.stem
+    partial_dataset = import_dataset(data_root=subset,
+                                     style=style,
+                                     name=identifier,
+                                     reindex=reindex,
+                                     verbose=verbose,
+                                     include_phantom=include_phantom,
+                                     metadata_root=metadata_root,
+                                     save=False)
+    return partial_dataset
 
 
 def merge_subset(parent, final_name):
