@@ -6,7 +6,7 @@ from MRdataset import save_mr_dataset
 from pathlib import Path
 
 
-def check_partial_datasets(all_batches_txt):
+def check_partial_datasets(all_batches_txt, force=False):
     txt_path_list = txt2list(all_batches_txt)
     mrds_paths = []
     for txt_file in txt_path_list:
