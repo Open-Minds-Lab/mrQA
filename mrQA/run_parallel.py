@@ -47,11 +47,11 @@ def parallel_dataset(data_root=None,
             stacklevel=2)
         name = random_name()
 
-    batch_txt_path_list = create_index(data_root, metadata_root, name,
-                            reindex, subjects_per_job)
+    txt_path_list = create_index(data_root, metadata_root, name,
+                                 reindex, subjects_per_job)
 
     processes = []
-    for txt_filepath in batch_txt_path_list:
+    for txt_filepath in txt_path_list[:2]:
         # create slurm script to call run_subset.py
         s_folderpath = metadata_root/f'scripts_{name}'
         s_folderpath.mkdir(parents=True, exist_ok=True)
