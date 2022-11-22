@@ -78,6 +78,10 @@ def read_subset(metadata_root, batch_txt_file, style, reindex, verbose,
 
     metadata_root = Path(metadata_root).resolve()
 
+    if Path(batch_txt_file).exists():
+        batch_txt_file = Path(batch_txt_file)
+    else:
+        raise FileNotFoundError(f'Invalid path : {batch_txt_file}')
     subset = txt2list(batch_txt_file)
     # for j, folder in enumerate(subset):
     identifier = batch_txt_file.stem
