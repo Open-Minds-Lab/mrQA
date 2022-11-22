@@ -2,7 +2,8 @@ import warnings
 from pathlib import Path
 from MRdataset.utils import random_name
 from MRdataset.config import CACHE_DIR, MRDS_EXT
-from mrQA.run_subset import read_subset, merge_subset, merge_from_disk
+from mrQA.run_subset import read_subset
+from mrQA.run_merge import check_and_merge
 from MRdataset.base import save_mr_dataset
 from mrQA.utils import create_index, execute_local
 import subprocess
@@ -68,9 +69,7 @@ def parallel_dataset(data_root=None,
     if not submit_job:
         if not debug:
             exit_codes = [p.wait() for p in processes]
-        complete_dataset = merge_from_disk(name, txt_path_list)
-        complete_dataset.is_complete = True
-        save_mr_dataset(name, metadata_root, complete_dataset)
+            check_and_merge(name, all_batches_txt_filepath)
     return
 
 
