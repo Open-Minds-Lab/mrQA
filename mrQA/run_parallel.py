@@ -49,6 +49,9 @@ def parallel_dataset(data_root=None,
     txt_path_list = create_index(data_root, metadata_root, name,
                                  reindex, subjects_per_job)
 
+    all_batches_txt_filepath = metadata_root / (name+'_txt_files.txt')
+    list2txt(path=all_batches_txt_filepath, list_=txt_path_list)
+
     processes = []
     for txt_filepath in txt_path_list:
         # create slurm script to call run_subset.py
