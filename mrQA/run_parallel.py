@@ -71,20 +71,26 @@ def parallel_dataset(data_root=None,
         save_mr_dataset(name, metadata_root, complete_dataset)
     return
 
-        create_slurm_script(s_filename, name, metadata_root, txt_filepath, env, subjects_per_job)
-        # submit job or run with bash
-        if not s_filename.exists() or reindex:
-            if not submit_job:
-                output = execute_local(s_filename)
-                processes.append(output)
-            else:
-                subprocess.call(['sbatch', s_filename])
-    if not submit_job:
-        exit_codes = [p.wait() for p in processes]
-        complete_dataset = merge_from_disk(metadata_root, name)
-        with open(metadata_root/f'{name}.pkl', "wb") as f:
-            pickle.dump(complete_dataset.__dict__, f)
-    return
+
+def run_single(debug, metadata_root, txt_filepath, reindex, verbose,
+               include_phantom, s_filename, submit_job):
+    # submit job or run with bash or execute with python
+    if debug:
+        partial_dataset = read_subset(metadata_root,
+                                      txt_filepath, 'dicom',
+                                      reindex, verbose,
+                                      include_phantom)
+        partial_dataset.set_cache_path()
+        partial_dataset.is_complete = False
+        save_filename = txt_filepath.with_suffix(MRDS_EXT)
+        save_mr_dataset(save_filename, metadata_root, partial_dataset)
+        return None
+    elif not s_filename.with_suffix(MRDS_EXT).exists() or reindex:
+        if not submit_job:
+            return execute_local(s_filename)
+        else:
+            subprocess.call(['sbatch', s_filename])
+            return
 
 
 def create_slurm_script(filename, dataset_name, metadata_root,
