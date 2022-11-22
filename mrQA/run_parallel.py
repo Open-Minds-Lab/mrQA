@@ -17,10 +17,12 @@ def parallel_dataset(data_root=None,
                      include_phantom=False,
                      verbose=False,
                      metadata_root=None,
-                     include_nifti_header=False,
+                     debug=False,
                      subjects_per_job=None,
                      submit_job=False,
                      conda_env=None):
+    if debug and submit_job:
+        raise AttributeError('Cannot debug when submitting jobs')
     if style != 'dicom':
         raise NotImplementedError(f'Expects dicom, Got {style}')
 
@@ -116,4 +118,5 @@ if __name__ == '__main__':
     parallel_dataset(data_root='/media/sinhah/extremessd/ABCD-375/dicom-baseline',
                      name='abcd-375',
                      reindex=False,
-                     subjects_per_job=50)
+                     subjects_per_job=5,
+                     debug=True)
