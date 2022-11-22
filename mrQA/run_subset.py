@@ -70,8 +70,8 @@ def main():
     save2pickle(partial_dataset)
 
 
-def read_subset(name, seq_num, style, reindex, verbose, include_phantom,
-                metadata_root):
+def read_subset(metadata_root, batch_txt_file, style, reindex, verbose,
+                include_phantom):
     if not metadata_root:
         metadata_root = Path.home() / CACHE_DIR
         metadata_root.mkdir(exist_ok=True)
