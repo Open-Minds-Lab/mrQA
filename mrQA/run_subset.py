@@ -106,7 +106,7 @@ def merge_subset(parent, final_name):
     return master
 
 
-def merge_from_disk(metadata_root, name, txt_path_list):
+def merge_from_disk(name, txt_path_list):
     chunks = []
     pkl_file_list = [filepath.with_suffix(MRDS_EXT) for filepath in
                      txt_path_list]
