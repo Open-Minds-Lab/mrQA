@@ -7,7 +7,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from MRdataset import import_dataset, load_mr_dataset
+from MRdataset import import_dataset, load_mr_dataset, save_mr_dataset
 from MRdataset.config import MRDS_EXT
 from mrQA.common import set_logging
 from mrQA.utils import txt2list, save2pickle

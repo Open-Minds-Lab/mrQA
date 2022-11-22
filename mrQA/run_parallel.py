@@ -5,7 +5,7 @@ from MRdataset.config import CACHE_DIR, MRDS_EXT
 from mrQA.run_subset import read_subset
 from mrQA.run_merge import check_and_merge
 from MRdataset.base import save_mr_dataset
-from mrQA.utils import create_index, execute_local
+from mrQA.utils import create_index, execute_local, list2txt, txt2list
 import subprocess
 import math
 
