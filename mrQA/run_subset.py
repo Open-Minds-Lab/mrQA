@@ -61,12 +61,13 @@ def main():
     #     raise OSError('Expected valid directory for --data_root argument, '
     #                   'Got {0}'.format(args.data_root))
 
-    sub_dataset = read_subset(args.name, args.seq_num, 'dicom',
-                              args.reindex, args.verbose,
-                              args.include_phantom, args.metadata_root)
-    master = merge_subset(sub_dataset, args.name + f'_master{args.seq_num}')
-    master.set_cache_path()
-    save2pickle(master)
+    partial_dataset = read_subset(args.metadata_root,
+                                  args.batch_txt_file, 'dicom',
+                                  args.reindex, args.verbose,
+                                  args.include_phantom)
+    partial_dataset.set_cache_path()
+    partial_dataset.is_complete = False
+    save2pickle(partial_dataset)
 
 
 def read_subset(name, seq_num, style, reindex, verbose, include_phantom,
