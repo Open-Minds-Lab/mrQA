@@ -8,9 +8,8 @@ import argparse
 import sys
 from pathlib import Path
 
-from MRdataset import import_dataset
-
-from mrQA import check_compliance
+from MRdataset import import_dataset, load_mr_dataset
+from MRdataset.config import MRDS_EXT
 from mrQA.common import set_logging
 from mrQA.utils import default_thread_count, txt2list, save2pickle
 import logging
@@ -109,13 +108,13 @@ def merge_subset(parent, final_name):
 
 def merge_from_disk(metadata_root, name, txt_path_list):
     chunks = []
-    pkl_file_list = [filepath.with_suffix('.pkl') for filepath in txt_path_list]
+    pkl_file_list = [filepath.with_suffix(MRDS_EXT) for filepath in
+                     txt_path_list]
     for file in pkl_file_list:
         if file.is_file():
             try:
-                with open(file, 'rb') as f:
-                    temp_dict = pickle.load(f)
-                    chunks.append(temp_dict)
+                temp_dict = load_mr_dataset(file)
+                chunks.append(temp_dict)
             except OSError:
                 print(f"Unable to read file: {file}")
     return merge_subset(chunks, name)
