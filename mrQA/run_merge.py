@@ -22,15 +22,30 @@ def check_partial_datasets(all_batches_txt, force=False):
             raise FileNotFoundError("Some txt files were not found!")
 
     mrds_paths = []
-    for txt_file in txt_path_list:
+    mrds_sizes = []
+    for txt_file in valid_txt_paths:
         saved_mrds_path = txt_file.with_suffix(MRDS_EXT)
         if saved_mrds_path.exists():
             size = saved_mrds_path.stat().st_size
-            if not (size > 0):
-                warnings.warn(f"Skipping file {saved_mrds_path}"
-                              "which was not saved properly")
-            else:
-                mrds_paths.append(saved_mrds_path)
+            mrds_sizes.append(size)
+            mrds_paths.append(saved_mrds_path)
+
+    outlier_idxs = get_outliers(mrds_sizes)
+    if not outlier_idxs:
+        return mrds_paths
+    bad_files = "\n".join([str(mrds_paths[i]) for i in outlier_idxs])
+    if force:
+        warnings.warn(f"File size for these files seem too off, assuming that "
+                      f"subjects were equally divided among all the jobs\n"
+                      f"{bad_files}"
+                      f"Using The Force to merge anyway")
+    else:
+        raise RuntimeError(f"File size for these files seem too off, "
+                           f"assuming that subjects were equally divided"
+                           f" among all the jobs\n"
+                           f"{bad_files}\n"
+                           f"Use The Force to merge anyway. Or re-submit "
+                           f"jobs for these files.")
     return mrds_paths
 
 
