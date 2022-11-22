@@ -51,7 +51,7 @@ def parallel_dataset(data_root=None,
                                  reindex, subjects_per_job)
 
     processes = []
-    for txt_filepath in txt_path_list[:2]:
+    for txt_filepath in txt_path_list:
         # create slurm script to call run_subset.py
         s_folderpath = metadata_root/f'scripts_{name}'
         s_folderpath.mkdir(parents=True, exist_ok=True)
