@@ -98,21 +98,21 @@ def split_index(dir_index, num_chunks):
             for i in range(num_chunks))
 
 
-def txt2list(path):
-    if not isinstance(path, Path):
-        path = Path(path)
-    if not path.exists():
-        raise FileNotFoundError
-    # with open(path, 'r') as fp:
-    data = path.read_text().splitlines()
-    return data
+def txt2list(txt_filepath):
+    if not isinstance(txt_filepath, Path):
+        txt_filepath = Path(txt_filepath).resolve()
+    if not txt_filepath.exists():
+        raise FileNotFoundError(f'Invalid path {txt_filepath}')
+    # Generate a list of folder paths stored in given txt_file
+    line_list = txt_filepath.read_text().splitlines()
+    return line_list
 
 
-def list2txt(path, data):
+def list2txt(path, list_):
     if Path(path).exists():
         warnings.warn("Overwriting pre-existing index on disk.")
     with open(path, 'w') as fp:
-        for line in data:
+        for line in list_:
             fp.write("%s\n" % line)
 
 
