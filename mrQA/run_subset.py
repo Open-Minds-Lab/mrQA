@@ -64,7 +64,9 @@ def main():
                                   args.include_phantom)
     partial_dataset.set_cache_path()
     partial_dataset.is_complete = False
-    save2pickle(partial_dataset)
+    txt_file_path = Path(args.batch_txt_file).resolve()
+    save_filename = txt_file_path.with_suffix(MRDS_EXT)
+    save_mr_dataset(save_filename, args.metadata_root, partial_dataset)
 
 
 def read_subset(metadata_root, batch_txt_file, style, reindex, verbose,
