@@ -52,7 +52,7 @@ def check_partial_datasets(all_batches_txt, force=False):
 def merge_partial_datasets(name, mrds_path_list, metadata_root):
     complete_dataset = merge_from_disk(name, mrds_path_list)
     complete_dataset.is_complete = True
-    save_mr_dataset(name, metadata_root, complete_dataset)
+    save_mr_dataset(name+MRDS_EXT, metadata_root, complete_dataset)
 
 
 def merge_from_disk(name, mrds_path_list):
