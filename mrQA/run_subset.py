@@ -92,29 +92,6 @@ def read_subset(metadata_root, batch_txt_file, style, reindex, verbose,
     return partial_dataset
 
 
-def merge_subset(list_, final_name):
-    if len(list_) < 1:
-        raise EOFError('Cannot merge an empty list!')
-    head = list_[0]
-    for next in list_[1:]:
-        head.merge(next)
-    head.name = final_name
-    return head
-
-
-def merge_from_disk(name, txt_path_list):
-    chunks = []
-    pkl_file_list = [filepath.with_suffix(MRDS_EXT) for filepath in
-                     txt_path_list]
-    for file in pkl_file_list:
-        if file.is_file():
-            try:
-                temp_dict = load_mr_dataset(file)
-                chunks.append(temp_dict)
-            except OSError:
-                print(f"Unable to read file: {file}")
-    return merge_subset(chunks, name)
-
 
 if __name__ == "__main__":
     sys.exit(main())  # pragma: no cover
