@@ -100,7 +100,7 @@ def create_slurm_script(filename, dataset_name, metadata_root,
     mem_reqd = 4096  # MB; fixed because we process only 1 subject at any time
     num_mins_per_subject = 1  # minutes
     num_hours = int(math.ceil(num_subj_per_job * num_mins_per_subject / 60))
-    time_limit = min(3, num_hours)
+    time_limit = 3 if num_hours < 3 else num_hours
 
     with open(filename, 'w') as fp:
         fp.writelines("\n".join([
