@@ -55,8 +55,7 @@ def parallel_dataset(data_root=None,
         # create slurm script to call run_subset.py
         s_folderpath = metadata_root/f'scripts_{name}'
         s_folderpath.mkdir(parents=True, exist_ok=True)
-        s_filename = txt_filepath.name.with_suffix('.sh')
-
+        s_filename = s_folderpath / (txt_filepath.stem+'.sh')
         if not conda_env:
             if submit_job:
                 env = 'mrqa'
