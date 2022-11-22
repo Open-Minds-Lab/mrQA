@@ -41,8 +41,6 @@ def main():
     optional.add_argument('--include_phantom', action='store_true',
                           help='whether to include phantom, localizer, '
                                'aahead_scout')
-    optional.add_argument('--metadata_root', type=str,
-                          help='directory containing cache')
     optional.add_argument('-w', '--max_workers', type=int, default=-1,
                           help='max workers threads for processing'
                                ' in parallel')
@@ -94,7 +92,6 @@ def read_subset(metadata_root, batch_txt_file, style, reindex, verbose,
                                      metadata_root=metadata_root,
                                      save=False)
     return partial_dataset
-
 
 
 if __name__ == "__main__":
