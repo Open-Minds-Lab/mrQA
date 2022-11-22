@@ -8,6 +8,19 @@ from pathlib import Path
 
 def check_partial_datasets(all_batches_txt, force=False):
     txt_path_list = txt2list(all_batches_txt)
+    valid_txt_paths = []
+    for txt in txt_path_list:
+        if Path(txt).exists():
+            valid_txt_paths.append(Path(txt))
+
+    if len(valid_txt_paths) < len(txt_path_list):
+        if force:
+            warnings.warn(f"Text files for {len(txt_path_list)-len(valid_txt_paths)}"
+                          f" batches were not found. Skipping! "
+                          f"Using The Force to continue!")
+        else:
+            raise FileNotFoundError("Some txt files were not found!")
+
     mrds_paths = []
     for txt_file in txt_path_list:
         saved_mrds_path = txt_file.with_suffix(MRDS_EXT)
