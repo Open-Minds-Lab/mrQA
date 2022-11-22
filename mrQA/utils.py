@@ -110,8 +110,8 @@ def txt2list(txt_filepath):
 
 
 def list2txt(path, list_):
-    if Path(path).exists():
-        warnings.warn("Overwriting pre-existing index on disk.")
+    # if Path(path).exists():
+    #     warnings.warn("Overwriting pre-existing index on disk.")
     with open(path, 'w') as fp:
         for line in list_:
             fp.write("%s\n" % line)
