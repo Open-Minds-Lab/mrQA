@@ -57,10 +57,19 @@ def parallel_dataset(data_root=None,
         s_folderpath.mkdir(parents=True, exist_ok=True)
         s_filename = s_folderpath / (txt_filepath.stem+'.sh')
         if not conda_env:
-            if submit_job:
-                env = 'mrqa'
-            else:
-                env = 'mrcheck'
+            env = 'mrqa' if submit_job else 'mrcheck'
+        create_slurm_script(s_filename, name, metadata_root, txt_filepath,
+                            env, subjects_per_job)
+        output = run_single(debug, metadata_root, txt_filepath, reindex,
+                            verbose, include_phantom, s_filename, submit_job)
+        processes.append(output)
+    if not submit_job:
+        if not debug:
+            exit_codes = [p.wait() for p in processes]
+        complete_dataset = merge_from_disk(name, txt_path_list)
+        complete_dataset.is_complete = True
+        save_mr_dataset(name, metadata_root, complete_dataset)
+    return
 
         create_slurm_script(s_filename, name, metadata_root, txt_filepath, env, subjects_per_job)
         # submit job or run with bash
