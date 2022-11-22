@@ -1,5 +1,5 @@
 from MRdataset import load_mr_dataset
-from mrQA.utils import txt2list
+from mrQA.utils import txt2list, get_outliers
 from MRdataset.config import MRDS_EXT, CACHE_DIR
 import warnings
 from MRdataset import save_mr_dataset

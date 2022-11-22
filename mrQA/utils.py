@@ -5,6 +5,7 @@ import warnings
 from collections import Counter, defaultdict
 from pathlib import Path
 import subprocess
+import numpy as np
 
 from MRdataset.utils import is_hashable
 
@@ -159,3 +160,25 @@ def execute_local(filename):
             'bash',
             filename
         ])
+
+
+def get_outliers(data, m=50.0):
+    """
+    Check for outliers. Adapted from
+    https://stackoverflow.com/a/16562028/3140172
+    Parameters
+    ----------
+    data
+    m
+
+    Returns
+    -------
+
+    """
+    d = np.abs(data - np.median(data))
+    mdev = np.median(d)
+    s = d/mdev if mdev else 0.
+    if np.any(s > m):
+        indices = np.argwhere(s > m).flatten()
+        return indices
+    return None
