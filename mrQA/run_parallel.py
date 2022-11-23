@@ -20,6 +20,8 @@ def parallel_dataset(data_root=None,
                      debug=False,
                      subjects_per_job=None,
                      submit_job=False,
+                     hpc=False,
+                     conda_dist=None,
                      conda_env=None):
     if debug and submit_job:
         raise AttributeError('Cannot debug when submitting jobs')
@@ -65,18 +67,18 @@ def parallel_dataset(data_root=None,
             conda_dist = 'miniconda3' if hpc else 'anaconda3'
 
         create_slurm_script(s_filename, name, metadata_root, txt_filepath,
-                            conda_env, subjects_per_job, reindex, verbose,
-                            include_phantom)
+                            conda_env, conda_dist, subjects_per_job, reindex,
+                            verbose, include_phantom)
         output = run_single(debug, metadata_root, txt_filepath, reindex,
                             verbose, include_phantom, s_filename, submit_job)
         processes.append(output)
-    if not (submit_job or debug):
+    if not (submit_job or debug or hpc):
         exit_codes = [p.wait() for p in processes]
     return
 
 
 def run_single(debug, metadata_root, txt_filepath, reindex, verbose,
-               include_phantom, s_filename, submit_job):
+               include_phantom, s_filename, submit_job, hpc=False):
     # submit job or run with bash or execute with python
     if debug:
         partial_dataset = read_subset(metadata_root,
@@ -97,7 +99,7 @@ def run_single(debug, metadata_root, txt_filepath, reindex, verbose,
 
 
 def create_slurm_script(filename, dataset_name, metadata_root,
-                        txt_batch_filepath, env='mrqa',
+                        txt_batch_filepath, env='mrqa', conda_dist='anaconda3',
                         num_subj_per_job=50, reindex=False, verbose=False,
                         include_phantom=False):
     # Memory and CPU time :  typical usage observed locally
@@ -139,7 +141,7 @@ def create_slurm_script(filename, dataset_name, metadata_root,
             '#SBATCH --mail-user=harsh.sinha@pitt.edu',
             '#Clear the environment from any previously loaded modules',
             'module purge > /dev/null 2>&1',
-            'source  ${HOME}/anaconda3/etc/profile.d/conda.sh',
+            f'source  ${{HOME}}/{conda_dist}/etc/profile.d/conda.sh',
             f'conda activate {env}',
             python_cmd,
             'date',
