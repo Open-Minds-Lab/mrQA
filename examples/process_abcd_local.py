@@ -37,10 +37,12 @@ def main():
         parallel_dataset(data_root=DATA_ROOT,
                          name=name,
                          reindex=True,
-                         subjects_per_job=50,
+                         subjects_per_job=100,
                          debug=False,
                          submit_job=False,
-                         conda_env='mrcheck')
+                         conda_env='mrcheck',
+                         conda_dist='anaconda3',
+                         hpc=False)
     elif args.task == 'merge':
         check_and_merge(
             name=name,
