@@ -70,7 +70,8 @@ def parallel_dataset(data_root=None,
                             conda_env, conda_dist, subjects_per_job, reindex,
                             verbose, include_phantom)
         output = run_single(debug, metadata_root, txt_filepath, reindex,
-                            verbose, include_phantom, s_filename, submit_job)
+                            verbose, include_phantom, s_filename, submit_job,
+                            hpc)
         processes.append(output)
     if not (submit_job or debug or hpc):
         exit_codes = [p.wait() for p in processes]
