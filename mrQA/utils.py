@@ -162,7 +162,7 @@ def execute_local(filename):
         ])
 
 
-def get_outliers(data, m=50.0):
+def get_outliers(data, m=25.0):
     """
     Check for outliers. Adapted from
     https://stackoverflow.com/a/16562028/3140172
