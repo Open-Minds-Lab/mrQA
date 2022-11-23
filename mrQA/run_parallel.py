@@ -60,9 +60,10 @@ def parallel_dataset(data_root=None,
         s_folderpath.mkdir(parents=True, exist_ok=True)
         s_filename = s_folderpath / (txt_filepath.stem + '.sh')
         if not conda_env:
-            env = 'mrqa' if submit_job else 'mrcheck'
+            conda_env = 'mrqa' if submit_job else 'mrcheck'
         create_slurm_script(s_filename, name, metadata_root, txt_filepath,
-                            env, subjects_per_job)
+                            conda_env, subjects_per_job, reindex, verbose,
+                            include_phantom)
         output = run_single(debug, metadata_root, txt_filepath, reindex,
                             verbose, include_phantom, s_filename, submit_job)
         processes.append(output)
