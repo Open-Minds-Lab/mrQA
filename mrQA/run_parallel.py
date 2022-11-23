@@ -107,7 +107,7 @@ def create_slurm_script(filename, dataset_name, metadata_root,
     # Max RSS Size (Memory) ~160 MB,
     # Sys Time (CPU Time) : 20 minutes
 
-    mem_reqd = 4096  # MB; fixed because we process only 1 subject at any time
+    mem_reqd = 4096  # MB;
     num_mins_per_subject = 1  # minutes
     num_hours = int(math.ceil(num_subj_per_job * num_mins_per_subject / 60))
     time_limit = 3 if num_hours < 3 else num_hours
