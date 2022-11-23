@@ -67,10 +67,8 @@ def parallel_dataset(data_root=None,
         output = run_single(debug, metadata_root, txt_filepath, reindex,
                             verbose, include_phantom, s_filename, submit_job)
         processes.append(output)
-    if not submit_job:
-        if not debug:
-            exit_codes = [p.wait() for p in processes]
-            check_and_merge(name, all_batches_txt_filepath)
+    if not (submit_job or debug):
+        exit_codes = [p.wait() for p in processes]
     return
 
 
