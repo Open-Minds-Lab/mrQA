@@ -45,11 +45,13 @@ def main():
                          submit_job=False,
                          conda_env='mrqa')
     elif args.task == 'merge':
+        # Merge created partial datasets
         check_and_merge(
             name=name,
             all_batches_txtpaths=METADATA_ROOT / (name + '_txt_files.txt')
         )
     elif args.task == 'report':
+        # Generate the final report
         dataset = load_mr_dataset(METADATA_ROOT / (name + MRDS_EXT))
         check_compliance(dataset=dataset,
                          output_dir=HOME/'mr_reports')
