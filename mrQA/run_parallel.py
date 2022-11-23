@@ -91,9 +91,9 @@ def run_single(debug, metadata_root, txt_filepath, reindex, verbose,
         save_mr_dataset(save_filename, metadata_root, partial_dataset)
         return None
     elif not s_filename.with_suffix(MRDS_EXT).exists() or reindex:
-        if not submit_job:
+        if not hpc:
             return execute_local(s_filename)
-        else:
+        if hpc and submit_job:
             subprocess.call(['sbatch', s_filename])
             return
 
