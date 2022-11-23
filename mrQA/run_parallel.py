@@ -133,5 +133,5 @@ if __name__ == '__main__':
         data_root='/media/sinhah/extremessd/ABCD-375/dicom-baseline',
         name='abcd-375',
         reindex=False,
-        subjects_per_job=5,
-        debug=True)
+        subjects_per_job=175,
+        debug=False)
