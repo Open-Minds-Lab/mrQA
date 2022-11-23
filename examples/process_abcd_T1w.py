@@ -25,8 +25,8 @@ def main():
     optional = parser.add_argument_group('optional arguments')
 
     required.add_argument('-t', '--task', type=str, required=False,
-                          help='[submit_job|merge|report]',
-                          default='submit_job')
+                          help='[create_script|submit_job|merge|report]',
+                          default='create_script')
 
 
     args = parser.parse_args()
