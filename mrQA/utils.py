@@ -139,6 +139,9 @@ def create_index(data_root, metadata_root: pathlib.Path, name, reindex=False,
         raise RuntimeError("Trying to create more jobs than total number of "
                            "subjects in the directory. Why?")
     workers = len(dir_index) // subjects_per_job
+    if workers == 1:
+        raise RuntimeError("Decrease number of subjects per job. Expected"
+                           "workers > 1 for parallel processing. Got 1")
     index_subsets = split_index(dir_index, num_chunks=workers)
     for i, subset in enumerate(index_subsets):
         batch_filename = metadata_root/(name+f'_batch{i}.txt')
