@@ -159,12 +159,12 @@ def save2pickle(dataset):
 
 
 def execute_local(filename):
-    format_params = "\n".join(['"File system outputs: %O',
+    format_params = "\n".join(['File system outputs: %O',
                                'Maximum RSS size: %M',
                                'CPU percentage used: %P',
                                'Real Time: %E',
                                'User Time: %U',
-                               'Sys Time: %S"'])
+                               'Sys Time: %S'])
     return subprocess.Popen([
             '/usr/bin/time',
             '-f',
