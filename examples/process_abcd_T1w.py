@@ -31,7 +31,7 @@ def main():
 
     args = parser.parse_args()
     HOME = Path('/jet/home/sinhah/').resolve()
-    ARCHIVE = Path('/ocean/projects/med220005p/sinhah/')
+    ARCHIVE = Path('/ocean/projects/med220005p/sinhah')
     METADATA_ROOT = HOME / '.mrdataset'
     DATA_ROOT = ARCHIVE / 'ABCD/t1w/dicom'
     name = 'abcd-T1w-baseline'
