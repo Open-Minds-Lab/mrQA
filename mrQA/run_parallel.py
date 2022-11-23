@@ -101,6 +101,14 @@ def create_slurm_script(filename, dataset_name, metadata_root,
     num_mins_per_subject = 1  # minutes
     num_hours = int(math.ceil(num_subj_per_job * num_mins_per_subject / 60))
     time_limit = 3 if num_hours < 3 else num_hours
+    python_cmd = f'mrpc_subset -m {metadata_root} -b {txt_batch_filepath}'
+
+    if reindex:
+        python_cmd += ' --reindex'
+    if verbose:
+        python_cmd += ' --verbose'
+    if include_phantom:
+        python_cmd += ' --include_phantom'
 
     with open(filename, 'w') as fp:
         fp.writelines("\n".join([
@@ -120,9 +128,7 @@ def create_slurm_script(filename, dataset_name, metadata_root,
             'module purge > /dev/null 2>&1',
             'source  ${HOME}/anaconda3/etc/profile.d/conda.sh',
             f'conda activate {env}',
-            'mrpc_subset -m {} --name {} -b {}'.format(metadata_root,
-                                                      dataset_name,
-                                                      txt_batch_filepath),
+            python_cmd,
             'date',
         ])
         )
