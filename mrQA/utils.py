@@ -122,6 +122,9 @@ def create_index(data_root, metadata_root: pathlib.Path, name, reindex=False,
     output_path = metadata_root / (name+'_index.txt')
     batch_txt_path_list = []
     if output_path.exists() or not reindex:
+        warnings.warn(f"Found a pre-existing list of subjects on disk."
+                      f"Reusing existing {output_path}, Use reindex?",
+                      stacklevel=2)
         dir_index = txt2list(output_path)
     else:
         dir_index = []
