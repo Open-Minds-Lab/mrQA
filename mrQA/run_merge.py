@@ -83,7 +83,3 @@ def check_and_merge(name, all_batches_txtpaths, save_dir=None):
         save_dir = Path.home() / CACHE_DIR
         save_dir.mkdir(exist_ok=True, parents=True)
     merge_partial_datasets(name, mrds_paths, save_dir)
-
-
-if __name__ == '__main__':
-    check_and_merge('abcd-375', '/home/sinhah/.mrdataset/abcd-375_txt_files.txt')

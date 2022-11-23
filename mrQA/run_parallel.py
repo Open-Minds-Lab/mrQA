@@ -127,11 +127,3 @@ def create_slurm_script(filename, dataset_name, metadata_root,
         ])
         )
 
-
-if __name__ == '__main__':
-    parallel_dataset(
-        data_root='/media/sinhah/extremessd/ABCD-375/dicom-baseline',
-        name='abcd-375',
-        reindex=False,
-        subjects_per_job=175,
-        debug=False)
