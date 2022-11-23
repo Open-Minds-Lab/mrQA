@@ -92,7 +92,8 @@ def split_index(dir_index, num_chunks):
         raise RuntimeError("List of directories is empty!")
     if len(dir_index) < num_chunks:
         warnings.warn(f"Got num_chunks={num_chunks}, list_size={len(dir_index)}"
-                             f"Expected num_chunks < list_size")
+                             f"Expected num_chunks < list_size",
+                      stacklevel=2)
         num_chunks = len(dir_index)
     k, m = divmod(len(dir_index), num_chunks)
     return (dir_index[i * k + min(i, m):(i + 1) * k + min(i + 1, m)]
