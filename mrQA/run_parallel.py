@@ -97,6 +97,16 @@ def create_slurm_script(filename, dataset_name, metadata_root,
                         txt_batch_filepath, env='mrqa',
                         num_subj_per_job=50, reindex=False, verbose=False,
                         include_phantom=False):
+    # Memory and CPU time :  typical usage observed locally
+
+    # For subjects_per_job = 50
+    # Max RSS Size (Memory) ~150 MB,
+    # Sys Time (CPU Time) : 10 minutes
+
+    # For subjects_per_job = 100
+    # Max RSS Size (Memory) ~160 MB,
+    # Sys Time (CPU Time) : 20 minutes
+
     mem_reqd = 4096  # MB; fixed because we process only 1 subject at any time
     num_mins_per_subject = 1  # minutes
     num_hours = int(math.ceil(num_subj_per_job * num_mins_per_subject / 60))
