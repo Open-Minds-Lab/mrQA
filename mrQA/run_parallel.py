@@ -95,7 +95,8 @@ def run_single(debug, metadata_root, txt_filepath, reindex, verbose,
 
 def create_slurm_script(filename, dataset_name, metadata_root,
                         txt_batch_filepath, env='mrqa',
-                        num_subj_per_job=50):
+                        num_subj_per_job=50, reindex=False, verbose=False,
+                        include_phantom=False):
     mem_reqd = 4096  # MB; fixed because we process only 1 subject at any time
     num_mins_per_subject = 1  # minutes
     num_hours = int(math.ceil(num_subj_per_job * num_mins_per_subject / 60))
