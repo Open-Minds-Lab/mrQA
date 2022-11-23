@@ -36,14 +36,26 @@ def main():
     DATA_ROOT = ARCHIVE / 'ABCD/t1w/dicom'
     name = 'abcd-T1w-baseline'
 
-    if args.task == 'submit_job':
+    if args.task == 'create_script':
+        # Create scripts but do not submit jobs
         parallel_dataset(data_root=DATA_ROOT,
                          name=name,
                          reindex=True,
                          subjects_per_job=100,
                          debug=False,
                          submit_job=False,
-                         conda_env='mrqa')
+                         conda_env='mrqa',
+                         hpc=True)
+    elif args.task == 'submit_job':
+        # Create scripts and submit jobs simultaneously
+        parallel_dataset(data_root=DATA_ROOT,
+                         name=name,
+                         reindex=True,
+                         subjects_per_job=100,
+                         debug=False,
+                         submit_job=True,
+                         conda_env='mrqa',
+                         hpc=True)
     elif args.task == 'merge':
         # Merge created partial datasets
         check_and_merge(
