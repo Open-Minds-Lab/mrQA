@@ -145,7 +145,7 @@ def create_slurm_script(filename, dataset_name, metadata_root,
             f'source  ${{HOME}}/{conda_dist}/etc/profile.d/conda.sh',
             f'conda activate {env}',
             python_cmd,
-            'date',
+            'date\n',
         ])
         )
 
