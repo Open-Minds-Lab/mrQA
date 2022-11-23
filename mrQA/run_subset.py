@@ -26,8 +26,6 @@ def main():
     required.add_argument('-m', '--metadata_root', type=str, required=True,
                           help='directory containing pickle files for each '
                                'part')
-    required.add_argument('-n', '--name', type=str,
-                          help='provide a identifier/name for the dataset')
     required.add_argument('-b', '--batch_txt_file', type=str, required=True,
                           help='text file path specifying the directories')
     optional.add_argument('-h', '--help', action='help',
@@ -41,9 +39,6 @@ def main():
     optional.add_argument('--include_phantom', action='store_true',
                           help='whether to include phantom, localizer, '
                                'aahead_scout')
-    optional.add_argument('-w', '--max_workers', type=int, default=-1,
-                          help='max workers threads for processing'
-                               ' in parallel')
     logger = set_logging('root')
 
     if len(sys.argv) < 2:
