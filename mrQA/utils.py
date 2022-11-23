@@ -145,7 +145,7 @@ def create_index(data_root, metadata_root: pathlib.Path, name, reindex=False,
                            "workers > 1 for parallel processing. Got 1")
     index_subsets = split_index(dir_index, num_chunks=workers)
     for i, subset in enumerate(index_subsets):
-        batch_filename = metadata_root/(name+f'_batch{i}.txt')
+        batch_filename = metadata_root/(name+f'_batch{i:04}.txt')
         list2txt(batch_filename, subset)
         batch_txt_path_list.append(batch_filename)
     return batch_txt_path_list
