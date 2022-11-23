@@ -47,16 +47,17 @@ def main():
         parser.exit(1)
 
     args = parser.parse_args()
-
-    partial_dataset = read_subset(args.metadata_root,
-                                  args.batch_txt_file, 'dicom',
-                                  args.reindex, args.verbose,
-                                  args.include_phantom)
-    partial_dataset.set_cache_path()
-    partial_dataset.is_complete = False
     txt_file_path = Path(args.batch_txt_file).resolve()
     save_filename = txt_file_path.with_suffix(MRDS_EXT)
-    save_mr_dataset(save_filename, args.metadata_root, partial_dataset)
+
+    if not save_filename.exists() or args.reindex:
+        partial_dataset = read_subset(args.metadata_root,
+                                      args.batch_txt_file, 'dicom',
+                                      args.reindex, args.verbose,
+                                      args.include_phantom)
+        partial_dataset.set_cache_path()
+        partial_dataset.is_complete = False
+        save_mr_dataset(save_filename, args.metadata_root, partial_dataset)
 
 
 def read_subset(metadata_root, batch_txt_file, style, reindex, verbose,
