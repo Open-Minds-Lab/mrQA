@@ -133,6 +133,11 @@ def create_index(data_root, metadata_root: pathlib.Path, name, reindex=False,
                 dir_index.append(root)
         list2txt(output_path, list(set(dir_index)))
 
+    if subjects_per_job < 1:
+        raise RuntimeError("subjects_per_job cannot be less than 1.")
+    elif subjects_per_job > len(dir_index):
+        raise RuntimeError("Trying to create more jobs than total number of "
+                           "subjects in the directory. Why?")
     workers = len(dir_index) // subjects_per_job
     index_subsets = split_index(dir_index, num_chunks=workers)
     for i, subset in enumerate(index_subsets):
