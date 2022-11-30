@@ -16,7 +16,7 @@ def parallel_dataset(data_root=None,
                      reindex=False,
                      include_phantom=False,
                      verbose=False,
-                     metadata_root=None,
+                     output_dir=None,
                      debug=False,
                      subjects_per_job=None,
                      submit_job=False,
@@ -33,14 +33,14 @@ def parallel_dataset(data_root=None,
                       ' Got {0}'.format(data_root))
     data_root = Path(data_root).resolve()
 
-    if not metadata_root:
-        metadata_root = Path.home() / CACHE_DIR
-        metadata_root.mkdir(exist_ok=True)
+    if not output_dir:
+        output_dir = Path.home() / CACHE_DIR
+        output_dir.mkdir(exist_ok=True)
 
-    if not Path(metadata_root).is_dir():
-        raise OSError('Expected valid directory for --metadata_root argument,'
-                      ' Got {0}'.format(metadata_root))
-    metadata_root = Path(metadata_root).resolve()
+    if not Path(output_dir).is_dir():
+        raise OSError('Expected valid directory for --output_dir argument,'
+                      ' Got {0}'.format(output_dir))
+    output_dir = Path(output_dir).resolve()
 
     if name is None:
         warnings.warn(
@@ -49,16 +49,16 @@ def parallel_dataset(data_root=None,
             stacklevel=2)
         name = random_name()
 
-    txt_path_list = create_index(data_root, metadata_root, name,
+    txt_path_list = create_index(data_root, output_dir, name,
                                  reindex, subjects_per_job)
 
-    all_batches_txt_filepath = metadata_root / (name+'_txt_files.txt')
+    all_batches_txt_filepath = output_dir / (name+'_txt_files.txt')
     list2txt(path=all_batches_txt_filepath, list_=txt_path_list)
 
     processes = []
     for txt_filepath in txt_path_list:
         # create slurm script to call run_subset.py
-        s_folderpath = metadata_root / f'scripts_{name}'
+        s_folderpath = output_dir / f'scripts_{name}'
         s_folderpath.mkdir(parents=True, exist_ok=True)
         s_filename = s_folderpath / (txt_filepath.stem + '.sh')
         if not conda_env:
@@ -66,10 +66,10 @@ def parallel_dataset(data_root=None,
         if not conda_dist:
             conda_dist = 'miniconda3' if hpc else 'anaconda3'
 
-        create_slurm_script(s_filename, name, metadata_root, txt_filepath,
+        create_slurm_script(s_filename, name, output_dir, txt_filepath,
                             conda_env, conda_dist, subjects_per_job, reindex,
                             verbose, include_phantom)
-        output = run_single(debug, metadata_root, txt_filepath, reindex,
+        output = run_single(debug, output_dir, txt_filepath, reindex,
                             verbose, include_phantom, s_filename, submit_job,
                             hpc)
         processes.append(output)
@@ -78,18 +78,18 @@ def parallel_dataset(data_root=None,
     return
 
 
-def run_single(debug, metadata_root, txt_filepath, reindex, verbose,
+def run_single(debug, output_dir, txt_filepath, reindex, verbose,
                include_phantom, s_filename, submit_job, hpc=False):
     # submit job or run with bash or execute with python
     if debug:
-        partial_dataset = read_subset(metadata_root,
+        partial_dataset = read_subset(output_dir,
                                       txt_filepath, 'dicom',
                                       reindex, verbose,
                                       include_phantom)
         partial_dataset.set_cache_path()
         partial_dataset.is_complete = False
         save_filename = txt_filepath.with_suffix(MRDS_EXT)
-        save_mr_dataset(save_filename, metadata_root, partial_dataset)
+        save_mr_dataset(save_filename, output_dir, partial_dataset)
         return None
     elif not s_filename.with_suffix(MRDS_EXT).exists() or reindex:
         if not hpc:
@@ -99,7 +99,7 @@ def run_single(debug, metadata_root, txt_filepath, reindex, verbose,
             return
 
 
-def create_slurm_script(filename, dataset_name, metadata_root,
+def create_slurm_script(filename, dataset_name, output_dir,
                         txt_batch_filepath, env='mrqa', conda_dist='anaconda3',
                         num_subj_per_job=50, reindex=False, verbose=False,
                         include_phantom=False):
@@ -117,7 +117,7 @@ def create_slurm_script(filename, dataset_name, metadata_root,
     num_mins_per_subject = 1  # minutes
     num_hours = int(math.ceil(num_subj_per_job * num_mins_per_subject / 60))
     time_limit = 3 if num_hours < 3 else num_hours
-    python_cmd = f'mrpc_subset -m {metadata_root} -b {txt_batch_filepath}'
+    python_cmd = f'mrpc_subset -m {output_dir} -b {txt_batch_filepath}'
 
     if reindex:
         python_cmd += ' --reindex'

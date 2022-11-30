@@ -30,7 +30,7 @@ def main():
 
 
     args = parser.parse_args()
-    METADATA_ROOT = Path('/home/sinhah/.mrdataset/')
+    OUTPUT_DIR = Path('/home/sinhah/.mrdataset/')
     DATA_ROOT = Path('/media/sinhah/extremessd/ABCD-375/dicom-baseline')
     name = 'abcd-375'
     if args.task == 'submit_job':
@@ -46,10 +46,10 @@ def main():
     elif args.task == 'merge':
         check_and_merge(
             name=name,
-            all_batches_txtpaths=METADATA_ROOT / (name + '_txt_files.txt')
+            all_batches_txtpaths=OUTPUT_DIR / (name + '_txt_files.txt')
         )
     elif args.task == 'report':
-        dataset = load_mr_dataset(METADATA_ROOT / (name + MRDS_EXT))
+        dataset = load_mr_dataset(OUTPUT_DIR / (name + MRDS_EXT))
         check_compliance(dataset=dataset,
                          output_dir='/home/sinhah/mr_reports')
     else:
