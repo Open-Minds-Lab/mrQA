@@ -34,7 +34,9 @@ def parallel_dataset(data_root=None,
     data_root = Path(data_root).resolve()
 
     if not output_dir:
-        output_dir = Path.home() / CACHE_DIR
+        warnings.warn('Expected a directory to save job scripts. Using '
+                      '--data_root instead.')
+        output_dir = data_root.parent / 'mrqa_files'
         output_dir.mkdir(exist_ok=True)
 
     if not Path(output_dir).is_dir():
