@@ -96,7 +96,7 @@ def run_single(debug, output_dir, txt_filepath, reindex, verbose,
                partial_mrds_filename=None):
     # submit job or run with bash or execute with python
     if debug:
-        partial_dataset = read_subset(output_dir,
+        partial_dataset = read_subset(partial_mrds_filename,
                                       txt_filepath, 'dicom',
                                       reindex, verbose,
                                       include_phantom)
