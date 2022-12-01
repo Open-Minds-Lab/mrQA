@@ -66,7 +66,7 @@ def main():
     elif args.task == 'report':
         dataset = load_mr_dataset(OUTPUT_DIR / (name + MRDS_EXT))
         check_compliance(dataset=dataset,
-                         output_dir='/home/sinhah/mr_reports')
+                         output_dir=OUTPUT_DIR/'reports')
     else:
         raise NotImplementedError(f"Expected one of [submit_job|merge|report], "
                                   f"Got {args.task}")
