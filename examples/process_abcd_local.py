@@ -57,9 +57,11 @@ def main():
                          conda_dist='anaconda3',
                          hpc=False)
     elif args.task == 'merge':
+        mrds_paths = OUTPUT_DIR / ('mrds_files/' + name + '_txt_files.txt')
         check_and_merge(
             name=name,
-            all_batches_txtpaths=OUTPUT_DIR / (name + '_txt_files.txt')
+            mrds_paths=mrds_paths,
+            save_dir=OUTPUT_DIR
         )
     elif args.task == 'report':
         dataset = load_mr_dataset(OUTPUT_DIR / (name + MRDS_EXT))
