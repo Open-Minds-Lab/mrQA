@@ -59,7 +59,7 @@ def main():
                          hpc=False,
                          output_dir=OUTPUT_DIR)
     elif args.task == 'merge':
-        mrds_paths = OUTPUT_DIR / ('mrds_files/' + name + '_txt_files.txt')
+        mrds_paths = OUTPUT_DIR / (name + '_mrds_files.txt')
         check_and_merge(
             name=name,
             mrds_paths=mrds_paths,
