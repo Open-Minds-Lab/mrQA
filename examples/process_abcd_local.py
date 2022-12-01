@@ -30,8 +30,11 @@ def main():
 
 
     args = parser.parse_args()
-    OUTPUT_DIR = Path('/home/sinhah/.mrdataset/')
     DATA_ROOT = Path('/media/sinhah/extremessd/ABCD-375/dicom-baseline')
+
+    OUTPUT_DIR = DATA_ROOT.parent / (DATA_ROOT.stem+'mrqa_files')
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
     name = 'abcd-375'
     if args.task == 'submit_job':
         parallel_dataset(data_root=DATA_ROOT,
