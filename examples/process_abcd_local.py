@@ -36,7 +36,17 @@ def main():
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     name = 'abcd-375'
-    if args.task == 'submit_job':
+    if args.task == 'debug':
+        parallel_dataset(data_root=DATA_ROOT,
+                         name=name,
+                         reindex=True,
+                         subjects_per_job=100,
+                         debug=True,
+                         submit_job=False,
+                         conda_env='mrcheck',
+                         conda_dist='anaconda3',
+                         hpc=False)
+    elif args.task == 'submit_job':
         parallel_dataset(data_root=DATA_ROOT,
                          name=name,
                          reindex=True,
