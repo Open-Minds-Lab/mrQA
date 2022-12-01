@@ -66,7 +66,7 @@ def main():
             save_dir=OUTPUT_DIR
         )
     elif args.task == 'report':
-        dataset = load_mr_dataset(OUTPUT_DIR / (name + MRDS_EXT))
+        dataset = load_mr_dataset(OUTPUT_DIR / (name + MRDS_EXT), style='dicom')
         check_compliance(dataset=dataset,
                          output_dir=OUTPUT_DIR/'reports')
     else:
