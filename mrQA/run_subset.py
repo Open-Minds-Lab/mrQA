@@ -23,7 +23,7 @@ def main():
     required = parser.add_argument_group('required arguments')
     optional = parser.add_argument_group('optional arguments')
 
-    required.add_argument('-o', '--output_dir', type=str, required=True,
+    required.add_argument('-o', '--output_path', type=str, required=True,
                           help='directory containing pickle files for each '
                                'part')
     required.add_argument('-b', '--batch_txt_file', type=str, required=True,
@@ -51,26 +51,26 @@ def main():
     save_filename = txt_file_path.with_suffix(MRDS_EXT)
 
     if not save_filename.exists() or args.reindex:
-        partial_dataset = read_subset(args.output_dir,
+        partial_dataset = read_subset(args.output_path,
                                       args.batch_txt_file, 'dicom',
                                       args.reindex, args.verbose,
                                       args.include_phantom)
         partial_dataset.set_cache_path()
         partial_dataset.is_complete = False
-        save_mr_dataset(save_filename, args.output_dir, partial_dataset)
+        save_mr_dataset(save_filename, args.output_path, partial_dataset)
 
 
-def read_subset(output_dir, batch_txt_file, style, reindex, verbose,
+def read_subset(output_path, batch_txt_file, style, reindex, verbose,
                 include_phantom):
-    if not output_dir:
-        output_dir = Path.home() / CACHE_DIR
-        output_dir.mkdir(exist_ok=True)
+    if not output_path:
+        output_path = Path.home() / CACHE_DIR
+        output_path.mkdir(exist_ok=True)
 
-    if not Path(output_dir).is_dir():
-        raise OSError('Expected valid directory for --output_dir argument,'
-                      ' Got {0}'.format(output_dir))
+    if not Path(output_path).is_dir():
+        raise OSError('Expected valid directory for --output_path argument,'
+                      ' Got {0}'.format(output_path))
 
-    output_dir = Path(output_dir).resolve()
+    output_path = Path(output_path).resolve()
 
     if Path(batch_txt_file).exists():
         batch_txt_file = Path(batch_txt_file)
@@ -85,7 +85,7 @@ def read_subset(output_dir, batch_txt_file, style, reindex, verbose,
                                      reindex=reindex,
                                      verbose=verbose,
                                      include_phantom=include_phantom,
-                                     metadata_root=output_dir,
+                                     metadata_root=output_path,
                                      save=False)
     return partial_dataset
 

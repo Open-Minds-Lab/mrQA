@@ -68,12 +68,15 @@ def parallel_dataset(data_root=None,
         if not conda_dist:
             conda_dist = 'miniconda3' if hpc else 'anaconda3'
 
+        partial_mrds_folder = output_dir / 'saved_files'
+        partial_mrds_folder.mkdir(parents=True, exist_ok=True)
+        partial_mrds_filename = partial_mrds_folder / (txt_filepath.stem + MRDS_EXT)
         create_slurm_script(s_filename, name, output_dir, txt_filepath,
                             conda_env, conda_dist, subjects_per_job, reindex,
-                            verbose, include_phantom)
+                            verbose, include_phantom, partial_mrds_filename)
         output = run_single(debug, output_dir, txt_filepath, reindex,
                             verbose, include_phantom, s_filename, submit_job,
-                            hpc)
+                            hpc, partial_mrds_filename)
         processes.append(output)
     if not (submit_job or debug or hpc):
         exit_codes = [p.wait() for p in processes]
@@ -81,7 +84,8 @@ def parallel_dataset(data_root=None,
 
 
 def run_single(debug, output_dir, txt_filepath, reindex, verbose,
-               include_phantom, s_filename, submit_job, hpc=False):
+               include_phantom, s_filename, submit_job, hpc=False,
+               partial_mrds_filename=None):
     # submit job or run with bash or execute with python
     if debug:
         partial_dataset = read_subset(output_dir,
@@ -93,7 +97,7 @@ def run_single(debug, output_dir, txt_filepath, reindex, verbose,
         save_filename = txt_filepath.with_suffix(MRDS_EXT)
         save_mr_dataset(save_filename, output_dir, partial_dataset)
         return None
-    elif not s_filename.with_suffix(MRDS_EXT).exists() or reindex:
+    elif not partial_mrds_filename.exists() or reindex:
         if not hpc:
             return execute_local(s_filename)
         if hpc and submit_job:
@@ -104,7 +108,7 @@ def run_single(debug, output_dir, txt_filepath, reindex, verbose,
 def create_slurm_script(filename, dataset_name, output_dir,
                         txt_batch_filepath, env='mrqa', conda_dist='anaconda3',
                         num_subj_per_job=50, reindex=False, verbose=False,
-                        include_phantom=False):
+                        include_phantom=False, partial_mrds_filename=None):
     # Memory and CPU time :  typical usage observed locally
 
     # For subjects_per_job = 50
@@ -119,7 +123,7 @@ def create_slurm_script(filename, dataset_name, output_dir,
     num_mins_per_subject = 1  # minutes
     num_hours = int(math.ceil(num_subj_per_job * num_mins_per_subject / 60))
     time_limit = 3 if num_hours < 3 else num_hours
-    python_cmd = f'mrpc_subset -m {output_dir} -b {txt_batch_filepath}'
+    python_cmd = f'mrpc_subset -o {partial_mrds_filename} -b {txt_batch_filepath}'
 
     if reindex:
         python_cmd += ' --reindex'
