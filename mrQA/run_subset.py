@@ -57,7 +57,7 @@ def main():
                                       args.include_phantom)
         partial_dataset.set_cache_path()
         partial_dataset.is_complete = False
-        save_mr_dataset(save_filename, args.output_path, partial_dataset)
+        save_mr_dataset(args.output_path, partial_dataset)
 
 
 def read_subset(output_path, batch_txt_file, style, reindex, verbose,

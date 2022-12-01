@@ -95,7 +95,7 @@ def run_single(debug, output_dir, txt_filepath, reindex, verbose,
         partial_dataset.set_cache_path()
         partial_dataset.is_complete = False
         save_filename = txt_filepath.with_suffix(MRDS_EXT)
-        save_mr_dataset(save_filename, output_dir, partial_dataset)
+        save_mr_dataset(partial_mrds_filename, partial_dataset)
         return None
     elif not partial_mrds_filename.exists() or reindex:
         if not hpc:
