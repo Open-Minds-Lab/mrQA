@@ -63,14 +63,11 @@ def main():
 def read_subset(output_path, batch_txt_file, style, reindex, verbose,
                 include_phantom):
     if not output_path:
-        output_path = Path.home() / CACHE_DIR
-        output_path.mkdir(exist_ok=True)
-
-    if not Path(output_path).is_dir():
-        raise OSError('Expected valid directory for --output_path argument,'
-                      ' Got {0}'.format(output_path))
-
-    output_path = Path(output_path).resolve()
+        output_dir = Path.home() / CACHE_DIR
+        output_dir.mkdir(exist_ok=True)
+    else:
+        output_dir = output_path.parent
+    # output_path = Path(output_path).resolve()
 
     if Path(batch_txt_file).exists():
         batch_txt_file = Path(batch_txt_file)
@@ -85,7 +82,7 @@ def read_subset(output_path, batch_txt_file, style, reindex, verbose,
                                      reindex=reindex,
                                      verbose=verbose,
                                      include_phantom=include_phantom,
-                                     metadata_root=output_path,
+                                     metadata_root=output_dir,
                                      save=False)
     return partial_dataset
 
