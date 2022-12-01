@@ -45,7 +45,8 @@ def main():
                          submit_job=False,
                          conda_env='mrcheck',
                          conda_dist='anaconda3',
-                         hpc=False)
+                         hpc=False,
+                         output_dir=OUTPUT_DIR)
     elif args.task == 'submit_job':
         parallel_dataset(data_root=DATA_ROOT,
                          name=name,
@@ -55,7 +56,8 @@ def main():
                          submit_job=False,
                          conda_env='mrcheck',
                          conda_dist='anaconda3',
-                         hpc=False)
+                         hpc=False,
+                         output_dir=OUTPUT_DIR)
     elif args.task == 'merge':
         mrds_paths = OUTPUT_DIR / ('mrds_files/' + name + '_txt_files.txt')
         check_and_merge(
