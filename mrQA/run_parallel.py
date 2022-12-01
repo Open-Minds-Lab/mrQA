@@ -55,8 +55,10 @@ def parallel_dataset(data_root=None,
                                  reindex, subjects_per_job)
 
     all_batches_txt_filepath = output_dir / (name+'_txt_files.txt')
-    list2txt(path=all_batches_txt_filepath, list_=txt_path_list)
+    all_batches_mrds_filepath = output_dir / (name + '_mrds_files.txt')
 
+    list2txt(path=all_batches_txt_filepath, list_=txt_path_list)
+    mrds_path_list = []
     processes = []
     for txt_filepath in txt_path_list:
         # create slurm script to call run_subset.py
@@ -71,15 +73,21 @@ def parallel_dataset(data_root=None,
         partial_mrds_folder = output_dir / 'saved_files'
         partial_mrds_folder.mkdir(parents=True, exist_ok=True)
         partial_mrds_filename = partial_mrds_folder / (txt_filepath.stem + MRDS_EXT)
+        mrds_path_list.append(partial_mrds_filename)
+
         create_slurm_script(s_filename, name, output_dir, txt_filepath,
                             conda_env, conda_dist, subjects_per_job, reindex,
                             verbose, include_phantom, partial_mrds_filename)
+
         output = run_single(debug, output_dir, txt_filepath, reindex,
                             verbose, include_phantom, s_filename, submit_job,
                             hpc, partial_mrds_filename)
         processes.append(output)
-    if not (submit_job or debug or hpc):
-        exit_codes = [p.wait() for p in processes]
+
+    list2txt(path=all_batches_mrds_filepath, list_=mrds_path_list)
+
+    # if not (submit_job or debug or hpc):
+    #     exit_codes = [p.wait() for p in processes]
     return
 
 
