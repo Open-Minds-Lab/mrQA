@@ -43,7 +43,7 @@ def parallel_dataset(data_root=None,
         raise OSError('Expected valid directory for --output_dir argument,'
                       ' Got {0}'.format(output_dir))
     output_dir = Path(output_dir).resolve()
-
+    # TODO: Add the name flag to parser arguments
     if name is None:
         warnings.warn(
             'Expected a unique identifier for caching data. Got NoneType. '
@@ -89,8 +89,8 @@ def parallel_dataset(data_root=None,
 
     list2txt(path=all_batches_mrds_filepath, list_=mrds_path_list)
 
-    # if not (submit_job or debug or hpc):
-    #     exit_codes = [p.wait() for p in processes]
+    if not (submit_job or debug or hpc):
+        exit_codes = [p.wait() for p in processes]
     return
 
 
@@ -110,6 +110,7 @@ def run_single(debug, output_dir, txt_filepath, reindex, verbose,
         return None
     elif not partial_mrds_filename.exists() or reindex:
         if not hpc:
+            # print('Started job')
             return execute_local(s_filename)
         if hpc and submit_job:
             subprocess.call(['sbatch', s_filename])

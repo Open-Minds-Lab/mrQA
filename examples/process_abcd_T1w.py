@@ -46,6 +46,7 @@ def main():
                          submit_job=False,
                          conda_env='mrqa',
                          hpc=True)
+
     elif args.task == 'submit_job':
         # Create scripts and submit jobs simultaneously
         parallel_dataset(data_root=DATA_ROOT,
