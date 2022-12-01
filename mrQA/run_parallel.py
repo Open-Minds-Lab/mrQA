@@ -60,7 +60,7 @@ def parallel_dataset(data_root=None,
     processes = []
     for txt_filepath in txt_path_list:
         # create slurm script to call run_subset.py
-        s_folderpath = output_dir / f'scripts_{name}'
+        s_folderpath = output_dir / 'scripts'
         s_folderpath.mkdir(parents=True, exist_ok=True)
         s_filename = s_folderpath / (txt_filepath.stem + '.sh')
         if not conda_env:
