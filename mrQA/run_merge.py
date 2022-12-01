@@ -77,9 +77,10 @@ def merge_subset(list_, final_name):
     return head
 
 
-def check_and_merge(name, all_batches_txtpaths, save_dir=None):
-    mrds_paths = check_partial_datasets(all_batches_txtpaths)
+def check_and_merge(name, mrds_paths, save_dir=None):
+    mrds_paths = check_partial_datasets(mrds_paths)
     if save_dir is None:
-        save_dir = Path.home() / CACHE_DIR
-        save_dir.mkdir(exist_ok=True, parents=True)
+        raise AttributeError("Pass a directory to save the file!")
+        # save_dir = Path.home() / CACHE_DIR
+        # save_dir.mkdir(exist_ok=True, parents=True)
     merge_partial_datasets(name, mrds_paths, save_dir)
