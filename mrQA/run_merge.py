@@ -6,16 +6,16 @@ from MRdataset import save_mr_dataset
 from pathlib import Path
 
 
-def check_partial_datasets(all_batches_txt, force=False):
-    txt_path_list = txt2list(all_batches_txt)
-    valid_txt_paths = []
-    for txt in txt_path_list:
-        if Path(txt).exists():
-            valid_txt_paths.append(Path(txt))
+def check_partial_datasets(all_batches_mrds, force=False):
+    mrds_path_list = txt2list(all_batches_mrds)
+    valid_mrds_paths = []
+    for file in mrds_path_list:
+        if Path(file).exists():
+            valid_mrds_paths.append(Path(file))
 
-    if len(valid_txt_paths) < len(txt_path_list):
+    if len(valid_mrds_paths) < len(mrds_path_list):
         if force:
-            warnings.warn(f"Text files for {len(txt_path_list)-len(valid_txt_paths)}"
+            warnings.warn(f"Files for {len(mrds_path_list)-len(valid_mrds_paths)}"
                           f" batches were not found. Skipping! "
                           f"Using The Force to continue!")
         else:
@@ -23,12 +23,11 @@ def check_partial_datasets(all_batches_txt, force=False):
 
     mrds_paths = []
     mrds_sizes = []
-    for txt_file in valid_txt_paths:
-        saved_mrds_path = txt_file.with_suffix(MRDS_EXT)
-        if saved_mrds_path.exists():
-            size = saved_mrds_path.stat().st_size
+    for file in valid_mrds_paths:
+        if file.exists():
+            size = file.stat().st_size
             mrds_sizes.append(size)
-            mrds_paths.append(saved_mrds_path)
+            mrds_paths.append(file)
 
     outlier_idxs = get_outliers(mrds_sizes)
     if not outlier_idxs:
