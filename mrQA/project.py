@@ -159,6 +159,8 @@ def generate_report(dataset: Project, output_dir: Union[Path, str]) -> None:
         Directory in which the generated report should be stored.
     """
     output_path = Path(output_dir).resolve()
+    output_path.mkdir(parents=True, exist_ok=True)
+
     if not Path(output_path).is_dir():
         raise OSError('Expected valid output_directory, '
                       'Got {0}'.format(output_dir))
