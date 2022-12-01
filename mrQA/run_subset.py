@@ -47,10 +47,10 @@ def main():
         parser.exit(1)
 
     args = parser.parse_args()
-    txt_file_path = Path(args.batch_txt_file).resolve()
-    save_filename = txt_file_path.with_suffix(MRDS_EXT)
+    # txt_file_path = Path(args.batch_txt_file).resolve()
+    # save_filename = txt_file_path.with_suffix(MRDS_EXT)
 
-    if not save_filename.exists() or args.reindex:
+    if not args.output_path.exists() or args.reindex:
         partial_dataset = read_subset(args.output_path,
                                       args.batch_txt_file, 'dicom',
                                       args.reindex, args.verbose,
