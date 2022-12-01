@@ -55,7 +55,7 @@ def main():
                                       args.batch_txt_file, 'dicom',
                                       args.reindex, args.verbose,
                                       args.include_phantom)
-        partial_dataset.set_cache_path()
+        # partial_dataset.set_cache_path()
         partial_dataset.is_complete = False
         save_mr_dataset(args.output_path, partial_dataset)
 
