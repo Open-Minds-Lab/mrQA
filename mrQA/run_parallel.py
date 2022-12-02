@@ -53,6 +53,10 @@ def parallel_dataset(data_root=None,
             stacklevel=2)
         name = random_name()
 
+    id_folder = output_dir / 'id_lists'
+    id_folder.mkdir(parents=True, exist_ok=True)
+    all_batches_ids_filepath = output_dir / (name + '_id_complete_list.txt')
+
     txt_path_list = create_index(data_root, output_dir, name,
                                  reindex, subjects_per_job)
 
