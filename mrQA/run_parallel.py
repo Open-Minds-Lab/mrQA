@@ -57,7 +57,8 @@ def parallel_dataset(data_root=None,
     id_folder.mkdir(parents=True, exist_ok=True)
     all_batches_ids_filepath = output_dir / (name + '_id_complete_list.txt')
 
-    txt_path_list = create_index(data_root, output_dir, name,
+    txt_path_list = create_index(data_root, all_batches_ids_filepath,
+                                 id_folder, name,
                                  reindex, subjects_per_job)
 
     all_batches_txt_filepath = output_dir / (name+'_id_lists.txt')
@@ -175,9 +176,8 @@ def create_slurm_script(filename, dataset_name, output_dir,
         )
 
 
-def create_index(data_root, metadata_root: pathlib.Path, name, reindex=False,
+def create_index(data_root, output_path, output_dir, name, reindex=False,
                  subjects_per_job=50):
-    output_path = metadata_root / (name+'_index.txt')
     batch_txt_path_list = []
     if output_path.exists() and not reindex:
         warnings.warn(f"Found a  pre-existing list of subjects on disk."
@@ -201,11 +201,10 @@ def create_index(data_root, metadata_root: pathlib.Path, name, reindex=False,
         raise RuntimeError("Decrease number of subjects per job. Expected"
                            "workers > 1 for parallel processing. Got 1")
     index_subsets = split_index(dir_index, num_chunks=workers)
-    txt_dir = metadata_root/'txt_files'
-    txt_dir.mkdir(exist_ok=True, parents=True)
+    output_dir.mkdir(exist_ok=True, parents=True)
 
     for i, subset in enumerate(index_subsets):
-        batch_filename = txt_dir/(name+f'_batch{i:04}.txt')
+        batch_filename = output_dir/(name+f'_batch{i:04}.txt')
         list2txt(batch_filename, subset)
         batch_txt_path_list.append(batch_filename)
     return batch_txt_path_list
