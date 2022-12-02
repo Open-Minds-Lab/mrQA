@@ -62,10 +62,13 @@ def parallel_dataset(data_root=None,
 
     all_batches_txt_filepath = output_dir / (name+'_id_lists.txt')
     list2txt(path=all_batches_txt_filepath, list_=txt_path_list)
-    s_folderpath = output_dir / 'scripts'
+
+    all_batches_mrds_filepath = output_dir / (name + '_partial_mrds_paths.txt')
+
+    s_folderpath = output_dir / 'bash_scripts'
     s_folderpath.mkdir(parents=True, exist_ok=True)
 
-    partial_mrds_folder = output_dir / 'mrds_files'
+    partial_mrds_folder = output_dir / 'partial_mrds'
     partial_mrds_folder.mkdir(parents=True, exist_ok=True)
 
     mrds_path_list = []
