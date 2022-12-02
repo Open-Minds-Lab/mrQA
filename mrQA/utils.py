@@ -1,8 +1,7 @@
-import pathlib
 import pickle
 import time, os
 import warnings
-from collections import Counter, defaultdict
+from collections import Counter
 from pathlib import Path
 import subprocess
 import numpy as np
@@ -116,42 +115,6 @@ def list2txt(path, list_):
     with open(path, 'w') as fp:
         for line in list_:
             fp.write("%s\n" % line)
-
-
-def create_index(data_root, metadata_root: pathlib.Path, name, reindex=False,
-                 subjects_per_job=50):
-    output_path = metadata_root / (name+'_index.txt')
-    batch_txt_path_list = []
-    if output_path.exists() and not reindex:
-        warnings.warn(f"Found a  pre-existing list of subjects on disk."
-                      f"Reusing existing {output_path}, Use reindex?",
-                      stacklevel=2)
-        dir_index = txt2list(output_path)
-    else:
-        dir_index = []
-        for root, dirs, files in os.walk(data_root):
-            if 'sub-' in Path(root).name:
-                dir_index.append(root)
-        list2txt(output_path, list(set(dir_index)))
-
-    if subjects_per_job < 1:
-        raise RuntimeError("subjects_per_job cannot be less than 1.")
-    elif subjects_per_job > len(dir_index):
-        raise RuntimeError("Trying to create more jobs than total number of "
-                           "subjects in the directory. Why?")
-    workers = len(dir_index) // subjects_per_job
-    if workers == 1:
-        raise RuntimeError("Decrease number of subjects per job. Expected"
-                           "workers > 1 for parallel processing. Got 1")
-    index_subsets = split_index(dir_index, num_chunks=workers)
-    txt_dir = metadata_root/'txt_files'
-    txt_dir.mkdir(exist_ok=True, parents=True)
-
-    for i, subset in enumerate(index_subsets):
-        batch_filename = txt_dir/(name+f'_batch{i:04}.txt')
-        list2txt(batch_filename, subset)
-        batch_txt_path_list.append(batch_filename)
-    return batch_txt_path_list
 
 
 def save2pickle(dataset):
