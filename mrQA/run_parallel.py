@@ -60,9 +60,7 @@ def parallel_dataset(data_root=None,
     txt_path_list = create_index(data_root, output_dir, name,
                                  reindex, subjects_per_job)
 
-    all_batches_txt_filepath = output_dir / (name+'_txt_files.txt')
-    all_batches_mrds_filepath = output_dir / (name + '_mrds_files.txt')
-
+    all_batches_txt_filepath = output_dir / (name+'_id_lists.txt')
     list2txt(path=all_batches_txt_filepath, list_=txt_path_list)
     s_folderpath = output_dir / 'scripts'
     s_folderpath.mkdir(parents=True, exist_ok=True)
