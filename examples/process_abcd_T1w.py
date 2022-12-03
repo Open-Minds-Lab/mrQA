@@ -30,11 +30,11 @@ def main():
 
 
     args = parser.parse_args()
-    HOME = Path('/jet/home/sinhah/').resolve()
     ARCHIVE = Path('/ocean/projects/med220005p/sinhah')
-    METADATA_ROOT = HOME / '.mrdataset'
     DATA_ROOT = ARCHIVE / 'ABCD/t1w/dicom'
     name = 'abcd-T1w-baseline'
+    OUTPUT_DIR = DATA_ROOT.parent / (DATA_ROOT.stem + '_mrqa_files')
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     if args.task == 'create_script':
         # Create scripts but do not submit jobs
