@@ -64,7 +64,7 @@ def parallel_dataset(data_root=None,
     # "id_complete_list"
     id_folder = output_dir / 'id_lists'
     id_folder.mkdir(parents=True, exist_ok=True)
-    all_batches_ids_filepath = output_dir / (name + '_id_complete_list.txt')
+    all_batches_ids_filepath = output_dir / 'id_complete_list.txt'
     ids_path_list = create_index(data_root, all_batches_ids_filepath,
                                  id_folder, name,
                                  reindex, subjects_per_job)
@@ -72,12 +72,11 @@ def parallel_dataset(data_root=None,
 
     s_folderpath = output_dir / 'bash_scripts'
     s_folderpath.mkdir(parents=True, exist_ok=True)
-    all_batches_scripts_filepath = output_dir / (
-        name + '_scripts_complete_list.txt'
-    )
+    all_batches_scripts_filepath = output_dir / 'scripts_complete_list.txt'
+
     partial_mrds_folder = output_dir / 'partial_mrds'
     partial_mrds_folder.mkdir(parents=True, exist_ok=True)
-    all_batches_mrds_filepath = output_dir / (name + '_partial_mrds_paths.txt')
+    all_batches_mrds_filepath = output_dir / 'partial_mrds_paths.txt'
 
     scripts_path_list = []
     mrds_path_list = []
