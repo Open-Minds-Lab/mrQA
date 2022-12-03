@@ -45,8 +45,9 @@ def main():
                          debug=False,
                          submit_job=False,
                          conda_env='mrqa',
-                         hpc=True)
-
+                         conda_dist='miniconda3',
+                         hpc=True,
+                         output_dir=OUTPUT_DIR)
     elif args.task == 'submit_job':
         # Create scripts and submit jobs simultaneously
         parallel_dataset(data_root=DATA_ROOT,
@@ -56,7 +57,9 @@ def main():
                          debug=False,
                          submit_job=True,
                          conda_env='mrqa',
-                         hpc=True)
+                         conda_dist='miniconda3',
+                         hpc=True,
+                         output_dir=OUTPUT_DIR)
     elif args.task == 'merge':
         # Merge created partial datasets
         check_and_merge(
