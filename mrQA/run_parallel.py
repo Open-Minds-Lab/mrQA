@@ -89,11 +89,11 @@ def parallel_dataset(data_root=None,
         partial_mrds_filename = partial_mrds_folder / (txt_filepath.stem + MRDS_EXT)
         mrds_path_list.append(partial_mrds_filename)
 
-        create_slurm_script(s_filename, name, output_dir, txt_filepath,
+        create_slurm_script(s_filename, txt_filepath,
                             conda_env, conda_dist, subjects_per_job, reindex,
                             verbose, include_phantom, partial_mrds_filename)
 
-        output = run_single(debug, output_dir, txt_filepath, reindex,
+        output = run_single(debug, txt_filepath, reindex,
                             verbose, include_phantom, s_filename, submit_job,
                             hpc, partial_mrds_filename)
         processes.append(output)
@@ -106,7 +106,7 @@ def parallel_dataset(data_root=None,
     return
 
 
-def run_single(debug, output_dir, txt_filepath, reindex, verbose,
+def run_single(debug, txt_filepath, reindex, verbose,
                include_phantom, s_filename, submit_job, hpc=False,
                partial_mrds_filename=None):
     # submit job or run with bash or execute with python
@@ -129,8 +129,8 @@ def run_single(debug, output_dir, txt_filepath, reindex, verbose,
             return
 
 
-def create_slurm_script(filename, dataset_name, output_dir,
-                        txt_batch_filepath, env='mrqa', conda_dist='anaconda3',
+def create_slurm_script(filename, txt_batch_filepath, env='mrqa',
+                        conda_dist='anaconda3',
                         num_subj_per_job=50, reindex=False, verbose=False,
                         include_phantom=False, partial_mrds_filename=None):
     # Memory and CPU time :  typical usage observed locally
