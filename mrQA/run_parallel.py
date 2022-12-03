@@ -62,15 +62,10 @@ def parallel_dataset(data_root=None,
     id_folder = output_dir / 'id_lists'
     id_folder.mkdir(parents=True, exist_ok=True)
     all_batches_ids_filepath = output_dir / (name + '_id_complete_list.txt')
-
-    txt_path_list = create_index(data_root, all_batches_ids_filepath,
+    ids_path_list = create_index(data_root, all_batches_ids_filepath,
                                  id_folder, name,
                                  reindex, subjects_per_job)
-
-    all_batches_txt_filepath = output_dir / (name+'_id_lists.txt')
-    list2txt(path=all_batches_txt_filepath, list_=txt_path_list)
-
-    all_batches_mrds_filepath = output_dir / (name + '_partial_mrds_paths.txt')
+    list2txt(path=all_batches_ids_filepath, list_=ids_path_list)
 
     s_folderpath = output_dir / 'bash_scripts'
     s_folderpath.mkdir(parents=True, exist_ok=True)
@@ -80,7 +75,7 @@ def parallel_dataset(data_root=None,
 
     mrds_path_list = []
     processes = []
-    for txt_filepath in txt_path_list:
+    for txt_filepath in ids_path_list:
         # create slurm script to call run_subset.py
         s_filename = s_folderpath / (txt_filepath.stem + '.sh')
         if not conda_env:
