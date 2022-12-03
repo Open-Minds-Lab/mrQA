@@ -80,19 +80,19 @@ def parallel_dataset(data_root=None,
     scripts_path_list = []
     mrds_path_list = []
     processes = []
-    for txt_filepath in ids_path_list:
+    for ids_filepath in ids_path_list:
         # create slurm script to call run_subset.py
-        s_filename = s_folderpath / (txt_filepath.stem + '.sh')
+        s_filename = s_folderpath / (ids_filepath.stem + '.sh')
         scripts_path_list.append(s_filename)
 
-        partial_mrds_filename = partial_mrds_folder / (txt_filepath.stem + MRDS_EXT)
+        partial_mrds_filename = partial_mrds_folder / (ids_filepath.stem + MRDS_EXT)
         mrds_path_list.append(partial_mrds_filename)
 
-        create_slurm_script(s_filename, txt_filepath,
+        create_slurm_script(s_filename, ids_filepath,
                             conda_env, conda_dist, subjects_per_job, reindex,
                             verbose, include_phantom, partial_mrds_filename)
 
-        output = run_single(debug, txt_filepath, reindex,
+        output = run_single(debug, ids_filepath, reindex,
                             verbose, include_phantom, s_filename, submit_job,
                             hpc, partial_mrds_filename)
         processes.append(output)
@@ -128,7 +128,7 @@ def run_single(debug, txt_filepath, reindex, verbose,
             return
 
 
-def create_slurm_script(filename, txt_batch_filepath, env='mrqa',
+def create_slurm_script(filename, ids_filepath, env='mrqa',
                         conda_dist='anaconda3',
                         num_subj_per_job=50, reindex=False, verbose=False,
                         include_phantom=False, partial_mrds_filename=None):
@@ -146,7 +146,7 @@ def create_slurm_script(filename, txt_batch_filepath, env='mrqa',
     num_mins_per_subject = 1  # minutes
     num_hours = int(math.ceil(num_subj_per_job * num_mins_per_subject / 60))
     time_limit = 3 if num_hours < 3 else num_hours
-    python_cmd = f'mrpc_subset -o {partial_mrds_filename} -b {txt_batch_filepath}'
+    python_cmd = f'mrpc_subset -o {partial_mrds_filename} -b {ids_filepath}'
 
     if reindex:
         python_cmd += ' --reindex'
@@ -164,8 +164,8 @@ def create_slurm_script(filename, txt_batch_filepath, env='mrqa',
             f'#SBATCH --mem-per-cpu={mem_reqd}M #memory per cpu-core',
             f'#SBATCH --time={time_limit}:00:00',
             '#SBATCH --ntasks-per-node=1',
-            f'#SBATCH --error={txt_batch_filepath.stem}.%J.err',
-            f'#SBATCH --output={txt_batch_filepath.stem}.%J.out',
+            f'#SBATCH --error={ids_filepath.stem}.%J.err',
+            f'#SBATCH --output={ids_filepath.stem}.%J.out',
             '#SBATCH --mail-type=end          # send email when job ends',
             '#SBATCH --mail-type=fail         # send email if job fails',
             '#SBATCH --mail-user=mail.sinha.harsh@gmail.com',
@@ -181,7 +181,7 @@ def create_slurm_script(filename, txt_batch_filepath, env='mrqa',
 
 def create_index(data_root, output_path, output_dir, reindex=False,
                  subjects_per_job=50):
-    batch_txt_path_list = []
+    batch_ids_path_list = []
     if output_path.exists() and not reindex:
         warnings.warn(f"Found a  pre-existing list of subjects on disk."
                       f"Reusing existing {output_path}, Use reindex?",
@@ -209,5 +209,5 @@ def create_index(data_root, output_path, output_dir, reindex=False,
     for i, subset in enumerate(index_subsets):
         batch_filename = output_dir/f'batch{i:04}.txt'
         list2txt(batch_filename, subset)
-        batch_txt_path_list.append(batch_filename)
-    return batch_txt_path_list
+        batch_ids_path_list.append(batch_filename)
+    return batch_ids_path_list
