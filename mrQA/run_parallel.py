@@ -69,20 +69,19 @@ def parallel_dataset(data_root=None,
 
     s_folderpath = output_dir / 'bash_scripts'
     s_folderpath.mkdir(parents=True, exist_ok=True)
-
+    all_batches_scripts_filepath = output_dir / (
+        name + '_scripts_complete_list.txt'
+    )
     partial_mrds_folder = output_dir / 'partial_mrds'
     partial_mrds_folder.mkdir(parents=True, exist_ok=True)
 
+    scripts_path_list = []
     mrds_path_list = []
     processes = []
     for txt_filepath in ids_path_list:
         # create slurm script to call run_subset.py
         s_filename = s_folderpath / (txt_filepath.stem + '.sh')
-        if not conda_env:
-            conda_env = 'mrqa' if hpc else 'mrcheck'
-        if not conda_dist:
-            conda_dist = 'miniconda3' if hpc else 'anaconda3'
-
+        scripts_path_list.append(s_filename)
 
         partial_mrds_filename = partial_mrds_folder / (txt_filepath.stem + MRDS_EXT)
         mrds_path_list.append(partial_mrds_filename)
@@ -97,6 +96,7 @@ def parallel_dataset(data_root=None,
         processes.append(output)
 
     list2txt(path=all_batches_mrds_filepath, list_=mrds_path_list)
+    list2txt(path=all_batches_scripts_filepath, list_=scripts_path_list)
 
     if not (submit_job or debug or hpc):
         exit_codes = [p.wait() for p in processes]
