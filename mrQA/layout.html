@@ -129,7 +129,7 @@
             {% set te = echo_time %}
             {% set reference = modality.get_reference(echo_time) %}
             {% if modality.is_multi_echo() %}
-                <h4>Multi-Echo Modality : Reference {{ loop.index }}</h4>
+                <h4>Reference {{ loop.index }}</h4>
             {% else %}
                 <h4>Reference</h4>
             {% endif %}
@@ -249,7 +249,7 @@
         {% for echo_time in modality.get_echo_times()|sort %}
             {% set reference = modality.get_reference(echo_time) %}
             {% if modality.is_multi_echo() %}
-                <h4>Mult-Echo Modality : Reference {{ loop.index }}</h4>
+                <h4>Reference {{ loop.index }}</h4>
             {% else %}
                 <h4>Reference</h4>
             {% endif %}
