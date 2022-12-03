@@ -45,6 +45,12 @@ def parallel_dataset(data_root=None,
         raise OSError('Expected valid directory for --output_dir argument,'
                       ' Got {0}'.format(output_dir))
     output_dir = Path(output_dir).resolve()
+
+    if not conda_env:
+        conda_env = 'mrqa' if hpc else 'mrcheck'
+    if not conda_dist:
+        conda_dist = 'miniconda3' if hpc else 'anaconda3'
+
     # TODO: Add the name flag to parser arguments
     if name is None:
         warnings.warn(
