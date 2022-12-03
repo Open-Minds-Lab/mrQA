@@ -66,8 +66,7 @@ def parallel_dataset(data_root=None,
     id_folder.mkdir(parents=True, exist_ok=True)
     all_batches_ids_filepath = output_dir / 'id_complete_list.txt'
     ids_path_list = create_index(data_root, all_batches_ids_filepath,
-                                 id_folder, name,
-                                 reindex, subjects_per_job)
+                                 id_folder, reindex, subjects_per_job)
     list2txt(path=all_batches_ids_filepath, list_=ids_path_list)
 
     s_folderpath = output_dir / 'bash_scripts'
@@ -180,7 +179,7 @@ def create_slurm_script(filename, txt_batch_filepath, env='mrqa',
         )
 
 
-def create_index(data_root, output_path, output_dir, name, reindex=False,
+def create_index(data_root, output_path, output_dir, reindex=False,
                  subjects_per_job=50):
     batch_txt_path_list = []
     if output_path.exists() and not reindex:
@@ -208,7 +207,7 @@ def create_index(data_root, output_path, output_dir, name, reindex=False,
     output_dir.mkdir(exist_ok=True, parents=True)
 
     for i, subset in enumerate(index_subsets):
-        batch_filename = output_dir/(name+f'_batch{i:04}.txt')
+        batch_filename = output_dir/f'batch{i:04}.txt'
         list2txt(batch_filename, subset)
         batch_txt_path_list.append(batch_filename)
     return batch_txt_path_list
