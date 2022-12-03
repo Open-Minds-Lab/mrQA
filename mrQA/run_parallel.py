@@ -59,6 +59,9 @@ def parallel_dataset(data_root=None,
             stacklevel=2)
         name = random_name()
 
+    # Create a folder id_lists for storing list of subject ids for each job
+    # in a separate txt file. And store the original complete list in
+    # "id_complete_list"
     id_folder = output_dir / 'id_lists'
     id_folder.mkdir(parents=True, exist_ok=True)
     all_batches_ids_filepath = output_dir / (name + '_id_complete_list.txt')
