@@ -74,7 +74,8 @@ def main():
         check_compliance(dataset=dataset,
                          output_dir=OUTPUT_DIR/'reports')
     else:
-        raise NotImplementedError(f"Expected one of [submit_job|merge|report], "
+        raise NotImplementedError(f"Expected one of "
+                                  f"[create_script|submit_job|merge|report], "
                                   f"Got {args.task}")
 
 
