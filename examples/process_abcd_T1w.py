@@ -62,15 +62,17 @@ def main():
                          output_dir=OUTPUT_DIR)
     elif args.task == 'merge':
         # Merge created partial datasets
+        mrds_paths = OUTPUT_DIR / 'partial_mrds_paths.txt'
         check_and_merge(
             name=name,
-            all_batches_txtpaths=METADATA_ROOT / (name + '_txt_files.txt')
+            mrds_paths=mrds_paths,
+            save_dir=OUTPUT_DIR
         )
     elif args.task == 'report':
         # Generate the final report
-        dataset = load_mr_dataset(METADATA_ROOT / (name + MRDS_EXT))
+        dataset = load_mr_dataset(OUTPUT_DIR / (name + MRDS_EXT), style='dicom')
         check_compliance(dataset=dataset,
-                         output_dir=HOME/'mr_reports')
+                         output_dir=OUTPUT_DIR/'reports')
     else:
         raise NotImplementedError(f"Expected one of [submit_job|merge|report], "
                                   f"Got {args.task}")
