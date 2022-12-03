@@ -77,6 +77,7 @@ def parallel_dataset(data_root=None,
     )
     partial_mrds_folder = output_dir / 'partial_mrds'
     partial_mrds_folder.mkdir(parents=True, exist_ok=True)
+    all_batches_mrds_filepath = output_dir / (name + '_partial_mrds_paths.txt')
 
     scripts_path_list = []
     mrds_path_list = []
