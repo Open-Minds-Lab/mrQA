@@ -60,7 +60,7 @@ def main():
         save_mr_dataset(args.output_path, partial_dataset)
 
 
-def read_subset(output_path, batch_txt_file, style, reindex, verbose,
+def read_subset(output_path, batch_ids_file, style, reindex, verbose,
                 include_phantom):
     if not output_path:
         output_dir = Path.home() / CACHE_DIR
@@ -69,13 +69,13 @@ def read_subset(output_path, batch_txt_file, style, reindex, verbose,
         output_dir = Path(output_path).parent
     # output_path = Path(output_path).resolve()
 
-    if Path(batch_txt_file).exists():
-        batch_txt_file = Path(batch_txt_file)
+    if Path(batch_ids_file).exists():
+        batch_ids_file = Path(batch_ids_file)
     else:
-        raise FileNotFoundError(f'Invalid path : {batch_txt_file}')
-    subset = txt2list(batch_txt_file)
+        raise FileNotFoundError(f'Invalid path : {batch_ids_file}')
+    subset = txt2list(batch_ids_file)
     # for j, folder in enumerate(subset):
-    identifier = batch_txt_file.stem
+    identifier = batch_ids_file.stem
     partial_dataset = import_dataset(data_root=subset,
                                      style=style,
                                      name=identifier,
