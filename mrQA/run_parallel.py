@@ -2,7 +2,7 @@ import os
 import pathlib
 import warnings
 from pathlib import Path
-from MRdataset.utils import random_name
+from MRdataset.utils import random_name, valid_dirs
 from MRdataset.config import CACHE_DIR, MRDS_EXT
 from mrQA.run_subset import read_subset
 from mrQA.run_merge import check_and_merge
@@ -10,7 +10,7 @@ from MRdataset.base import save_mr_dataset
 from mrQA.utils import execute_local, list2txt, txt2list, split_index
 import subprocess
 import math
-
+from typing import Iterable
 
 def parallel_dataset(data_root=None,
                      style='dicom',
@@ -30,12 +30,11 @@ def parallel_dataset(data_root=None,
     if style != 'dicom':
         raise NotImplementedError(f'Expects dicom, Got {style}')
 
-    if not Path(data_root).is_dir():
-        raise OSError('Expected valid directory for --data_root argument,'
-                      ' Got {0}'.format(data_root))
-    data_root = Path(data_root).resolve()
+    data_root = valid_dirs(data_root)
 
     if not output_dir:
+        if isinstance(data_root, Iterable):
+            raise RuntimeError("Need an output directory to store files")
         warnings.warn('Expected a directory to save job scripts. Using '
                       '--data_root instead.')
         output_dir = data_root.parent / 'mrqa_files'
