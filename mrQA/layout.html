@@ -81,7 +81,7 @@
     </tr>
     </thead>
     <tbody>
-    {% for modality in dataset.modalities %}
+    {% for modality in dataset.modalities|sort %}
         <tr>
             <td class="tg-0pky" colspan="2">{{ modality.name }}</td>
             {% set percent_non_compliant = 100 * modality.non_compliant_subject_names|length|float / modality.subjects|length|float %}
@@ -93,12 +93,12 @@
             </td>
 
             <td class="tg-0pky" colspan="2">
-                {% for name in modality.non_compliant_subject_names %}
+                {% for name in modality.non_compliant_subject_names|sort %}
                     {{ name }},
                 {% endfor %}
             </td>
             <td class="tg-0pky" colspan="2">
-                {% for parameter in modality.reasons_non_compliance() %}
+                {% for parameter in modality.reasons_non_compliance()|sort %}
                     {{ parameter }},
                 {% endfor %}
             </td>
@@ -121,11 +121,11 @@
 </table>
 
 
-{% for modality in dataset.modalities %}
+{% for modality in dataset.modalities|sort %}
 
     {% if not modality.compliant %}
         <h2>Modality : {{ modality.name }}</h2>
-        {% for echo_time in modality.get_echo_times() %}
+        {% for echo_time in modality.get_echo_times()|sort %}
             {% set te = echo_time %}
             {% set reference = modality.get_reference(echo_time) %}
             {% if modality.is_multi_echo() %}
@@ -137,7 +137,7 @@
             <table class="tg" id="with_margin">
                 <thead>
                 <tr>
-                    {% for key in reference.keys() %}
+                    {% for key in reference.keys()|sort %}
                         <th class="tg-0pky" colspan="2">{{ key }}</th>
                     {% endfor %}
                 </tr>
@@ -145,7 +145,7 @@
                 </thead>
                 <tbody>
                 <tr>
-                    {% for key in reference.keys() %}
+                    {% for key in reference.keys()|sort %}
                         <td class="tg-0pky"
                             colspan="2">{{ reference[key] }}</td>
                     {% endfor %}
@@ -172,23 +172,22 @@
                 </thead>
                 <tbody>
             {% endif %}
-        {% for parameter in modality.reasons_non_compliance(te) %}
+        {% for parameter in modality.reasons_non_compliance(te)|sort %}
             {# {% set reasons = modality.query_reason(parameter, te) %}#}
             <tr>
                 <td class="tg-0pky" colspan="4">{{ parameter }}</td>
                 <td class="tg-0pky" colspan="4">
-                    {% for value in modality.query_reason(parameter, te, 'ref_value') %}
+                    {% for value in modality.query_reason(parameter, te, 'ref_value')|sort %}
                         {{ value }},
                     {% endfor %}
                 </td>
                 <td class="tg-0pky" colspan="4">
-                    {% for value in modality.query_reason(parameter, te, 'new_value') %}
+                    {% for value in modality.query_reason(parameter, te, 'new_value')|sort %}
                         {{ value }},
                     {% endfor %}
                 </td>
                 <td class="tg-0pky" colspan="2">
-                    {% for subject in modality.query_reason
-                            (parameter, te, 'subjects') %}
+                    {% for subject in modality.query_reason(parameter, te, 'subjects')|sort %}
                         {{ subject }},
                     {% endfor %}
                 </td>
@@ -243,11 +242,11 @@
 {% endfor %}
 
 
-{% for modality in dataset.modalities %}
+{% for modality in dataset.modalities|sort %}
 
     {% if modality.compliant %}
         <h2>Modality : {{ modality.name }}</h2>
-        {% for echo_time in modality.get_echo_times() %}
+        {% for echo_time in modality.get_echo_times()|sort %}
             {% set reference = modality.get_reference(echo_time) %}
             {% if modality.is_multi_echo() %}
                 <h4>Mult-Echo Modality : Reference {{ loop.index }}</h4>
@@ -257,7 +256,7 @@
             <table class="tg" id="with_margin">
                 <thead>
                 <tr>
-                    {% for key in reference.keys() %}
+                    {% for key in reference.keys()|sort %}
                         <th class="tg-0pky"
                             colspan="2">{{ key }}</th>
                     {% endfor %}
@@ -266,7 +265,7 @@
                 </thead>
                 <tbody>
                 <tr>
-                    {% for key in reference.keys() %}
+                    {% for key in reference.keys()|sort %}
                         <td class="tg-0pky"
                             colspan="2">{{ reference[key] }}</td>
                     {% endfor %}
