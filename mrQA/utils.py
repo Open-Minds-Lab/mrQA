@@ -108,7 +108,21 @@ def split_index(dir_index: list, num_chunks: int) -> Generator[List[str]]:
             for i in range(num_chunks))
 
 
-def txt2list(path):
+def txt2list(path: Union[str, Path]) -> list:
+    """
+    Given a filepath to a text file, read all the lines and return as a list
+    of lines.
+
+    Parameters
+    ----------
+    path: str or pathlib.Path
+        valid filepath to a text file
+
+    Returns
+    -------
+    list of lines in the text file
+
+    """
     if not isinstance(path, Path):
         path = Path(path)
     if not path.exists():
