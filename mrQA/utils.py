@@ -75,17 +75,26 @@ def default_thread_count():
     return workers
 
 
-def split_index(dir_index, num_chunks):
+def split_index(dir_index: list, num_chunks: int) -> Generator[List[str]]:
     """
-    https://stackoverflow.com/questions/2130016/splitting-a-list-into-n-parts-of-approximately-equal-length
+    Adapted from https://stackoverflow.com/questions/2130016/splitting-a-list-into-n-parts-of-approximately-equal-length
+
+    Given a list of n elements, split it into k parts, where k = num_chunks.
+    Each part has atleast n/k elements. And the remaining elements
+    n % k are distributed uniformly among the sub-parts such that
+    each part has almost same number of elements. The first n % k will have
+    floor(n/k) + 1 elements.
+
     Parameters
     ----------
-    dir_index
-    num_chunks
+    dir_index : list
+        list to split
+    num_chunks : int
+        number of parts
 
     Returns
     -------
-
+    tuple of all subsets
     """
     if num_chunks == 0:
         raise RuntimeError("Cannot divide list into chunks of size 0")
@@ -97,6 +106,7 @@ def split_index(dir_index, num_chunks):
                       stacklevel=2)
         num_chunks = len(dir_index)
     k, m = divmod(len(dir_index), num_chunks)
+    #  k, m = (len(dir_index)//num_chunks, len(dir_index)%num_chunks)
     return (dir_index[i * k + min(i, m):(i + 1) * k + min(i + 1, m)]
             for i in range(num_chunks))
 
