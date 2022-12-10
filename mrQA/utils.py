@@ -132,7 +132,18 @@ def txt2list(path: Union[str, Path]) -> list:
     return data
 
 
-def list2txt(path, data):
+def list2txt(path: Union[str, Path], data: list) -> None:
+    """
+    Given a list of values, dump all the lines to a text file. Each element of
+    the list is on a separate line.
+
+    Parameters
+    ----------
+    path : pathlib.Path
+        output path of the final text file
+    data : list
+        values to be exported in a text file
+    """
     if Path(path).exists():
         warnings.warn("Overwriting pre-existing index on disk.")
     with open(path, 'w') as fp:
