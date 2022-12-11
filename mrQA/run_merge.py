@@ -75,7 +75,7 @@ def merge_and_save(name: str,
 
 
 def merge_from_disk(name, mrds_path_list):
-    chunks = []
+    complete_mrds = None
     for file in mrds_path_list:
         # Check if it is valid path to file, i.e. it exists and
         # it is not a directory
@@ -85,7 +85,7 @@ def merge_from_disk(name, mrds_path_list):
                 chunks.append(temp_dict)
             except OSError:
                 print(f"Unable to read file: {file}")
-    return merge_subset(chunks, name)
+    return complete_mrds
 
 
 
