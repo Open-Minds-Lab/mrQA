@@ -142,6 +142,24 @@ def merge_from_disk(mrds_path_list: List[str]) -> MRdataset.base.Project:
 
 
 def check_and_merge(name: str, mrds_paths: List[str], save_dir: str = None):
+    """
+    Entry point function to merge partial datasets.
+     Use this function, and other function will be called internally.
+
+    Parameters
+    ----------
+    name : str
+        filename to use while saving the dataset. Typically, it can be
+        name of the study project, like ABCD, Oasis etc.
+    mrds_paths : List[str]
+        List of paths each pointing to a partial mrds file
+    save_dir : str
+        Specify folder to save the final file
+
+    Returns
+    -------
+
+    """
     mrds_paths = check_partial_datasets(mrds_paths)
     if save_dir is None:
         raise AttributeError("Pass a directory to save the file!")
