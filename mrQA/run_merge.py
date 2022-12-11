@@ -32,10 +32,9 @@ def check_partial_datasets(all_batches_mrds: str,
     mrds_paths = []
     mrds_sizes = []
     for file in valid_mrds_paths:
-        if file.exists():
-            size = file.stat().st_size
-            mrds_sizes.append(size)
-            mrds_paths.append(file)
+        size = file.stat().st_size
+        mrds_sizes.append(size)
+        mrds_paths.append(file)
 
     # outlier_idxs = get_outliers(mrds_sizes)
     # if not outlier_idxs:
