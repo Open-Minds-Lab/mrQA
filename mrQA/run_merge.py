@@ -17,10 +17,14 @@ def check_partial_datasets(all_batches_mrds: str,
     valid_mrds_paths = []
     for file in mrds_path_list:
         filepath = Path(file)
-        # Check for existence and checks if not directory
+        # Check for existence of regular fike
+        # and checks if not directory
         if filepath.is_file():
             valid_mrds_paths.append(filepath)
 
+    # Check if all the files in mrds_path_list are valid!
+    # Otherwise, raise error.
+    # User may use the argument --force to continue
     if len(valid_mrds_paths) < len(mrds_path_list):
         if force:
             warnings.warn(f"Files for {len(mrds_path_list)-len(valid_mrds_paths)}"
