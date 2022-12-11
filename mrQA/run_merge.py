@@ -10,6 +10,25 @@ import MRdataset
 
 def check_partial_datasets(all_batches_mrds: str,
                            force: bool = False) -> List[Path]:
+    """
+    Given a list of paths, check if all of them are valid and all of them
+    have a non-zero size. Return list of valid paths
+
+    Parameters
+    ----------
+    text_filepath : str
+    Path to a text file, which contains the paths to all partial mrds files
+
+    force : bool
+    If False, proceed only if paths are valid. If True, proceeds even if some
+    paths are invalid.
+
+    Returns
+    -------
+    mrds_paths : List[Path]
+    List of paths pointing to valid partial mrds files
+    """
+
     # Read the text file to a list of paths
     mrds_path_list = txt2list(all_batches_mrds)
 
