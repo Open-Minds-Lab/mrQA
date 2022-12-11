@@ -96,7 +96,7 @@ def merge_from_disk(mrds_path_list: List[str]) -> MRdataset.base.Project:
     """
     complete_mrds = None
     for file in mrds_path_list:
-        # Check if it is valid path to file, i.e. it exists and
+        # Check if it is valid path to file, i.e. it exists, and
         # it is not a directory
         filepath = Path(file)
         if filepath.is_file():
@@ -105,6 +105,7 @@ def merge_from_disk(mrds_path_list: List[str]) -> MRdataset.base.Project:
                 if complete_mrds is None:
                     complete_mrds = partial_mrds
                 else:
+                    # keep aggregating, and return in the end
                     complete_mrds.merge(partial_mrds)
             except OSError:
                 print(f"Unable to read file: {filepath}")
