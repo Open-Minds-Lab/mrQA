@@ -47,10 +47,12 @@ def main():
     args = parser.parse_args()
     output_path = Path(args.output_path).resolve()
     if not output_path.exists() or args.reindex:
-        partial_dataset = read_subset(args.output_path,
-                                      args.batch_txt_file, 'dicom',
-                                      args.reindex, args.verbose,
-                                      args.include_phantom)
+        partial_dataset = read_subset(output_path=args.output_path,
+                                      batch_ids_file=args.batch_txt_file,
+                                      style='dicom',
+                                      reindex=args.reindex,
+                                      verbose=args.verbose,
+                                      include_phantom=args.include_phantom)
         partial_dataset.is_complete = False
         save_mr_dataset(args.output_path, partial_dataset)
 
