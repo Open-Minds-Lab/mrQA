@@ -1,3 +1,4 @@
+import MRdataset.base
 from MRdataset.config import CACHE_DIR
 
 """Console script for mrQA."""
@@ -54,8 +55,12 @@ def main():
         save_mr_dataset(args.output_path, partial_dataset)
 
 
-def read_subset(output_path, batch_ids_file, style, reindex, verbose,
-                include_phantom):
+def read_subset(output_path: str,
+                batch_ids_file: str,
+                style: str,
+                reindex: bool,
+                verbose: bool,
+                include_phantom: bool) -> MRdataset.base.Project:
     if not output_path:
         output_dir = Path.home() / CACHE_DIR
         output_dir.mkdir(exist_ok=True)
