@@ -4,9 +4,11 @@ from MRdataset.config import MRDS_EXT, CACHE_DIR
 import warnings
 from MRdataset import save_mr_dataset
 from pathlib import Path
+from typing import List
 
 
-def check_partial_datasets(all_batches_mrds, force=False):
+def check_partial_datasets(all_batches_mrds: str,
+                           force: bool = False) -> List[Path]:
     mrds_path_list = txt2list(all_batches_mrds)
     valid_mrds_paths = []
     for file in mrds_path_list:
