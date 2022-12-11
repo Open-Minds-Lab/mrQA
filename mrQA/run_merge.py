@@ -50,10 +50,27 @@ def check_partial_datasets(all_batches_mrds: str,
     return mrds_paths
 
 
-def merge_partial_datasets(name, mrds_path_list, metadata_root):
+def merge_and_save(name: str,
+                   mrds_path_list: List[str],
+                   save_folder: str):
+    """
+    Given a list of paths, each pointing to a partial mrds pickle file.
+    Merges all mrds pickle file into a single mrds pickle, and saves to
+    disk
+
+    Parameters
+    ----------
+    name: str
+        Provide a name for final pickle file on disk
+    mrds_path_list: List[str]
+        List of mrds pickle files to be merged
+    save_folder: str
+        Folder to save the file
+    """
+
     complete_dataset = merge_from_disk(name, mrds_path_list)
     complete_dataset.is_complete = True
-    filename = metadata_root/(name+MRDS_EXT)
+    filename = save_folder / (name + MRDS_EXT)
     save_mr_dataset(filename, complete_dataset)
 
 
