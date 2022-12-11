@@ -1,5 +1,3 @@
-import pickle
-
 from MRdataset.config import CACHE_DIR
 
 """Console script for mrQA."""
@@ -7,10 +5,9 @@ import argparse
 import sys
 from pathlib import Path
 
-from MRdataset import import_dataset, load_mr_dataset, save_mr_dataset
-from MRdataset.config import MRDS_EXT
+from MRdataset import import_dataset, save_mr_dataset
 from mrQA.common import set_logging
-from mrQA.utils import txt2list, save2pickle
+from mrQA.utils import txt2list
 
 
 def main():
