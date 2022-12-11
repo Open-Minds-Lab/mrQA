@@ -83,6 +83,4 @@ def check_and_merge(name, mrds_paths, save_dir=None):
     mrds_paths = check_partial_datasets(mrds_paths)
     if save_dir is None:
         raise AttributeError("Pass a directory to save the file!")
-        # save_dir = Path.home() / CACHE_DIR
-        # save_dir.mkdir(exist_ok=True, parents=True)
     merge_partial_datasets(name, mrds_paths, save_dir)
