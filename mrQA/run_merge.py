@@ -86,15 +86,6 @@ def merge_from_disk(name, mrds_path_list):
     return merge_subset(chunks, name)
 
 
-def merge_subset(list_, final_name):
-    if len(list_) < 1:
-        raise EOFError('Cannot merge an empty list!')
-    head = list_[0]
-    for next in list_[1:]:
-        head.merge(next)
-    head.name = final_name
-    return head
-
 
 def check_and_merge(name, mrds_paths, save_dir=None):
     mrds_paths = check_partial_datasets(mrds_paths)
