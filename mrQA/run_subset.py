@@ -22,16 +22,16 @@ def main():
     optional = parser.add_argument_group('optional arguments')
 
     required.add_argument('-o', '--output_path', type=str, required=True,
-                          help='directory containing pickle files for each '
-                               'part')
+                          help='complete path to pickle file for storing '
+                               'partial dataset')
     required.add_argument('-b', '--batch_txt_file', type=str, required=True,
-                          help='text file path specifying the directories')
+                          help='text file path specifying the folders to read')
     optional.add_argument('-h', '--help', action='help',
                           default=argparse.SUPPRESS,
                           help='show this help message and exit')
     # TODO: use this flag to store cache
     optional.add_argument('-r', '--reindex', action='store_true',
-                          help='reindex dataset & regenerate mrQA report')
+                          help='rebuild cache, ignore existing')
     optional.add_argument('-v', '--verbose', action='store_true',
                           help='allow verbose output on console')
     optional.add_argument('--include_phantom', action='store_true',
