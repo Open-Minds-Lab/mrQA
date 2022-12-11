@@ -26,18 +26,27 @@ def parallel_dataset(data_root=None,
                      hpc=False,
                      conda_dist=None,
                      conda_env=None):
+    # It is not possible to submit jobs while debugging, why would you submit
+    # a job, if code is still being debugged
     if debug and submit_job:
         raise AttributeError('Cannot debug when submitting jobs')
     if style != 'dicom':
         raise NotImplementedError(f'Expects dicom, Got {style}')
 
+    # Check if dataroot is a valid directory, or list of valid directories
     data_root = valid_dirs(data_root)
 
+    # Check if output_dir was provided.
+    # RULE : If not, it will be saved in 'mrqa_files'
+    # created in the parent folder of data_root
     if not output_dir:
         if isinstance(data_root, Iterable):
+            # If dataroot is a bunch of directories, the above RULE cannot
+            # be followed, just pass a directory to save the file.
             raise RuntimeError("Need an output directory to store files")
-        warnings.warn('Expected a directory to save job scripts. Using '
-                      '--data_root instead.')
+
+        # Didn't find a good alternative in pathlib, please raise a issue if
+        # you know one, happy to incorporate
         output_dir = data_root.parent / 'mrqa_files'
         output_dir.mkdir(exist_ok=True)
 
