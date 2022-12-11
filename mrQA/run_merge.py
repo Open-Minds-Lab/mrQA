@@ -67,7 +67,11 @@ def merge_and_save(name: str,
     save_folder: str
         Folder to save the file
     """
-
+    if isinstance(save_folder, str):
+        save_folder = Path(save_folder)
+    if not isinstance(save_folder, Path):
+        raise RuntimeError(f"Expect save_folder to be one of "
+                           f"[str|pathlib.Path]. Got {type(save_folder)}")
     complete_dataset = merge_from_disk(name, mrds_path_list)
     complete_dataset.is_complete = True
     filename = save_folder / (name + MRDS_EXT)
