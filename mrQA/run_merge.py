@@ -77,6 +77,8 @@ def merge_and_save(name: str,
 def merge_from_disk(name, mrds_path_list):
     chunks = []
     for file in mrds_path_list:
+        # Check if it is valid path to file, i.e. it exists and
+        # it is not a directory
         if file.is_file():
             try:
                 temp_dict = load_mr_dataset(file)
