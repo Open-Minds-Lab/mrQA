@@ -112,9 +112,8 @@ def merge_from_disk(mrds_path_list: List[str]) -> MRdataset.base.Project:
     return complete_mrds
 
 
-
-def check_and_merge(name, mrds_paths, save_dir=None):
+def check_and_merge(name: str, mrds_paths: List[str], save_dir: str = None):
     mrds_paths = check_partial_datasets(mrds_paths)
     if save_dir is None:
         raise AttributeError("Pass a directory to save the file!")
-    merge_partial_datasets(name, mrds_paths, save_dir)
+    merge_and_save(name, mrds_paths, save_dir)
