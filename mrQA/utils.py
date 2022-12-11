@@ -111,14 +111,14 @@ def split_index(dir_index: list, num_chunks: int) -> Generator[List[str]]:
             for i in range(num_chunks))
 
 
-def txt2list(path: Union[str, Path]) -> list:
+def txt2list(txt_filepath: Union[str, Path]) -> list:
     """
     Given a filepath to a text file, read all the lines and return as a list
     of lines.
 
     Parameters
     ----------
-    path: str or pathlib.Path
+    txt_filepath: str or pathlib.Path
         valid filepath to a text file
 
     Returns
@@ -133,7 +133,6 @@ def txt2list(path: Union[str, Path]) -> list:
     # Generate a list of folder paths stored in given txt_file
     line_list = txt_filepath.read_text().splitlines()
     return line_list
-
 
 
 def list2txt(path, list_):
