@@ -8,7 +8,7 @@ from typing import List
 import MRdataset
 
 
-def check_partial_datasets(all_batches_mrds: str,
+def check_partial_datasets(text_filepath: str,
                            force: bool = False) -> List[Path]:
     """
     Given a list of paths, check if all of them are valid and all of them
