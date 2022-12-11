@@ -48,7 +48,18 @@ def parallel_dataset(data_root=None,
         # Didn't find a good alternative in pathlib, please raise a issue if
         # you know one, happy to incorporate
         output_dir = data_root.parent / 'mrqa_files'
-        output_dir.mkdir(exist_ok=True)
+        if not os.access(output_dir, os.F_OK):
+            if os.access(output_dir, os.W_OK):
+                warnings.warn('Expected a directory to save job scripts. Using '
+                              'parent folder of --data_root instead.')
+                output_dir.mkdir(exist_ok=True)
+            else:
+                raise PermissionError(f'You do not have write permission to'
+                                      f'create a folder in {data_root.parent}'
+                                      f'Please provide output_dir')
+        else:
+            warnings.warn('Expected a directory to save job scripts. Using '
+                          'parent folder of --data_root instead.')
 
     if not Path(output_dir).is_dir():
         raise OSError('Expected valid directory for --output_dir argument,'
