@@ -62,8 +62,10 @@ def parallel_dataset(data_root=None,
                           'parent folder of --data_root instead.')
 
     if not Path(output_dir).is_dir():
-        raise OSError('Expected valid directory for --output_dir argument,'
-                      ' Got {0}'.format(output_dir))
+        # If the output_dir argument doesn't exist, or it is not a directory
+        # Need not check permissions, because this path is supplied by the user
+        # The user should check himself.
+        output_dir.mkdir(exist_ok=True, parents=True)
     output_dir = Path(output_dir).resolve()
 
     if not conda_env:
