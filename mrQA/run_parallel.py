@@ -1,16 +1,17 @@
+import math
 import os
-import pathlib
+import subprocess
 import warnings
 from pathlib import Path
-from MRdataset.utils import random_name, valid_dirs
-from MRdataset.config import CACHE_DIR, MRDS_EXT
-from mrQA.run_subset import read_subset
-from mrQA.run_merge import check_and_merge
-from MRdataset.base import save_mr_dataset
-from mrQA.utils import execute_local, list2txt, txt2list, split_index
-import subprocess
-import math
 from typing import Iterable
+
+from MRdataset.base import save_mr_dataset
+from MRdataset.config import MRDS_EXT
+from MRdataset.utils import random_name, valid_dirs
+
+from mrQA.run_subset import read_subset
+from mrQA.utils import execute_local, list2txt, txt2list, split_index
+
 
 def parallel_dataset(data_root=None,
                      style='dicom',
