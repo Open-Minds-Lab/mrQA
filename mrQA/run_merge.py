@@ -103,9 +103,10 @@ def merge_from_disk(mrds_path_list: List[str]) -> MRdataset.base.Project:
             try:
                 partial_mrds = load_mr_dataset(filepath)
                 if complete_mrds is None:
+                    # Add the first partial dataset
                     complete_mrds = partial_mrds
                 else:
-                    # keep aggregating, and return in the end
+                    # otherwise, keep aggregating, and return in the end
                     complete_mrds.merge(partial_mrds)
             except FileNotFoundError:
                 print(f"Unable to read file: {filepath}")
