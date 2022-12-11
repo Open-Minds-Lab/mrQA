@@ -78,17 +78,35 @@ def merge_and_save(name: str,
     save_mr_dataset(filename, complete_dataset)
 
 
-def merge_from_disk(name, mrds_path_list):
+def merge_from_disk(mrds_path_list: List[str]) -> MRdataset.base.Project:
+    """
+    Given a list of paths to partial mrds datasets, read and merge
+    Keep aggregating along with the loop.
+
+    Parameters
+    ----------
+    mrds_path_list : List[str]
+        List of paths to mrds datasets to merge.
+
+    Returns
+    -------
+    complete_mrds: MRdataset.base.Project
+        Complete merged mrds file
+    """
     complete_mrds = None
     for file in mrds_path_list:
         # Check if it is valid path to file, i.e. it exists and
         # it is not a directory
-        if file.is_file():
+        filepath = Path(file)
+        if filepath.is_file():
             try:
-                temp_dict = load_mr_dataset(file)
-                chunks.append(temp_dict)
+                partial_mrds = load_mr_dataset(filepath)
+                if complete_mrds is None:
+                    complete_mrds = partial_mrds
+                else:
+                    complete_mrds.merge(partial_mrds)
             except OSError:
-                print(f"Unable to read file: {file}")
+                print(f"Unable to read file: {filepath}")
     return complete_mrds
 
 
