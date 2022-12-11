@@ -34,11 +34,12 @@ def check_partial_datasets(all_batches_mrds: str,
             raise FileNotFoundError("Some txt files were not found!")
 
     mrds_paths = []
-    mrds_sizes = []
+    # mrds_sizes = []
     for file in valid_mrds_paths:
         size = file.stat().st_size
-        mrds_sizes.append(size)
-        mrds_paths.append(file)
+        if size > 0:
+            # mrds_sizes.append(size)
+            mrds_paths.append(file)
 
     # outlier_idxs = get_outliers(mrds_sizes)
     # if not outlier_idxs:
@@ -56,7 +57,7 @@ def check_partial_datasets(all_batches_mrds: str,
     #                        f"{bad_files}\n"
     #                        f"Use The Force to merge anyway. Or re-submit "
     #                        f"jobs for these files.")
-    # return mrds_paths
+    return mrds_paths
 
 
 def merge_and_save(name: str,
