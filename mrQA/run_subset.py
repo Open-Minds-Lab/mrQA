@@ -92,6 +92,9 @@ def read_subset(output_path: str,
     else:
         output_dir = Path(output_path).parent
 
+    if style != 'dicom':
+        raise NotImplementedError(f"Expected style as dicom, Got {style}")
+
     if Path(batch_ids_file).exists():
         batch_ids_file = Path(batch_ids_file)
     else:
