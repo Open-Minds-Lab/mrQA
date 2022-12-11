@@ -30,7 +30,7 @@ def check_partial_datasets(text_filepath: str,
     """
 
     # Read the text file to a list of paths
-    mrds_path_list = txt2list(all_batches_mrds)
+    mrds_path_list = txt2list(text_filepath)
 
     # Check all the paths and cast them to pathlib.Path
     valid_mrds_paths = []
