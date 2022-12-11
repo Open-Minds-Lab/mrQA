@@ -61,6 +61,31 @@ def read_subset(output_path: str,
                 reindex: bool,
                 verbose: bool,
                 include_phantom: bool) -> MRdataset.base.Project:
+    """
+    Given a list of folder paths, reads all dicom files in those folders
+    and returns a MRdataset object. In context, when this function was created,
+    each folder corresponds to a different subject.
+
+    Parameters
+    ----------
+    output_path : str
+        where should the MRdataset object should be saved finally
+    batch_ids_file : str
+        path to a text file containing a list of paths (to several folders)
+    style : str
+        what kind of MRdataset to create, dicom, bids etc.
+    reindex : bool
+        re-create the files, even if they exist on disk
+    verbose : bool
+        print more while doing the job
+    include_phantom : bool
+        whether to include phantom files in processing
+
+    Returns
+    -------
+    MRdataset.base.Project
+
+    """
     if not output_path:
         output_dir = Path.home() / CACHE_DIR
         output_dir.mkdir(exist_ok=True)
