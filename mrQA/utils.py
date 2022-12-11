@@ -144,7 +144,7 @@ def list2txt(path, list_):
     ----------
     path : pathlib.Path
         output path of the final text file
-    data : list
+    list_ : list
         values to be exported in a text file
     """
 
