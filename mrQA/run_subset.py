@@ -44,15 +44,12 @@ def main():
         parser.exit(1)
 
     args = parser.parse_args()
-    # txt_file_path = Path(args.batch_txt_file).resolve()
-    # save_filename = txt_file_path.with_suffix(MRDS_EXT)
     output_path = Path(args.output_path).resolve()
     if not output_path.exists() or args.reindex:
         partial_dataset = read_subset(args.output_path,
                                       args.batch_txt_file, 'dicom',
                                       args.reindex, args.verbose,
                                       args.include_phantom)
-        # partial_dataset.set_cache_path()
         partial_dataset.is_complete = False
         save_mr_dataset(args.output_path, partial_dataset)
 
@@ -64,14 +61,12 @@ def read_subset(output_path, batch_ids_file, style, reindex, verbose,
         output_dir.mkdir(exist_ok=True)
     else:
         output_dir = Path(output_path).parent
-    # output_path = Path(output_path).resolve()
 
     if Path(batch_ids_file).exists():
         batch_ids_file = Path(batch_ids_file)
     else:
         raise FileNotFoundError(f'Invalid path : {batch_ids_file}')
     subset = txt2list(batch_ids_file)
-    # for j, folder in enumerate(subset):
     identifier = batch_ids_file.stem
     partial_dataset = import_dataset(data_root=subset,
                                      style=style,
