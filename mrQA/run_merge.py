@@ -10,11 +10,16 @@ import MRdataset
 
 def check_partial_datasets(all_batches_mrds: str,
                            force: bool = False) -> List[Path]:
+    # Read the text file to a list of paths
     mrds_path_list = txt2list(all_batches_mrds)
+
+    # Check all the paths and cast them to pathlib.Path
     valid_mrds_paths = []
     for file in mrds_path_list:
-        if Path(file).exists():
-            valid_mrds_paths.append(Path(file))
+        filepath = Path(file)
+        # Check for existence and checks if not directory
+        if filepath.is_file():
+            valid_mrds_paths.append(filepath)
 
     if len(valid_mrds_paths) < len(mrds_path_list):
         if force:
