@@ -10,7 +10,7 @@ from MRdataset.config import MRDS_EXT
 from MRdataset.utils import random_name, valid_dirs
 
 from mrQA.run_subset import read_subset
-from mrQA.utils import execute_local, list2txt, txt2list, split_index
+from mrQA.utils import execute_local, list2txt, txt2list, split_index, is_integer_number
 
 
 def parallel_dataset(data_root: Union[str, Iterable] = None,
@@ -84,7 +84,8 @@ def parallel_dataset(data_root: Union[str, Iterable] = None,
             # be followed, just pass a directory to save the file.
             raise RuntimeError("Need an output directory to store files")
 
-        # Didn't find a good alternative in pathlib, please raise a issue if
+        # Didn't find a good alternative to os.access
+        # in pathlib, please raise a issue if
         # you know one, happy to incorporate
         output_dir = data_root.parent / 'mrqa_files'
         if not os.access(output_dir, os.F_OK):
