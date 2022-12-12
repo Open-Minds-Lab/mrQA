@@ -241,10 +241,12 @@ def run_single(debug: bool,
     if isinstance(partial_mrds_filename, str):
         partial_mrds_filename = Path(partial_mrds_filename)
     if debug:
+        # Run the script in debug mode
         partial_dataset = read_subset(partial_mrds_filename,
                                       txt_filepath, 'dicom',
                                       reindex, verbose,
                                       include_phantom)
+        # Save the partial mrds pickle file
         partial_dataset.is_complete = False
         save_mr_dataset(partial_mrds_filename, partial_dataset)
         return None
