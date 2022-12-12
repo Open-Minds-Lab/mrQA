@@ -1,16 +1,15 @@
-import MRdataset.base
-from MRdataset.config import CACHE_DIR
-
-"""Console script for mrQA."""
 import argparse
 import sys
 from pathlib import Path
+from typing import Union
 
+import MRdataset.base
 from MRdataset import import_dataset, save_mr_dataset
+from MRdataset.config import CACHE_DIR
+
 from mrQA.common import set_logging
 from mrQA.utils import txt2list
 
-from typing import Union
 
 def main():
     """Console script for mrQA."""
