@@ -380,7 +380,8 @@ def create_index(data_root, output_path, output_dir, reindex=False,
 
     # Create the output path
     output_path = Path(output_path)
-
+    # List of paths to the text files containing the list of subjects for
+    # each job
     batch_ids_path_list = []
 
     dir_index = []
