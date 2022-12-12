@@ -25,6 +25,43 @@ def parallel_dataset(data_root: Union[str, Iterable] = None,
                      hpc: bool = False,
                      conda_dist: str = None,
                      conda_env: str = None) -> None:
+    """
+    Given a folder(or List[folder]) it will divide the work into smaller
+    jobs. Each job will contain a fixed number of subjects. These jobs can be
+    executed in parallel to save time.
+
+    Parameters
+    ----------
+    data_root: str or List[str]
+        /path/to/my/dataset containing files
+    style: str
+        Specify dataset type. Use one of [dicom]
+    reindex: bool
+        Similar to --no-cache. rejects all cached files and rebuilds the dataset
+    include_phantom: bool
+        Include phantom scans in the dataset
+    verbose: bool
+        Print progress
+    output_dir: str
+        Path to save the output dataset
+    debug: bool
+        If True, the dataset will be created locally. This is useful for testing
+    subjects_per_job: int
+        Number of subjects per job. Recommended value is 50 or 100
+    submit_job: bool
+        If True, the scripts will be executed
+    hpc: bool
+        If True, the scripts will be generated for HPC, not for local execution
+    conda_dist: str
+        Name of conda distribution
+    conda_env: str
+        Name of conda environment
+
+    Returns
+    -------
+    None
+    """
+
     # It is not possible to submit jobs while debugging, why would you submit
     # a job, if code is still being debugged
     if debug and submit_job:
