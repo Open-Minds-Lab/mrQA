@@ -3,7 +3,7 @@ import os
 import subprocess
 import warnings
 from pathlib import Path
-from typing import Iterable, Union
+from typing import Iterable, Union, Optional
 
 from MRdataset.base import save_mr_dataset
 from MRdataset.config import MRDS_EXT
@@ -197,10 +197,46 @@ def parallel_dataset(data_root: Union[str, Iterable] = None,
     return
 
 
-def run_single(debug, txt_filepath, reindex, verbose,
-               include_phantom, s_filename, submit_job, hpc=False,
-               partial_mrds_filename=None):
-    # submit job or run with bash or execute with python
+def run_single(debug: bool,
+               txt_filepath: str,
+               reindex: bool,
+               verbose: bool,
+               include_phantom: bool,
+               s_filename: str,
+               submit_job: bool,
+               hpc: bool,
+               partial_mrds_filename: str) -> Optional[subprocess.Popen]:
+    """
+    Runs a single script file either locally or on hpc.
+
+    Parameters
+    ----------
+    debug : bool
+        If True, runs the script in debug mode
+    txt_filepath : str
+        Path to text file containing list of subject ids
+    reindex: bool
+        If True, reject cache and reindex
+    verbose: bool
+        If True, prints the output of the script
+    include_phantom: bool
+        If True, includes phantom, localizer and calibration studies
+    s_filename: str
+        Path to slurm script file
+    submit_job: bool
+        If True, executes the script either locally or on hpc
+    hpc: bool
+        If True, runs the slurm script on a hpc
+    partial_mrds_filename: str
+        Path to the partial mrds pickle file
+
+    Returns
+    -------
+
+    """
+    # If debug mode, run the script in debug mode
+    # The debug mode is used for local testing
+    # and not for running on a hpc
     if debug:
         partial_dataset = read_subset(partial_mrds_filename,
                                       txt_filepath, 'dicom',
@@ -213,9 +249,12 @@ def run_single(debug, txt_filepath, reindex, verbose,
         return None
     elif not partial_mrds_filename.exists() or reindex:
         if not hpc:
-            # print('Started job')
+            # If running locally, and the user does not want to
+            # submit the job, run the script using the bash command
             return execute_local(s_filename)
         if hpc and submit_job:
+            # If running on a hpc, use the sbatch command
+            # to submit the script
             subprocess.call(['sbatch', s_filename])
             return
 
