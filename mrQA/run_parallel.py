@@ -120,22 +120,22 @@ def parallel_dataset(data_root=None,
         # slurm script file, batch0000.sh which will run for these 10 subjects,
         # and the final partial mrds pickle file will have the name
         # batch0000.mrds.pkl
-        script_filename = scripts_folder / (ids_filepath.stem + '.sh')
-        partial_mrds_filename = partial_mrds_folder / (
+        script_filepath = scripts_folder / (ids_filepath.stem + '.sh')
+        partial_mrds_filepath = partial_mrds_folder / (
                 ids_filepath.stem + MRDS_EXT)
 
         # Keep storing the filenames. The entire list would be saved at the end
-        scripts_path_list.append(script_filename)
-        mrds_path_list.append(partial_mrds_filename)
+        scripts_path_list.append(script_filepath)
+        mrds_path_list.append(partial_mrds_filepath)
 
         # Finally create the slurm script and save to disk
-        create_slurm_script(script_filename, ids_filepath,
+        create_slurm_script(script_filepath, ids_filepath,
                             conda_env, conda_dist, subjects_per_job, reindex,
-                            verbose, include_phantom, partial_mrds_filename)
+                            verbose, include_phantom, partial_mrds_filepath)
 
         output = run_single(debug, ids_filepath, reindex,
-                            verbose, include_phantom, script_filename, submit_job,
-                            hpc, partial_mrds_filename)
+                            verbose, include_phantom, script_filepath, submit_job,
+                            hpc, partial_mrds_filepath)
         processes.append(output)
 
     list2txt(path=all_batches_mrds_filepath, list_=mrds_path_list)
