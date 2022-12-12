@@ -121,9 +121,11 @@ def parallel_dataset(data_root=None,
         # and the final partial mrds pickle file will have the name
         # batch0000.mrds.pkl
         script_filename = scripts_folder / (ids_filepath.stem + '.sh')
-        scripts_path_list.append(script_filename)
+        partial_mrds_filename = partial_mrds_folder / (
+                ids_filepath.stem + MRDS_EXT)
 
-        partial_mrds_filename = partial_mrds_folder / (ids_filepath.stem + MRDS_EXT)
+        # Keep storing the filenames. The entire list would be saved at the end
+        scripts_path_list.append(script_filename)
         mrds_path_list.append(partial_mrds_filename)
 
         create_slurm_script(script_filename, ids_filepath,
