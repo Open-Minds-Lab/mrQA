@@ -68,6 +68,9 @@ def parallel_dataset(data_root=None,
         output_dir.mkdir(exist_ok=True, parents=True)
     output_dir = Path(output_dir).resolve()
 
+    # Information about conda env is required for creating slurm scripts
+    # The snippet below sets some defaults, may not be true for everyone.
+    # The user can use the arguments to specify
     if not conda_env:
         conda_env = 'mrqa' if hpc else 'mrcheck'
     if not conda_dist:
