@@ -238,6 +238,8 @@ def run_single(debug: bool,
     # If debug mode, run the script in debug mode
     # The debug mode is used for local testing
     # and not for running on a hpc
+    if isinstance(partial_mrds_filename, str):
+        partial_mrds_filename = Path(partial_mrds_filename)
     if debug:
         partial_dataset = read_subset(partial_mrds_filename,
                                       txt_filepath, 'dicom',
