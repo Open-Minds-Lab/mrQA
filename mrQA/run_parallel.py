@@ -32,7 +32,7 @@ def parallel_dataset(data_root: Union[str, Iterable] = None,
     if style != 'dicom':
         raise NotImplementedError(f'Expects dicom, Got {style}')
 
-    # Check if dataroot is a valid directory, or list of valid directories
+    # Check if data_root is a valid directory, or list of valid directories
     data_root = valid_dirs(data_root)
 
     # Check if output_dir was provided.
@@ -40,7 +40,7 @@ def parallel_dataset(data_root: Union[str, Iterable] = None,
     # created in the parent folder of data_root
     if not output_dir:
         if isinstance(data_root, Iterable):
-            # If dataroot is a bunch of directories, the above RULE cannot
+            # If data_root is a bunch of directories, the above RULE cannot
             # be followed, just pass a directory to save the file.
             raise RuntimeError("Need an output directory to store files")
 
