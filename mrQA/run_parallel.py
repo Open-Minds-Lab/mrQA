@@ -262,10 +262,44 @@ def run_single(debug: bool,
             return
 
 
-def create_slurm_script(filename, ids_filepath, env='mrqa',
+def create_slurm_script(filename,
+                        ids_filepath,
+                        env='mrqa',
                         conda_dist='anaconda3',
-                        num_subj_per_job=50, reindex=False, verbose=False,
-                        include_phantom=False, partial_mrds_filename=None):
+                        num_subj_per_job=50,
+                        reindex=False,
+                        verbose=False,
+                        include_phantom=False,
+                        partial_mrds_filename=None):
+    """
+    Creates a slurm script file which can be submitted to a hpc.
+
+    Parameters
+    ----------
+    filename : str
+        Path to slurm script file
+    ids_filepath : str
+        Path to text file containing list of subject ids
+    env : str
+        Conda environment name
+    conda_dist : str
+        Conda distribution
+    num_subj_per_job : int
+        Number of subjects to process in each slurm job
+    reindex : bool
+        If True, reject cache and reindex
+    verbose : bool
+        If True, prints the output of the script
+    include_phantom : bool
+        If True, includes phantom, localizer and calibration studies
+    partial_mrds_filename : str
+        Path to the partial mrds pickle file
+
+    Returns
+    -------
+    None
+    """
+
     # Memory and CPU time :  typical usage observed locally
 
     # For subjects_per_job = 50

@@ -10,6 +10,7 @@ from MRdataset import import_dataset, save_mr_dataset
 from mrQA.common import set_logging
 from mrQA.utils import txt2list
 
+from typing import Union
 
 def main():
     """Console script for mrQA."""
