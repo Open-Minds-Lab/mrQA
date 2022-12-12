@@ -98,12 +98,16 @@ def parallel_dataset(data_root=None,
         reindex=reindex,
         subjects_per_job=subjects_per_job)
 
+    # Create folder to save slurm scripts
     scripts_folder = output_dir / 'bash_scripts'
     scripts_folder.mkdir(parents=True, exist_ok=True)
+    # Create a text file to point to all the scripts that were generated
     all_batches_scripts_filepath = output_dir / 'scripts_complete_list.txt'
-
+    # Create a folder to save partial mrds pickle files
     partial_mrds_folder = output_dir / 'partial_mrds'
     partial_mrds_folder.mkdir(parents=True, exist_ok=True)
+    # Create a text file to point to all the partial mrds pickle files
+    # which were created
     all_batches_mrds_filepath = output_dir / 'partial_mrds_paths.txt'
 
     scripts_path_list = []
