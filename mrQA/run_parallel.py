@@ -354,6 +354,33 @@ def create_slurm_script(filename: Union[str, Path],
 
 def create_index(data_root, output_path, output_dir, reindex=False,
                  subjects_per_job=50):
+    """
+    Splits a given set of subjects into multiple jobs and creates separate
+    text files containing the list of subjects. Each text file
+    contains the list of subjects to be processed in a single job.
+
+    Parameters
+    ----------
+    data_root : str
+        Path to the root directory of the data
+    output_path : str
+        Path to the output directory
+    output_dir : str
+        Name of the output directory
+    reindex : bool
+        If True, reject cache and reindex
+    subjects_per_job : int
+        Number of subjects to process in each job
+
+    Returns
+    -------
+    batch_ids_path_list : list
+        List of paths to the text files containing the list of subjects
+    """
+
+    # Create the output path
+    output_path = Path(output_path)
+
     batch_ids_path_list = []
     if output_path.exists() and not reindex:
         warnings.warn(f"Found a  pre-existing list of subjects on disk."
