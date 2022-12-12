@@ -68,6 +68,9 @@ def parallel_dataset(data_root: Union[str, Iterable] = None,
         raise AttributeError('Cannot debug when submitting jobs')
     if style != 'dicom':
         raise NotImplementedError(f'Expects dicom, Got {style}')
+    if not is_integer_number(subjects_per_job):
+        raise RuntimeError('Expects an integer value for subjects per job.'
+                           f'Got {subjects_per_job}')
 
     # Check if data_root is a valid directory, or list of valid directories
     data_root = valid_dirs(data_root)
