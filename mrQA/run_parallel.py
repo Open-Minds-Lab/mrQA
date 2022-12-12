@@ -384,19 +384,28 @@ def create_index(data_root, output_path, output_dir, reindex=False,
     # each job
     batch_ids_path_list = []
 
-    dir_index = []
+    subject_list = []
+    # Get the list of subject ids
     for root, dirs, files in os.walk(data_root):
         if 'sub-' in Path(root).name:
-            dir_index.append(root)
-    list2txt(output_path, list(set(dir_index)))
+            # Get the subject id
+            subject_list.append(root)
+    # Store the list of unique subject ids
+    list2txt(output_path, list(set(subject_list)))
 
     if subjects_per_job < 1:
+        # If subjects_per_job is less than 1, process all subjects in a single
+        # job
         raise RuntimeError("subjects_per_job cannot be less than 1.")
-    elif subjects_per_job > len(dir_index):
+    elif subjects_per_job > len(subject_list):
+        # If subjects_per_job is greater than the number of subjects,
+        # process all subjects in a single job
         raise RuntimeError("Trying to create more jobs than total number of "
                            "subjects in the directory. Why?")
-    workers = len(dir_index) // subjects_per_job
+    # Get the number of jobs
+    workers = len(subject_list) // subjects_per_job
     if workers == 1:
+        # If there is only one job, process all subjects in a single job
         raise RuntimeError("Decrease number of subjects per job. Expected"
                            "workers > 1 for parallel processing. Got 1")
     index_subsets = split_index(dir_index, num_chunks=workers)
