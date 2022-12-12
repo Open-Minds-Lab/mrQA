@@ -75,7 +75,7 @@ def default_thread_count():
     return workers
 
 
-def split_index(dir_index: list, num_chunks: int) -> Generator[List[str]]:
+def split_list(dir_index: list, num_chunks: int) -> Generator[List[str]]:
     """
     Adapted from https://stackoverflow.com/questions/2130016/splitting-a-list-into-n-parts-of-approximately-equal-length
 

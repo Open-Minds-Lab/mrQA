@@ -10,7 +10,7 @@ from MRdataset.config import MRDS_EXT
 from MRdataset.utils import random_name, valid_dirs
 
 from mrQA.run_subset import read_subset
-from mrQA.utils import execute_local, list2txt, txt2list, split_index, \
+from mrQA.utils import execute_local, list2txt, txt2list, split_list, \
     is_integer_number
 
 
@@ -415,8 +415,9 @@ def create_index(data_root, output_path, output_dir, reindex=False,
     output_dir = Path(output_dir)
     output_dir.mkdir(exist_ok=True, parents=True)
 
-    for i, subset in enumerate(index_subsets):
-        batch_filename = output_dir/f'batch{i:04}.txt'
-        list2txt(batch_filename, subset)
-        batch_ids_path_list.append(batch_filename)
+    # Create a text file for each job
+    for i, subset in enumerate(subject_subsets):
+        batch_filepath = output_dir / f'batch{i:04}.txt'
+        list2txt(batch_filepath, subset)
+        batch_ids_path_list.append(batch_filepath)
     return batch_ids_path_list
