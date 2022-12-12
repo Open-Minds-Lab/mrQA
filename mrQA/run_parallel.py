@@ -148,12 +148,16 @@ def parallel_dataset(data_root=None,
                             submit_job=submit_job,
                             hpc=hpc,
                             partial_mrds_filename=partial_mrds_filepath)
-
+        # Keep track of processes started, if running locally. Useful to
+        # keep python script active until all scripts have completed
+        # execution. Not useful if running in debug mode or using hpc
         processes.append(output)
-
+    # Finally, save the all the paths to create mrds pickle files and all the
+    # paths to generated scripts in a text file for reference.
     list2txt(path=all_batches_mrds_filepath, list_=mrds_path_list)
     list2txt(path=all_batches_scripts_filepath, list_=scripts_path_list)
 
+    # Wait only if executing locally
     if not (submit_job or debug or hpc):
         exit_codes = [p.wait() for p in processes]
     return
