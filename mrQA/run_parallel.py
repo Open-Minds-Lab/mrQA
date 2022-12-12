@@ -128,6 +128,7 @@ def parallel_dataset(data_root=None,
         scripts_path_list.append(script_filename)
         mrds_path_list.append(partial_mrds_filename)
 
+        # Finally create the slurm script and save to disk
         create_slurm_script(script_filename, ids_filepath,
                             conda_env, conda_dist, subjects_per_job, reindex,
                             verbose, include_phantom, partial_mrds_filename)
