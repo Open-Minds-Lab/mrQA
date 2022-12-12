@@ -352,8 +352,10 @@ def create_slurm_script(filename: Union[str, Path],
         )
 
 
-def create_index(data_root, output_path, output_dir, reindex=False,
-                 subjects_per_job=50):
+def create_index(data_root: Union[str, Path],
+                 output_path: Union[str, Path],
+                 output_dir: Union[str, Path],
+                 subjects_per_job: int = 50):
     """
     Splits a given set of subjects into multiple jobs and creates separate
     text files containing the list of subjects. Each text file
@@ -361,11 +363,11 @@ def create_index(data_root, output_path, output_dir, reindex=False,
 
     Parameters
     ----------
-    data_root : str
+    data_root : Union[str, Path]
         Path to the root directory of the data
-    output_path : str
+    output_path : Union[str, Path]
         Path to the output directory
-    output_dir : str
+    output_dir : Union[str, Path]
         Name of the output directory
     reindex : bool
         If True, reject cache and reindex
