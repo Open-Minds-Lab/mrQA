@@ -7,10 +7,10 @@ from typing import Iterable, Union, Optional
 
 from MRdataset.base import save_mr_dataset
 from MRdataset.config import MRDS_EXT
-from MRdataset.utils import random_name, valid_dirs
+from MRdataset.utils import valid_dirs
 
 from mrQA.run_subset import read_subset
-from mrQA.utils import execute_local, list2txt, txt2list, split_list, \
+from mrQA.utils import execute_local, list2txt, split_list, \
     is_integer_number
 
 
