@@ -13,18 +13,18 @@ from mrQA.run_subset import read_subset
 from mrQA.utils import execute_local, list2txt, txt2list, split_index
 
 
-def parallel_dataset(data_root=None,
-                     style='dicom',
-                     reindex=False,
-                     include_phantom=False,
-                     verbose=False,
-                     output_dir=None,
-                     debug=False,
-                     subjects_per_job=None,
-                     submit_job=False,
-                     hpc=False,
-                     conda_dist=None,
-                     conda_env=None):
+def parallel_dataset(data_root: Union[str, Iterable] = None,
+                     style: str = 'dicom',
+                     reindex: bool = False,
+                     include_phantom: bool = False,
+                     verbose: bool = False,
+                     output_dir: str = None,
+                     debug: bool = False,
+                     subjects_per_job: int = None,
+                     submit_job: bool = False,
+                     hpc: bool = False,
+                     conda_dist: str = None,
+                     conda_env: str = None) -> None:
     # It is not possible to submit jobs while debugging, why would you submit
     # a job, if code is still being debugged
     if debug and submit_job:
