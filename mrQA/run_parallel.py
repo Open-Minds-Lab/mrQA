@@ -382,17 +382,12 @@ def create_index(data_root, output_path, output_dir, reindex=False,
     output_path = Path(output_path)
 
     batch_ids_path_list = []
-    if output_path.exists() and not reindex:
-        warnings.warn(f"Found a  pre-existing list of subjects on disk."
-                      f"Reusing existing {output_path}, Use reindex?",
-                      stacklevel=2)
-        dir_index = txt2list(output_path)
-    else:
-        dir_index = []
-        for root, dirs, files in os.walk(data_root):
-            if 'sub-' in Path(root).name:
-                dir_index.append(root)
-        list2txt(output_path, list(set(dir_index)))
+
+    dir_index = []
+    for root, dirs, files in os.walk(data_root):
+        if 'sub-' in Path(root).name:
+            dir_index.append(root)
+    list2txt(output_path, list(set(dir_index)))
 
     if subjects_per_job < 1:
         raise RuntimeError("subjects_per_job cannot be less than 1.")
