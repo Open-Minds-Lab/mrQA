@@ -71,6 +71,8 @@ def parallel_dataset(data_root: Union[str, Iterable] = None,
     if not is_integer_number(subjects_per_job):
         raise RuntimeError('Expects an integer value for subjects per job.'
                            f'Got {subjects_per_job}')
+    if subjects_per_job < 1:
+        raise RuntimeError('subjects_per_job cannot be less than 1')
 
     # Check if data_root is a valid directory, or list of valid directories
     data_root = valid_dirs(data_root)
