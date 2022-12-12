@@ -115,18 +115,18 @@ def parallel_dataset(data_root=None,
     processes = []
     for ids_filepath in ids_path_list:
         # create slurm script to call run_subset.py
-        s_filename = scripts_folder / (ids_filepath.stem + '.sh')
-        scripts_path_list.append(s_filename)
+        script_filename = scripts_folder / (ids_filepath.stem + '.sh')
+        scripts_path_list.append(script_filename)
 
         partial_mrds_filename = partial_mrds_folder / (ids_filepath.stem + MRDS_EXT)
         mrds_path_list.append(partial_mrds_filename)
 
-        create_slurm_script(s_filename, ids_filepath,
+        create_slurm_script(script_filename, ids_filepath,
                             conda_env, conda_dist, subjects_per_job, reindex,
                             verbose, include_phantom, partial_mrds_filename)
 
         output = run_single(debug, ids_filepath, reindex,
-                            verbose, include_phantom, s_filename, submit_job,
+                            verbose, include_phantom, script_filename, submit_job,
                             hpc, partial_mrds_filename)
         processes.append(output)
 
