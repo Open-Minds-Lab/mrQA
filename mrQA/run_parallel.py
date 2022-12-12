@@ -113,8 +113,13 @@ def parallel_dataset(data_root=None,
     scripts_path_list = []
     mrds_path_list = []
     processes = []
+    # create a slurm job script for each sub_group of subject ids
     for ids_filepath in ids_path_list:
-        # create slurm script to call run_subset.py
+        # Filename of the bash script should be same as text file.
+        # Say batch0000.txt points to set of 10 subjects. Then create a
+        # slurm script file, batch0000.sh which will run for these 10 subjects,
+        # and the final partial mrds pickle file will have the name
+        # batch0000.mrds.pkl
         script_filename = scripts_folder / (ids_filepath.stem + '.sh')
         scripts_path_list.append(script_filename)
 
