@@ -15,7 +15,6 @@ from mrQA.utils import execute_local, list2txt, txt2list, split_index
 
 def parallel_dataset(data_root=None,
                      style='dicom',
-                     name=None,
                      reindex=False,
                      include_phantom=False,
                      verbose=False,
@@ -75,14 +74,6 @@ def parallel_dataset(data_root=None,
         conda_env = 'mrqa' if hpc else 'mrcheck'
     if not conda_dist:
         conda_dist = 'miniconda3' if hpc else 'anaconda3'
-
-    # # TODO: Add the name flag to parser arguments
-    # if name is None:
-    #     warnings.warn(
-    #         'Expected a unique identifier for caching data. Got NoneType. '
-    #         'Using a random name. Use --name flag for persistent metadata',
-    #         stacklevel=2)
-    #     name = random_name()
 
     # Create a folder id_lists for storing list of subject ids for each job
     # in a separate txt file. The files are saved as batch0000.txt,
