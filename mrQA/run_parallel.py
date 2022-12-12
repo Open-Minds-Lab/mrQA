@@ -98,8 +98,8 @@ def parallel_dataset(data_root=None,
         reindex=reindex,
         subjects_per_job=subjects_per_job)
 
-    s_folderpath = output_dir / 'bash_scripts'
-    s_folderpath.mkdir(parents=True, exist_ok=True)
+    scripts_folder = output_dir / 'bash_scripts'
+    scripts_folder.mkdir(parents=True, exist_ok=True)
     all_batches_scripts_filepath = output_dir / 'scripts_complete_list.txt'
 
     partial_mrds_folder = output_dir / 'partial_mrds'
@@ -111,7 +111,7 @@ def parallel_dataset(data_root=None,
     processes = []
     for ids_filepath in ids_path_list:
         # create slurm script to call run_subset.py
-        s_filename = s_folderpath / (ids_filepath.stem + '.sh')
+        s_filename = scripts_folder / (ids_filepath.stem + '.sh')
         scripts_path_list.append(s_filename)
 
         partial_mrds_filename = partial_mrds_folder / (ids_filepath.stem + MRDS_EXT)
