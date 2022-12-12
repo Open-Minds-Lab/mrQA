@@ -97,7 +97,6 @@ def parallel_dataset(data_root=None,
         output_dir=id_folder,
         reindex=reindex,
         subjects_per_job=subjects_per_job)
-    list2txt(path=all_batches_ids_filepath, list_=ids_path_list)
 
     s_folderpath = output_dir / 'bash_scripts'
     s_folderpath.mkdir(parents=True, exist_ok=True)
