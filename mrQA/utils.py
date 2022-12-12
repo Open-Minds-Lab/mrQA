@@ -198,3 +198,11 @@ def get_outliers(data, m=25.0):
         indices = np.argwhere(s > m).flatten()
         return indices
     return None
+
+
+def is_integer_number(n: Union[int, float]) -> bool:
+    if isinstance(n, int):
+        return True
+    if isinstance(n, float):
+        return n.is_integer()
+    return False

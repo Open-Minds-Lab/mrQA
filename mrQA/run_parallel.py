@@ -3,7 +3,7 @@ import os
 import subprocess
 import warnings
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Union
 
 from MRdataset.base import save_mr_dataset
 from MRdataset.config import MRDS_EXT
