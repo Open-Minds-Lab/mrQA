@@ -419,7 +419,11 @@ def create_index(data_root: Union[str, Path],
 
     # Create a text file for each job
     for i, subset in enumerate(subject_subsets):
+        # Create a text file containing the list of subjects for each job
         batch_filepath = output_dir / f'batch{i:04}.txt'
+        # Store to the path given to the text file
         list2txt(batch_filepath, subset)
+        # Add the path to the text file ( containing the
+        # list of subjects for each job) to a list, return the list
         batch_ids_path_list.append(batch_filepath)
     return batch_ids_path_list
