@@ -242,9 +242,7 @@ def run_single(debug: bool,
                                       txt_filepath, 'dicom',
                                       reindex, verbose,
                                       include_phantom)
-        # partial_dataset.set_cache_path()
         partial_dataset.is_complete = False
-        # save_filename = txt_filepath.with_suffix(MRDS_EXT)
         save_mr_dataset(partial_mrds_filename, partial_dataset)
         return None
     elif not partial_mrds_filename.exists() or reindex:
