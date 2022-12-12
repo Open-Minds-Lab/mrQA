@@ -262,15 +262,15 @@ def run_single(debug: bool,
             return
 
 
-def create_slurm_script(filename,
-                        ids_filepath,
-                        env='mrqa',
-                        conda_dist='anaconda3',
-                        num_subj_per_job=50,
-                        reindex=False,
-                        verbose=False,
-                        include_phantom=False,
-                        partial_mrds_filename=None):
+def create_slurm_script(filename: Union[str, Path],
+                        ids_filepath: Union[str, Path],
+                        env: str = 'mrqa',
+                        conda_dist: str = 'anaconda3',
+                        num_subj_per_job: str = 50,
+                        reindex: bool = False,
+                        verbose: bool = False,
+                        include_phantom: bool = False,
+                        partial_mrds_filename: bool = None):
     """
     Creates a slurm script file which can be submitted to a hpc.
 
