@@ -76,13 +76,13 @@ def parallel_dataset(data_root=None,
     if not conda_dist:
         conda_dist = 'miniconda3' if hpc else 'anaconda3'
 
-    # TODO: Add the name flag to parser arguments
-    if name is None:
-        warnings.warn(
-            'Expected a unique identifier for caching data. Got NoneType. '
-            'Using a random name. Use --name flag for persistent metadata',
-            stacklevel=2)
-        name = random_name()
+    # # TODO: Add the name flag to parser arguments
+    # if name is None:
+    #     warnings.warn(
+    #         'Expected a unique identifier for caching data. Got NoneType. '
+    #         'Using a random name. Use --name flag for persistent metadata',
+    #         stacklevel=2)
+    #     name = random_name()
 
     # Create a folder id_lists for storing list of subject ids for each job
     # in a separate txt file. And store the original complete list in
