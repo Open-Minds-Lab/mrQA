@@ -408,7 +408,11 @@ def create_index(data_root, output_path, output_dir, reindex=False,
         # If there is only one job, process all subjects in a single job
         raise RuntimeError("Decrease number of subjects per job. Expected"
                            "workers > 1 for parallel processing. Got 1")
-    index_subsets = split_index(dir_index, num_chunks=workers)
+    # Get the list of subjects for each job
+    subject_subsets = split_list(subject_list, num_chunks=workers)
+    # Create a directory to store the text files containing the list of
+    # subjects for each job
+    output_dir = Path(output_dir)
     output_dir.mkdir(exist_ok=True, parents=True)
 
     for i, subset in enumerate(index_subsets):
