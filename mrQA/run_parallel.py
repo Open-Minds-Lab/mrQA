@@ -206,7 +206,7 @@ def run_single(debug: bool,
                s_filename: str,
                submit_job: bool,
                hpc: bool,
-               partial_mrds_filename: str) -> Optional[subprocess.Popen]:
+               partial_mrds_filename: Union[str, Path]) -> Optional[subprocess.Popen]:
     """
     Runs a single script file either locally or on hpc.
 
