@@ -10,7 +10,8 @@ from MRdataset.config import MRDS_EXT
 from MRdataset.utils import random_name, valid_dirs
 
 from mrQA.run_subset import read_subset
-from mrQA.utils import execute_local, list2txt, txt2list, split_index, is_integer_number
+from mrQA.utils import execute_local, list2txt, txt2list, split_index, \
+    is_integer_number
 
 
 def parallel_dataset(data_root: Union[str, Iterable] = None,
