@@ -266,7 +266,7 @@ def create_slurm_script(filename: Union[str, Path],
                         ids_filepath: Union[str, Path],
                         env: str = 'mrqa',
                         conda_dist: str = 'anaconda3',
-                        num_subj_per_job: str = 50,
+                        num_subj_per_job: int = 50,
                         reindex: bool = False,
                         verbose: bool = False,
                         include_phantom: bool = False,
@@ -310,12 +310,16 @@ def create_slurm_script(filename: Union[str, Path],
     # Max RSS Size (Memory) ~160 MB,
     # Sys Time (CPU Time) : 20 minutes
 
+    # Set the memory and cpu time limits
     mem_reqd = 2000  # MB;
     num_mins_per_subject = 1  # minutes
     num_hours = int(math.ceil(num_subj_per_job * num_mins_per_subject / 60))
+    # Set the number of hours to 3 if less than 3
     time_limit = 3 if num_hours < 3 else num_hours
+    # Setup python command to run
     python_cmd = f'mrpc_subset -o {partial_mrds_filename} -b {ids_filepath}'
 
+    # Add flags to python command
     if reindex:
         python_cmd += ' --reindex'
     if verbose:
@@ -323,6 +327,7 @@ def create_slurm_script(filename: Union[str, Path],
     if include_phantom:
         python_cmd += ' --include_phantom'
 
+    # Create the slurm script file
     with open(filename, 'w') as fp:
         fp.writelines("\n".join([
             '#!/bin/bash',
