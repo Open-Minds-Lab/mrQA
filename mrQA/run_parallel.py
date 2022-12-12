@@ -138,10 +138,17 @@ def parallel_dataset(data_root=None,
                             verbose=verbose,
                             include_phantom=include_phantom,
                             partial_mrds_filename=partial_mrds_filepath)
+        # Run the script file
+        output = run_single(debug=debug,
+                            txt_filepath=ids_filepath,
+                            reindex=reindex,
+                            verbose=verbose,
+                            include_phantom=include_phantom,
+                            s_filename=script_filepath,
+                            submit_job=submit_job,
+                            hpc=hpc,
+                            partial_mrds_filename=partial_mrds_filepath)
 
-        output = run_single(debug, ids_filepath, reindex,
-                            verbose, include_phantom, script_filepath, submit_job,
-                            hpc, partial_mrds_filepath)
         processes.append(output)
 
     list2txt(path=all_batches_mrds_filepath, list_=mrds_path_list)
