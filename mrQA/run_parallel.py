@@ -130,7 +130,6 @@ def parallel_dataset(data_root: Union[str, Iterable] = None,
         data_root=data_root,
         output_path=all_batches_ids_filepath,
         output_dir=id_folder,
-        reindex=reindex,
         subjects_per_job=subjects_per_job)
 
     # Create folder to save slurm scripts
