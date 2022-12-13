@@ -195,6 +195,7 @@ def generate_report(dataset: Project, output_dir: Union[Path, str]) -> None:
 
 def otg_report(dataset, report_name):
     """
+    On-the-Go report generator.
     Generate a single line report for the dataset
 
     Parameters
@@ -209,11 +210,13 @@ def otg_report(dataset, report_name):
 
     """
     result = {}
+    # For all the modalities calculate the percent of non-compliance
     for modality in dataset.modalities:
         percent_non_compliant = len(modality.non_compliant_subject_names) \
                                 / len(modality.subjects)
         if percent_non_compliant > 0:
             result[modality.name] = str(100 * percent_non_compliant)
+    # Format the result as a string
     if result:
         ret_string = 'In {0} dataset, modalities "{1}" are non-compliant. ' \
                  'See {2} for report'.format(dataset.name,
