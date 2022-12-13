@@ -169,15 +169,15 @@ def parallel_dataset(data_root: Union[str, Path, Iterable] = None,
                             include_phantom=include_phantom,
                             partial_mrds_filename=partial_mrds_filepath)
         # Run the script file
-        output = run_single(debug=debug,
-                            txt_filepath=ids_filepath,
-                            reindex=reindex,
-                            verbose=verbose,
-                            include_phantom=include_phantom,
-                            s_filename=script_filepath,
-                            submit_job=submit_job,
-                            hpc=hpc,
-                            partial_mrds_filename=partial_mrds_filepath)
+        output = run_single_batch(debug=debug,
+                                  txt_filepath=ids_filepath,
+                                  reindex=reindex,
+                                  verbose=verbose,
+                                  include_phantom=include_phantom,
+                                  s_filename=script_filepath,
+                                  submit_job=submit_job,
+                                  hpc=hpc,
+                                  partial_mrds_filename=partial_mrds_filepath)
         # Keep track of processes started, if running locally. Useful to
         # keep python script active until all scripts have completed
         # execution. Not useful if running in debug mode or using hpc. In this
@@ -194,15 +194,16 @@ def parallel_dataset(data_root: Union[str, Path, Iterable] = None,
     return
 
 
-def run_single(debug: bool,
-               txt_filepath: str,
-               reindex: bool,
-               verbose: bool,
-               include_phantom: bool,
-               s_filename: str,
-               submit_job: bool,
-               hpc: bool,
-               partial_mrds_filename: Union[str, Path]) -> Optional[subprocess.Popen]:
+def run_single_batch(debug: bool,
+                     txt_filepath: str,
+                     reindex: bool,
+                     verbose: bool,
+                     include_phantom: bool,
+                     s_filename: str,
+                     submit_job: bool,
+                     hpc: bool,
+                     partial_mrds_filename: Union[str, Path]) \
+                     -> Optional[subprocess.Popen]:
     """
     Runs a single script file either locally or on hpc.
 
