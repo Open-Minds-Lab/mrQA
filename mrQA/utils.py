@@ -96,6 +96,9 @@ def split_list(dir_index: list, num_chunks: int) -> Generator[List[str]]:
     -------
     tuple of all subsets
     """
+    if not is_integer_number(num_chunks):
+        raise RuntimeError(f"Number of chunks must be an integer. "
+                           f"Got {num_chunks}")
     if num_chunks == 0:
         raise RuntimeError("Cannot divide list into chunks of size 0")
     if len(dir_index) == 0:
