@@ -179,15 +179,17 @@ def generate_report(dataset: Project, output_dir: Union[Path, str]) -> None:
     output_dir : Union[Path, str]
         Directory in which the generated report should be stored.
     """
-    output_path = Path(output_dir).resolve()
-    output_path.mkdir(parents=True, exist_ok=True)
+    output_dir = Path(output_dir).resolve()
+    output_dir.mkdir(parents=True, exist_ok=True)
 
-    if not Path(output_path).is_dir():
+    if not Path(output_dir).is_dir():
         raise OSError('Expected valid output_directory, '
                       'Got {0}'.format(output_dir))
     filename = '{}_{}.html'.format(dataset.name, timestamp())
-    out_path = output_path / filename
-    HtmlFormatter(filepath=out_path, params=dataset)
+    # Generate the HTML report and save it to the output_path
+    output_path = output_dir / filename
+    HtmlFormatter(filepath=output_path, params=dataset)
+    # Print a small message on the console, about non-compliance of dataset
     print(otg_report(dataset, filename))
 
 
