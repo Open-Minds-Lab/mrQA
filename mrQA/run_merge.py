@@ -38,14 +38,14 @@ def check_partial_datasets(text_filepath: str,
     valid_mrds_paths = []
     for file in mrds_path_list:
         filepath = Path(file)
-        # Check for existence of regular fike
+        # Check for existence of regular file
         # and checks if not directory
         if filepath.is_file():
             valid_mrds_paths.append(filepath)
 
     # Check if all the files in mrds_path_list are valid!
     # Otherwise, raise error.
-    # User may use the argument --force to continue
+    # User may use the argument --force to skip invalid files and continue
     if len(valid_mrds_paths) < len(mrds_path_list):
         if force:
             warnings.warn(
@@ -132,6 +132,7 @@ def merge_from_disk(mrds_path_list: List[str]) -> MRdataset.base.Project:
         filepath = Path(file)
         if filepath.is_file():
             try:
+                # Load the partial mrds file
                 partial_mrds = load_mr_dataset(filepath)
                 if complete_mrds is None:
                     # Add the first partial dataset
