@@ -65,19 +65,23 @@ def compare_with_majority(dataset: "Project") -> Project:
     """
     # TODO: Check for subset, if incomplete dataset throw error and stop
 
-
     for modality in dataset.modalities:
-        # Calculate reference for comparing
+        # Infer reference protocol for each echo_time
         run_by_echo = dict()
         for subject in modality.subjects:
             for session in subject.sessions:
                 for run in session.runs:
-                    # Use defaultdict instead?
+                    # Given a run, check if it has its echo time is present
+                    # in the dictionary. If not, add it
                     if run.echo_time not in run_by_echo.keys():
                         run_by_echo[run.echo_time] = []
+                    # Add the run to the list of runs for that echo time,
+                    # so that we can compare it with other runs
+                    # Add only if parameters are not empty
                     if run.params:
                         run_by_echo[run.echo_time].append(run.params)
 
+        # For each echo time, find the most common values
         for echo_time in run_by_echo.keys():
             if run_by_echo[echo_time]:
                 reference = majority_attribute_values(run_by_echo[echo_time])
@@ -92,29 +96,46 @@ def compare_with_majority(dataset: "Project") -> Project:
             flag_subject = True
             for session in subject.sessions:
                 for run in session.runs:
+                    # Retrieve the reference protocol w.r.t run's echo time
                     reference = modality.get_reference(run.echo_time)
+                    # If reference is empty, then skip this run
                     if not reference:
                         continue
+                    # Calculate the delta between the run and the reference
                     run.delta = param_difference(run.params,
                                                  reference)
                     # run.delta = param_difference(run.params,
                     #                              reference,
                     #                              ignore=['modality',
                     #                                      'phase_encoding_direction'])
+
+                    # If delta is not empty, then the run is non-compliant
                     if run.delta:
+                        # Store the non-compliant subjects, and modalities
                         modality.add_non_compliant_subject_name(subject.name)
                         dataset.add_non_compliant_modality_name(modality.name)
-                        # reasons = extract_reasons(run.delta)
-                        # modality.reasons_non_compliance.update(reasons)
                         store_reasons(modality, run, subject.name, session.name)
+                        # If any of the runs are non-compliant, then the
+                        # subject is non-compliant.
+                        # If any of the subjects are non-compliant, then the
+                        # modality is non-compliant.
+                        # If none of the subjects or modalities are found to
+                        # be non-compliant, flag will remain True, after the
+                        # loop is finished.
                         flag_subject = False
                         flag_modality = False
                         modality.compliant = False
+            # If all the runs are compliant, then the subject is
+            # compliant. Flag remains True.
             if flag_subject:
                 modality.add_compliant_subject_name(subject.name)
+        # If all the subjects are compliant, then the modality is compliant.
+        # Flag remains True.
         if flag_modality:
             modality.compliant = flag_modality
             dataset.add_compliant_modality_name(modality.name)
+    # As we are updating the same dataset by adding non-compliant subject names,
+    # and non-compliant modality names, we can return the same dataset
     return dataset
 
 
