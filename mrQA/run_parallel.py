@@ -104,8 +104,7 @@ def parallel_dataset(data_root: Union[str, Path, Iterable] = None,
     # user provided output_dir
     if not Path(output_dir).is_dir():
         # If the output_dir argument doesn't exist, or it is not a directory
-        # Need not check permissions, because this path is supplied by the user
-        # The user should check himself.
+        # Need not check permissions, because this path is supplied by the user.
         output_dir.mkdir(exist_ok=True, parents=True)
     output_dir = Path(output_dir).resolve()
 
@@ -132,7 +131,7 @@ def parallel_dataset(data_root: Union[str, Path, Iterable] = None,
     # Create folder to save slurm scripts
     scripts_folder = output_dir / 'bash_scripts'
     scripts_folder.mkdir(parents=True, exist_ok=True)
-    # Create a text file to point to all the scripts that were generated
+    # Create a text file to save paths to all the scripts that were generated
     all_batches_scripts_filepath = output_dir / 'scripts_complete_list.txt'
     # Create a folder to save partial mrds pickle files
     partial_mrds_folder = output_dir / 'partial_mrds'
@@ -148,7 +147,7 @@ def parallel_dataset(data_root: Union[str, Path, Iterable] = None,
     for ids_filepath in ids_path_list:
         # Filename of the bash script should be same as text file.
         # Say batch0000.txt points to set of 10 subjects. Then create a
-        # slurm script file, batch0000.sh which will run for these 10 subjects,
+        # slurm script file batch0000.sh which will run for these 10 subjects,
         # and the final partial mrds pickle file will have the name
         # batch0000.mrds.pkl
         script_filepath = scripts_folder / (ids_filepath.stem + '.sh')
@@ -181,7 +180,8 @@ def parallel_dataset(data_root: Union[str, Path, Iterable] = None,
                             partial_mrds_filename=partial_mrds_filepath)
         # Keep track of processes started, if running locally. Useful to
         # keep python script active until all scripts have completed
-        # execution. Not useful if running in debug mode or using hpc
+        # execution. Not useful if running in debug mode or using hpc. In this
+        # case output is None
         processes.append(output)
     # Finally, save the all the paths to create mrds pickle files and all the
     # paths to generated scripts in a text file for reference.
