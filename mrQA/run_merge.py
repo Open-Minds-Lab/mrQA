@@ -1,6 +1,6 @@
 import warnings
 from pathlib import Path
-from typing import List
+from typing import List, Union
 
 import MRdataset
 from MRdataset import load_mr_dataset
