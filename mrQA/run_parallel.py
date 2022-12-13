@@ -91,19 +91,17 @@ def parallel_dataset(data_root: Union[str, Path, Iterable] = None,
         # in pathlib, please raise a issue if
         # you know one, happy to incorporate
         output_dir = data_root.parent / 'mrqa_files'
-        if not os.access(output_dir, os.F_OK):
-            if os.access(output_dir, os.W_OK):
-                warnings.warn('Expected a directory to save job scripts. Using '
-                              'parent folder of --data_root instead.')
-                output_dir.mkdir(exist_ok=True)
-            else:
-                raise PermissionError(f'You do not have write permission to'
-                                      f'create a folder in {data_root.parent}'
-                                      f'Please provide output_dir')
-        else:
+
+        # Check if permission to create a folder in data_root.parent
+        if os.access(data_root.parent, os.W_OK):
             warnings.warn('Expected a directory to save job scripts. Using '
                           'parent folder of --data_root instead.')
-
+            output_dir.mkdir(exist_ok=True)
+        else:
+            raise PermissionError(f'You do not have write permission to'
+                                  f'create a folder in {data_root.parent}'
+                                  f'Please provide output_dir')
+    # user provided output_dir
     if not Path(output_dir).is_dir():
         # If the output_dir argument doesn't exist, or it is not a directory
         # Need not check permissions, because this path is supplied by the user
