@@ -267,7 +267,7 @@ def create_slurm_script(filename: Union[str, Path],
                         reindex: bool = False,
                         verbose: bool = False,
                         include_phantom: bool = False,
-                        partial_mrds_filename: bool = None):
+                        partial_mrds_filename: bool = None) -> None:
     """
     Creates a slurm script file which can be submitted to a hpc.
 
@@ -352,7 +352,7 @@ def create_slurm_script(filename: Union[str, Path],
 def create_index(data_root: Union[str, Path],
                  output_path: Union[str, Path],
                  output_dir: Union[str, Path],
-                 subjects_per_job: int = 50):
+                 subjects_per_job: int = 50) -> List[Path]:
     """
     Splits a given set of subjects into multiple jobs and creates separate
     text files containing the list of subjects. Each text file
