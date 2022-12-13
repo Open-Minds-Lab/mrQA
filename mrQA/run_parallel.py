@@ -124,11 +124,10 @@ def parallel_dataset(data_root: Union[str, Path, Iterable] = None,
     id_folder = output_dir / 'id_lists'
     id_folder.mkdir(parents=True, exist_ok=True)
     all_batches_ids_filepath = output_dir / 'id_complete_list.txt'
-    ids_path_list = create_index(
-        data_root=data_root,
-        output_path=all_batches_ids_filepath,
-        output_dir=id_folder,
-        subjects_per_job=subjects_per_job)
+    ids_path_list = create_index(data_root=data_root,
+                                 output_path=all_batches_ids_filepath,
+                                 output_dir=id_folder,
+                                 subjects_per_job=subjects_per_job)
 
     # Create folder to save slurm scripts
     scripts_folder = output_dir / 'bash_scripts'
