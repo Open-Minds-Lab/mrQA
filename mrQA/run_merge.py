@@ -94,7 +94,7 @@ def merge_and_save(name: str,
     ----------
     name: str
         Provide a name for final pickle file on disk
-    mrds_path_list: List[str]
+    mrds_path_list: List[Path]
         List of mrds pickle files to be merged
     save_folder: str
         Folder to save the file
