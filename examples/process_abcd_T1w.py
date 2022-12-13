@@ -65,7 +65,7 @@ def main():
         mrds_paths = OUTPUT_DIR / 'partial_mrds_paths.txt'
         check_and_merge(
             name=name,
-            mrds_paths=mrds_paths,
+            mrds_list_filepath=mrds_paths,
             save_dir=OUTPUT_DIR
         )
     elif args.task == 'report':
