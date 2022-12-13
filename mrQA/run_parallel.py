@@ -374,6 +374,9 @@ def create_index(data_root: Union[str, Path],
     batch_ids_path_list : list
         Paths to the text files, each containing a list of subjects
     """
+    # Check subjects_per_job is a positive integer
+    if subjects_per_job < 1:
+        raise ValueError('subjects_per_job must be greater than 0')
 
     # Create the output path
     output_path = Path(output_path)
