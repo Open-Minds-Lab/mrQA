@@ -14,12 +14,12 @@ from mrQA.utils import execute_local, list2txt, split_list, \
     is_integer_number
 
 
-def parallel_dataset(data_root: Union[str, Iterable] = None,
+def parallel_dataset(data_root: Union[str, Path, Iterable] = None,
                      style: str = 'dicom',
                      reindex: bool = False,
                      include_phantom: bool = False,
                      verbose: bool = False,
-                     output_dir: str = None,
+                     output_dir: Union[str, Path] = None,
                      debug: bool = False,
                      subjects_per_job: int = None,
                      submit_job: bool = False,
