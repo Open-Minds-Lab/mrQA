@@ -3,7 +3,7 @@ import os
 import subprocess
 import warnings
 from pathlib import Path
-from typing import Iterable, Union, Optional
+from typing import Iterable, Union, Optional, List
 
 from MRdataset.base import save_mr_dataset
 from MRdataset.config import MRDS_EXT
@@ -372,7 +372,7 @@ def create_index(data_root: Union[str, Path],
     Returns
     -------
     batch_ids_path_list : list
-        List of paths to the text files containing the list of subjects
+        Paths to the text files, each containing a list of subjects
     """
 
     # Create the output path
@@ -387,16 +387,17 @@ def create_index(data_root: Union[str, Path],
         if 'sub-' in Path(root).name:
             # Get the subject id
             subject_list.append(root)
-    # Store the list of unique subject ids
+    # Store the list of unique subject ids to a text file given by
+    # output_path
     list2txt(output_path, list(set(subject_list)))
 
     if subjects_per_job < 1:
-        # If subjects_per_job is less than 1, process all subjects in a single
-        # job
+        # If subjects_per_job is less than 1, processing should be done for
+        # all subjects in a single job. Stop execution.
         raise RuntimeError("subjects_per_job cannot be less than 1.")
     elif subjects_per_job > len(subject_list):
         # If subjects_per_job is greater than the number of subjects,
-        # process all subjects in a single job
+        # process all subjects in a single job. Stop execution.
         raise RuntimeError("Trying to create more jobs than total number of "
                            "subjects in the directory. Why?")
     # Get the number of jobs
