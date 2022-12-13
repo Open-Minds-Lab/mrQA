@@ -110,14 +110,15 @@ def merge_and_save(name: str,
     save_mr_dataset(filename, complete_dataset)
 
 
-def merge_from_disk(mrds_path_list: List[str]) -> MRdataset.base.Project:
+def merge_from_disk(mrds_path_list: Union[List[Path], List[str]]) \
+                    -> MRdataset.base.Project:
     """
     Given a list of paths to partial mrds datasets, read and merge
     Keep aggregating along with the loop.
 
     Parameters
     ----------
-    mrds_path_list : List[str]
+    mrds_path_list : List[Path]
         List of paths to mrds datasets to merge.
 
     Returns
