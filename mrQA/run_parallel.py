@@ -366,8 +366,6 @@ def create_index(data_root: Union[str, Path],
         Path to the output directory
     output_dir : Union[str, Path]
         Name of the output directory
-    reindex : bool
-        If True, reject cache and reindex
     subjects_per_job : int
         Number of subjects to process in each job
 
