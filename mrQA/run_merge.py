@@ -146,7 +146,9 @@ def merge_from_disk(mrds_path_list: Union[List[Path], List[str]]) \
     return complete_mrds
 
 
-def check_and_merge(name: str, mrds_paths: List[str], save_dir: str = None):
+def check_and_merge(name: str,
+                    mrds_list_filepath: Union[str, Path],
+                    save_dir: Union[str, Path] = None) -> None:
     """
     Entry point function to merge partial datasets.
      Use this function, and other function will be called internally.
@@ -156,9 +158,10 @@ def check_and_merge(name: str, mrds_paths: List[str], save_dir: str = None):
     name : str
         filename to use while saving the dataset. Typically, it can be
         name of the study project, like ABCD, Oasis etc.
-    mrds_paths : List[str]
-        List of paths each pointing to a partial mrds file
-    save_dir : str
+    mrds_list_filepath : str
+        Filepath to a text file which contains complete list of paths
+        each pointing to a partial mrds file
+    save_dir : Union[str, Path]
         Specify folder to save the final file
 
     Returns
