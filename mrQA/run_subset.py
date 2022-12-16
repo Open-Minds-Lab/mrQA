@@ -88,12 +88,15 @@ def read_subset(output_path: Union[str, Path],
     MRdataset.base.Project
 
     """
+    # TODO: add support for bids
+
     if not output_path:
         output_dir = Path.home() / CACHE_DIR
         output_dir.mkdir(exist_ok=True)
     else:
         output_dir = Path(output_path).parent
 
+    # Supports only dicom for now
     if style != 'dicom':
         raise NotImplementedError(f"Expected style as dicom, Got {style}")
 
