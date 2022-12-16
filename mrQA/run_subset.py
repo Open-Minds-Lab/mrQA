@@ -100,7 +100,7 @@ def read_subset(output_path: Union[str, Path],
     if style != 'dicom':
         raise NotImplementedError(f"Expected style as dicom, Got {style}")
 
-    if Path(batch_ids_file).exists():
+    if Path(batch_ids_file).is_file():
         batch_ids_file = Path(batch_ids_file)
     else:
         raise FileNotFoundError(f'Invalid path : {batch_ids_file}')
