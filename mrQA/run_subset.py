@@ -29,9 +29,13 @@ def main():
     optional.add_argument('-h', '--help', action='help',
                           default=argparse.SUPPRESS,
                           help='show this help message and exit')
+    optional.add_argument('--is_partial', action='store_true',
+                          help='flag dataset as a partial dataset')
+    optional.add_argument('--skip_save', action='store_true',
+                          help='skip saving dataset to disk')
     # TODO: use this flag to store cache
-    optional.add_argument('-r', '--reindex', action='store_true',
-                          help='rebuild cache, ignore existing')
+    optional.add_argument('--cache_path', type=str,
+                          help='complete path for saving the dataset')
     optional.add_argument('-v', '--verbose', action='store_true',
                           help='allow verbose output on console')
     optional.add_argument('--include_phantom', action='store_true',
