@@ -1,12 +1,13 @@
+import argparse
+import sys
 from pathlib import Path
 
 from MRdataset import load_mr_dataset
 from MRdataset.config import MRDS_EXT
+
 from mrQA import check_compliance
 from mrQA.run_merge import check_and_merge
 from mrQA.run_parallel import parallel_dataset
-import argparse
-import sys
 
 
 def main():
@@ -27,7 +28,6 @@ def main():
     required.add_argument('-t', '--task', type=str, required=False,
                           help='[create_script|submit_job|merge|report]',
                           default='create_script')
-
 
     args = parser.parse_args()
     ARCHIVE = Path('/ocean/projects/med220005p/sinhah')
@@ -68,7 +68,7 @@ def main():
         # Generate the final report
         dataset = load_mr_dataset(OUTPUT_DIR / (name + MRDS_EXT), style='dicom')
         check_compliance(dataset=dataset,
-                         output_dir=OUTPUT_DIR/'reports')
+                         output_dir=OUTPUT_DIR / 'reports')
     else:
         raise NotImplementedError(f"Expected one of "
                                   f"[create_script|submit_job|merge|report], "
@@ -77,4 +77,3 @@ def main():
 
 if __name__ == '__main__':
     sys.exit(main())
-
