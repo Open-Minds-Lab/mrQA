@@ -45,7 +45,7 @@ def main():
         # sequentially, so it is not recommended to use this for large datasets
         parallel_dataset(data_root=DATA_ROOT,
                          reindex=True,
-                         subjects_per_job=50,
+                         subjects_per_job=3,
                          debug=True,
                          submit_job=False,
                          conda_env='mrcheck',
