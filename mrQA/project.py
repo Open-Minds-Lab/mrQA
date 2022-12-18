@@ -114,7 +114,7 @@ def compare_with_majority(dataset: "Project") -> Project:
                         # Store the non-compliant subjects, and modalities
                         modality.add_non_compliant_subject_name(subject.name)
                         dataset.add_non_compliant_modality_name(modality.name)
-                        store_reasons(modality, run, subject.name, session.name)
+                        store(modality, run, subject.name, session.name)
                         # If any of the runs are non-compliant, then the
                         # subject is non-compliant.
                         # If any of the subjects are non-compliant, then the
@@ -139,7 +139,7 @@ def compare_with_majority(dataset: "Project") -> Project:
     return dataset
 
 
-def store_reasons(modality, run, subject_name, session_name):
+def store(modality, run, subject_name, session_name):
     """
     Store the sources of non-compliance like flip angle, ped, tr, te
 
