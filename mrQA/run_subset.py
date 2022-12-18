@@ -70,7 +70,8 @@ def read_subset(output_path: Union[str, Path],
                 style: str,
                 reindex: bool,
                 verbose: bool,
-                include_phantom: bool) -> MRdataset.base.Project:
+                include_phantom: bool,
+                **_kwargs) -> MRdataset.base.Project:
     """
     Given a list of folder paths, reads all dicom files in those folders
     and returns a MRdataset object. In context, when this function was created,
@@ -121,7 +122,9 @@ def read_subset(output_path: Union[str, Path],
                                      verbose=verbose,
                                      include_phantom=include_phantom,
                                      metadata_root=output_dir,
-                                     save=False)
+                                     save=False,
+                                     **_kwargs)
+    # partial_dataset.walk(), import_dataset already does this
     return partial_dataset
 
 
