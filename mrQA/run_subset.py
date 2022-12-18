@@ -64,7 +64,6 @@ def main():
 def read_subset(output_path: Union[str, Path],
                 batch_ids_file: str,
                 style: str,
-                reindex: bool,
                 verbose: bool,
                 include_phantom: bool,
                 **_kwargs) -> MRdataset.base.Project:
@@ -81,8 +80,6 @@ def read_subset(output_path: Union[str, Path],
         path to a text file containing a list of paths (to several folders)
     style : str
         what kind of MRdataset to create, dicom, bids etc.
-    reindex : bool
-        re-create the files, even if they exist on disk
     verbose : bool
         print more while doing the job
     include_phantom : bool
@@ -117,7 +114,6 @@ def read_subset(output_path: Union[str, Path],
                                      verbose=verbose,
                                      include_phantom=include_phantom,
                                      metadata_root=output_dir,
-                                     save=_kwargs.get('save', False),
                                      cache_path=output_path,
                                      **_kwargs)
     # partial_dataset.walk(), import_dataset already does this
