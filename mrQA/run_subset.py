@@ -56,7 +56,11 @@ def main():
                                       style='dicom',
                                       reindex=args.reindex,
                                       verbose=args.verbose,
-                                      include_phantom=args.include_phantom)
+                                      include_phantom=args.include_phantom,
+                                      is_complete=not args.is_partial,
+                                      save=not args.skip_save,
+                                      cache_path=args.cache_path)
+
         partial_dataset.is_complete = False
         save_mr_dataset(args.output_path, partial_dataset)
 
