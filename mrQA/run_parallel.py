@@ -142,13 +142,13 @@ def parallel_dataset(data_root: Union[str, Path, Iterable] = None,
     scripts_folder = output_dir / 'bash_scripts'
     scripts_folder.mkdir(parents=True, exist_ok=True)
     # Create a text file to save paths to all the scripts that were generated
-    all_batches_scripts_filepath = output_dir / 'scripts_complete_list.txt'
+    all_batches_scripts_filepath = output_dir / 'per_batch_script_list.txt'
     # Create a folder to save partial mrds pickle files
     partial_mrds_folder = output_dir / 'partial_mrds'
     partial_mrds_folder.mkdir(parents=True, exist_ok=True)
     # Create a text file to point to all the partial mrds pickle files
     # which were created
-    all_batches_mrds_filepath = output_dir / 'partial_mrds_paths.txt'
+    all_batches_mrds_filepath = output_dir / 'per_batch_partial_mrds_list.txt'
 
     scripts_path_list = []
     mrds_path_list = []
