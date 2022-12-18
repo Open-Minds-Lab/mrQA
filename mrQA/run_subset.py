@@ -34,8 +34,6 @@ def main():
     optional.add_argument('--skip_save', action='store_true',
                           help='skip saving dataset to disk')
     # TODO: use this flag to store cache
-    optional.add_argument('--cache_path', type=str,
-                          help='complete path for saving the dataset')
     optional.add_argument('-v', '--verbose', action='store_true',
                           help='allow verbose output on console')
     optional.add_argument('--include_phantom', action='store_true',
@@ -57,8 +55,7 @@ def main():
                                       verbose=args.verbose,
                                       include_phantom=args.include_phantom,
                                       is_complete=not args.is_partial,
-                                      save=not args.skip_save,
-                                      cache_path=args.cache_path)
+                                      save=not args.skip_save)
 
         partial_dataset.is_complete = False
         save_mr_dataset(args.output_path, partial_dataset)
@@ -120,7 +117,8 @@ def read_subset(output_path: Union[str, Path],
                                      verbose=verbose,
                                      include_phantom=include_phantom,
                                      metadata_root=output_dir,
-                                     save=False,
+                                     save=_kwargs.get('save', False),
+                                     cache_path=output_path,
                                      **_kwargs)
     # partial_dataset.walk(), import_dataset already does this
     return partial_dataset
