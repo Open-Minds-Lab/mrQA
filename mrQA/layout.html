@@ -173,21 +173,21 @@
                 <tbody>
             {% endif %}
         {% for parameter in modality.reasons_non_compliance(te)|sort %}
-            {# {% set reasons = modality.query_reason(parameter, te) %}#}
+            {# {% set reasons = modality.query(parameter, te) %}#}
             <tr>
                 <td class="tg-0pky" colspan="4">{{ parameter }}</td>
                 <td class="tg-0pky" colspan="4">
-                    {% for value in modality.query_reason(parameter, te, 'ref_value')|sort %}
+                    {% for value in modality.query(parameter, te, 'ref_value')|sort %}
                         {{ value }},
                     {% endfor %}
                 </td>
                 <td class="tg-0pky" colspan="4">
-                    {% for value in modality.query_reason(parameter, te, 'new_value')|sort %}
+                    {% for value in modality.query(parameter, te, 'new_value')|sort %}
                         {{ value }},
                     {% endfor %}
                 </td>
                 <td class="tg-0pky" colspan="2">
-                    {% for subject in modality.query_reason(parameter, te, 'subjects')|sort %}
+                    {% for subject in modality.query(parameter, te, 'subjects')|sort %}
                         {{ subject }},
                     {% endfor %}
                 </td>
