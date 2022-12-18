@@ -50,8 +50,7 @@ def main():
                          submit_job=False,
                          conda_env='mrcheck',
                          conda_dist='anaconda3',
-                         hpc=False,
-                         output_dir=OUTPUT_DIR)
+                         hpc=False)
     elif args.task == 'submit_job':
         # Generate slurm scripts and submit jobs, for local parallel processing
         parallel_dataset(data_root=DATA_ROOT,
