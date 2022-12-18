@@ -36,7 +36,7 @@ def main():
     # Set constants
     DATA_ROOT = Path('/media/sinhah/extremessd/ABCD-375/dicom-baseline')
     OUTPUT_DIR = DATA_ROOT.parent / (DATA_ROOT.stem+'_mrqa_files')
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    # OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     name = 'abcd-375'
 
     # Choose a task, one of [debug|submit_job|merge|report]
