@@ -39,8 +39,6 @@ def main():
     if args.task == 'create_script':
         # Create scripts but do not submit jobs
         parallel_dataset(data_root=DATA_ROOT,
-                         name=name,
-                         reindex=True,
                          subjects_per_job=100,
                          debug=False,
                          submit_job=False,
@@ -51,8 +49,6 @@ def main():
     elif args.task == 'submit_job':
         # Create scripts and submit jobs simultaneously
         parallel_dataset(data_root=DATA_ROOT,
-                         name=name,
-                         reindex=True,
                          subjects_per_job=100,
                          debug=False,
                          submit_job=True,

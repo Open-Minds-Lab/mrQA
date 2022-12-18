@@ -44,7 +44,6 @@ def main():
         # Debugging code, note that it will generate scripts and also run them
         # sequentially, so it is not recommended to use this for large datasets
         parallel_dataset(data_root=DATA_ROOT,
-                         reindex=True,
                          subjects_per_job=3,
                          debug=True,
                          submit_job=False,
@@ -54,7 +53,6 @@ def main():
     elif args.task == 'submit_job':
         # Generate slurm scripts and submit jobs, for local parallel processing
         parallel_dataset(data_root=DATA_ROOT,
-                         reindex=True,
                          subjects_per_job=100,
                          debug=False,
                          submit_job=False,

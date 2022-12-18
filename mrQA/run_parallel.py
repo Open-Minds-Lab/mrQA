@@ -19,7 +19,6 @@ logger = logging.getLogger('root')
 
 def parallel_dataset(data_root: Union[str, Path, Iterable] = None,
                      style: str = 'dicom',
-                     reindex: bool = False,
                      include_phantom: bool = False,
                      verbose: bool = False,
                      output_dir: Union[str, Path] = None,
@@ -40,8 +39,6 @@ def parallel_dataset(data_root: Union[str, Path, Iterable] = None,
         /path/to/my/dataset containing files
     style: str
         Specify dataset type. Use one of [dicom]
-    reindex: bool
-        Similar to --no-cache. rejects all cached files and rebuilds the dataset
     include_phantom: bool
         Include phantom scans in the dataset
     verbose: bool
@@ -176,14 +173,12 @@ def parallel_dataset(data_root: Union[str, Path, Iterable] = None,
                             env=conda_env,
                             conda_dist=conda_dist,
                             num_subj_per_job=subjects_per_job,
-                            reindex=reindex,
                             verbose=verbose,
                             include_phantom=include_phantom,
                             partial_mrds_filename=partial_mrds_filepath)
         # Run the script file
         output = run_single_batch(debug=debug,
                                   txt_filepath=ids_filepath,
-                                  reindex=reindex,
                                   verbose=verbose,
                                   include_phantom=include_phantom,
                                   s_filename=script_filepath,
@@ -208,7 +203,6 @@ def parallel_dataset(data_root: Union[str, Path, Iterable] = None,
 
 def run_single_batch(debug: bool,
                      txt_filepath: str,
-                     reindex: bool,
                      verbose: bool,
                      include_phantom: bool,
                      s_filename: str,
@@ -225,8 +219,6 @@ def run_single_batch(debug: bool,
         If True, runs the script in debug mode
     txt_filepath : str
         Path to text file containing list of subject ids
-    reindex: bool
-        If True, reject cache and reindex
     verbose: bool
         If True, prints the output of the script
     include_phantom: bool
@@ -254,7 +246,6 @@ def run_single_batch(debug: bool,
         partial_dataset = read_subset(output_path=partial_mrds_filename,
                                       batch_ids_file=txt_filepath,
                                       style='dicom',
-                                      reindex=reindex,
                                       verbose=verbose,
                                       include_phantom=include_phantom,
                                       is_complete=False)
@@ -262,7 +253,7 @@ def run_single_batch(debug: bool,
         # partial_dataset.is_complete = False
         save_mr_dataset(partial_mrds_filename, partial_dataset)
         return None
-    elif not partial_mrds_filename.exists() or reindex:
+    elif not partial_mrds_filename.exists():
         if not hpc:
             # If running locally, and the user does not want to
             # submit the job, run the script using the bash command
@@ -279,7 +270,6 @@ def create_slurm_script(filename: Union[str, Path],
                         env: str = 'mrqa',
                         conda_dist: str = 'anaconda3',
                         num_subj_per_job: int = 50,
-                        reindex: bool = False,
                         verbose: bool = False,
                         include_phantom: bool = False,
                         partial_mrds_filename: bool = None) -> None:
@@ -298,8 +288,6 @@ def create_slurm_script(filename: Union[str, Path],
         Conda distribution
     num_subj_per_job : int
         Number of subjects to process in each slurm job
-    reindex : bool
-        If True, reject cache and reindex
     verbose : bool
         If True, prints the output of the script
     include_phantom : bool
@@ -332,8 +320,6 @@ def create_slurm_script(filename: Union[str, Path],
     python_cmd = f'mrpc_subset -o {partial_mrds_filename} -b {ids_filepath}'
 
     # Add flags to python command
-    if reindex:
-        python_cmd += ' --reindex'
     if verbose:
         python_cmd += ' --verbose'
     if include_phantom:

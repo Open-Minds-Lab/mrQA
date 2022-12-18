@@ -50,11 +50,10 @@ def main():
 
     args = parser.parse_args()
     output_path = Path(args.output_path).resolve()
-    if not output_path.exists() or args.reindex:
+    if not output_path.exists():
         partial_dataset = read_subset(output_path=args.output_path,
                                       batch_ids_file=args.batch_txt_file,
                                       style='dicom',
-                                      reindex=args.reindex,
                                       verbose=args.verbose,
                                       include_phantom=args.include_phantom,
                                       is_complete=not args.is_partial,
@@ -118,7 +117,6 @@ def read_subset(output_path: Union[str, Path],
     partial_dataset = import_dataset(data_root=subset,
                                      style=style,
                                      name=identifier,
-                                     reindex=reindex,
                                      verbose=verbose,
                                      include_phantom=include_phantom,
                                      metadata_root=output_dir,
