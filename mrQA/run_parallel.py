@@ -256,9 +256,10 @@ def run_single_batch(debug: bool,
                                       style='dicom',
                                       reindex=reindex,
                                       verbose=verbose,
-                                      include_phantom=include_phantom)
+                                      include_phantom=include_phantom,
+                                      is_complete=False)
         # Save the partial mrds pickle file
-        partial_dataset.is_complete = False
+        # partial_dataset.is_complete = False
         save_mr_dataset(partial_mrds_filename, partial_dataset)
         return None
     elif not partial_mrds_filename.exists() or reindex:
