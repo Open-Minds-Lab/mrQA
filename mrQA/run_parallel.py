@@ -2,16 +2,19 @@ import math
 import os
 import subprocess
 import warnings
+import logging
 from pathlib import Path
 from typing import Iterable, Union, Optional, List
 
 from MRdataset.base import save_mr_dataset
-from MRdataset.config import MRDS_EXT
-from MRdataset.utils import valid_dirs
+from MRdataset.config import MRDS_EXT, setup_logger
+from MRdataset.utils import valid_dirs, timestamp
 
 from mrQA.run_subset import read_subset
 from mrQA.utils import execute_local, list2txt, split_list, \
     is_integer_number
+
+logger = logging.getLogger('root')
 
 
 def parallel_dataset(data_root: Union[str, Path, Iterable] = None,
@@ -107,6 +110,15 @@ def parallel_dataset(data_root: Union[str, Path, Iterable] = None,
         # Need not check permissions, because this path is supplied by the user.
         output_dir.mkdir(exist_ok=True, parents=True)
     output_dir = Path(output_dir).resolve()
+
+    # Setup logger
+    log_filename = output_dir / '{}.log'.format(timestamp())
+
+    # Check if verbose is True, if so, set level to INFO
+    if verbose:
+        setup_logger('root', log_filename, logging.INFO)
+    else:
+        setup_logger('root', log_filename, logging.WARNING)
 
     # Information about conda env is required for creating slurm scripts
     # The snippet below sets some defaults, may not be true for everyone.
