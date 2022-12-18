@@ -93,7 +93,7 @@ def parallel_dataset(data_root: Union[str, Path, Iterable] = None,
         # Didn't find a good alternative to os.access
         # in pathlib, please raise a issue if
         # you know one, happy to incorporate
-        output_dir = data_root.parent / 'mrqa_files'
+        output_dir = data_root.parent / (data_root.name+'_mrqa_files')
 
         # Check if permission to create a folder in data_root.parent
         if os.access(data_root.parent, os.W_OK):
