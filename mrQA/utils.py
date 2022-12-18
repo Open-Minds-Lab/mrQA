@@ -82,7 +82,7 @@ def default_thread_count():
 
 def split_list(dir_index: list, num_chunks: int) -> typing.Iterable[List[str]]:
     """
-    Adapted from https://stackoverflow.com/questions/2130016/splitting-a-list-into-n-parts-of-approximately-equal-length
+    Adapted from https://stackoverflow.com/questions/2130016/splitting-a-list-into-n-parts-of-approximately-equal-length # noqa
 
     Given a list of n elements, split it into k parts, where k = num_chunks.
     Each part has atleast n/k elements. And the remaining elements
