@@ -106,7 +106,9 @@ def merge_and_save(name: str,
                            f"[str|pathlib.Path]. Got {type(save_folder)}")
     complete_dataset = merge_from_disk(mrds_path_list)
     complete_dataset.is_complete = True
+    complete_dataset.name = name
     filename = save_folder / (name + MRDS_EXT)
+    complete_dataset.cache_path = filename
     save_mr_dataset(filename, complete_dataset)
 
 
