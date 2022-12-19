@@ -12,26 +12,30 @@ def check_compliance(dataset: Project,
                      strategy: str = 'majority',
                      output_dir: Union[Path, str] = None):
     """
-    Main function for checking compliance. Calls individual functions for
-    inferring the most frequent values and then generating the report
+    Main function for checking compliance. Infers the reference protocol according to
+     the user chosen strategy, and then generates a report in compliance
 
     Parameters
     ----------
     dataset : Project
-        MRdataset.base.Project instance for the dataset which is to be checked
-        for compliance
+        Project instance for the dataset which is to be checked for compliance
+
     strategy : str
-        How to get the reference protocol, whether should take most common
-        values as reference or something else
+        Strategy employed to specify or automatically infer the reference protocol.
+        Allowed options are 'majority'
+
     output_dir: Union[Path, str]
         Path to save the report
-    return_dataset: bool
-        return checked MRdataset.base.Project instance
+
     Returns
     -------
-    dataset : Project
-        MRdataset.base.Project instance for the dataset which was checked
-        for compliance
+    None
+
+    Raises
+    ------
+    ValueError
+        If the input dataset is empty or otherwise invalid
+
     """
 
     if not dataset.modalities:
