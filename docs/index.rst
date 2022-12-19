@@ -1,29 +1,12 @@
 Welcome to mrQA's documentation!
 ======================================
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Tutorials
+Automatic checks of protocol compliance on MR datasets
 
-   installation
    readme
-
-.. toctree::
-   :maxdepth: 2
-   :caption: How-to Guides & Examples
-
+   installation
    contributing
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Reference
-
    mrQA
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Background
-
    authors
    history
 
