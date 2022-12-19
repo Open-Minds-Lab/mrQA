@@ -10,9 +10,7 @@ from mrQA.utils import timestamp, majority_attribute_values
 
 def check_compliance(dataset: Project,
                      strategy: str = 'majority',
-                     output_dir: Union[Path, str] = None,
-                     return_dataset: bool = False,
-                     reference_path = None) -> Union[Project, None]:
+                     output_dir: Union[Path, str] = None):
     """
     Main function for checking compliance. Calls individual functions for
     inferring the most frequent values and then generating the report
@@ -35,12 +33,16 @@ def check_compliance(dataset: Project,
         MRdataset.base.Project instance for the dataset which was checked
         for compliance
     """
+
     if not dataset.modalities:
-        raise EOFError("Dataset is empty.")
+        raise ValueError("Dataset is empty.")
+
     if strategy == 'majority':
         dataset = compare_with_majority(dataset)
     else:
-        raise NotImplementedError
+        raise NotImplementedError('Only the following strategies are allowed : \n\t'
+                                  '{}'.format(STRATEGIES_ALLOWED))
+
     generate_report(dataset, output_dir)
 
     return dataset
