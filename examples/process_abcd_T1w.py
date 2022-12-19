@@ -58,7 +58,7 @@ def main():
                          output_dir=OUTPUT_DIR)
     elif args.task == 'merge':
         # Merge created partial datasets
-        mrds_paths = OUTPUT_DIR / 'partial_mrds_paths.txt'
+        mrds_paths = OUTPUT_DIR / 'per_batch_partial_mrds_list.txt'
         check_and_merge(
             name=name,
             mrds_list_filepath=mrds_paths,
