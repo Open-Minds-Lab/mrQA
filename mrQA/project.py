@@ -6,6 +6,7 @@ from MRdataset.utils import param_difference, is_hashable
 
 from mrQA.formatter import HtmlFormatter
 from mrQA.utils import timestamp, majority_attribute_values
+from mrQA.config import STRATEGIES_ALLOWED
 
 
 def check_compliance(dataset: Project,
@@ -49,8 +50,6 @@ def check_compliance(dataset: Project,
 
     generate_report(dataset, output_dir)
 
-    return dataset
-
 
 def compare_with_majority(dataset: "Project") -> Project:
     """
@@ -91,10 +90,7 @@ def compare_with_majority(dataset: "Project") -> Project:
         for echo_time in run_by_echo.keys():
             if run_by_echo[echo_time]:
                 reference = majority_attribute_values(run_by_echo[echo_time])
-                if echo_time is None:
-                    modality.set_reference(reference, force=True)
-                else:
-                    modality.set_reference(reference, echo_time)
+                modality.set_reference(reference, echo_time)
 
         # Start calculating delta for each run
         flag_modality = True
@@ -140,6 +136,7 @@ def compare_with_majority(dataset: "Project") -> Project:
         if flag_modality:
             modality.compliant = flag_modality
             dataset.add_compliant_modality_name(modality.name)
+
     # As we are updating the same dataset by adding non-compliant subject names,
     # and non-compliant modality names, we can return the same dataset
     return dataset
@@ -225,11 +222,11 @@ def otg_report(dataset, report_name):
     # Format the result as a string
     if result:
         ret_string = 'In {0} dataset, modalities "{1}" are non-compliant. ' \
-                 'See {2} for report'.format(dataset.name,
-                                             ", ".join(result.keys()),
-                                             report_name)
+                     'See {2} for report'.format(dataset.name,
+                                                 ", ".join(result.keys()),
+                                                 report_name)
     else:
         ret_string = 'In {0} dataset, all modalities are compliant. ' \
-                 'See {1} for report'.format(dataset.name,
-                                             report_name)
+                     'See {1} for report'.format(dataset.name,
+                                                 report_name)
     return ret_string
