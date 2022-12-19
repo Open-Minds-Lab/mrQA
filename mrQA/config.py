@@ -1,3 +1,6 @@
+
+STRATEGIES_ALLOWED = ['majority', ]
+
 PARAMETER_NAMES = [
     'Manufacturer',
     'BodyPartExamined',
