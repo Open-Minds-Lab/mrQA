@@ -22,7 +22,7 @@ def _check_args(data_source_folders: Union[str, Path, Iterable] = None,
                 subjects_per_job: int = None,
                 hpc: bool = False,
                 conda_dist: str = None,
-                conda_env: str = None) -> dict:
+                conda_env: str = None):
     # It is not possible to submit jobs while debugging, why would you submit
     # a job, if code is still being debugged
     if debug and hpc:
@@ -69,12 +69,7 @@ def _check_args(data_source_folders: Union[str, Path, Iterable] = None,
         conda_env = 'mrqa' if hpc else 'mrcheck'
     if not conda_dist:
         conda_dist = 'miniconda3' if hpc else 'anaconda3'
-    return {
-        'data_source_folders': data_source_folders,
-        'output_dir': output_dir,
-        'conda_dist': conda_env,
-        'conda_env': conda_dist
-    }
+    return data_source_folders, output_dir, conda_env, conda_dist
 
 
 def _make_file_folders(output_dir):
