@@ -292,7 +292,6 @@ def create_scripts(data_source_folders: Union[str, Path, Iterable] = None,
                    output_dir: Union[str, Path] = None,
                    debug: bool = False,
                    subjects_per_job: int = None,
-                   submit_job: bool = False,
                    hpc: bool = False,
                    conda_dist: str = None,
                    conda_env: str = None) -> None:
@@ -317,8 +316,6 @@ def create_scripts(data_source_folders: Union[str, Path, Iterable] = None,
         If True, the dataset will be created locally. This is useful for testing
     subjects_per_job: int
         Number of subjects per job. Recommended value is 50 or 100
-    submit_job: bool
-        If True, the scripts will be executed
     hpc: bool
         If True, the scripts will be generated for HPC, not for local execution
     conda_dist: str
