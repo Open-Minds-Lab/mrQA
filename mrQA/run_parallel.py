@@ -417,28 +417,15 @@ def run_single_batch(debug: bool,
     # and not for running on a hpc
     if isinstance(partial_mrds_filename, str):
         partial_mrds_filename = Path(partial_mrds_filename)
-    if debug:
-        # Run the script in debug mode
-        partial_dataset = read_subset(output_path=partial_mrds_filename,
-                                      batch_ids_file=txt_filepath,
-                                      style='dicom',
-                                      verbose=verbose,
-                                      include_phantom=include_phantom,
-                                      is_complete=False)
-        # Save the partial mrds pickle file
-        # partial_dataset.is_complete = False
-        save_mr_dataset(partial_mrds_filename, partial_dataset)
-        return None
-    elif not partial_mrds_filename.exists():
+    if not partial_mrds_filename.exists():
         if not hpc:
             # If running locally, and the user does not want to
             # submit the job, run the script using the bash command
             return execute_local(s_filename)
-        if hpc and submit_job:
-            # If running on a hpc, use the sbatch command
-            # to submit the script
-            subprocess.call(['sbatch', s_filename])
-            return
+        # If running on a hpc, use the sbatch command
+        # to submit the script
+        subprocess.call(['sbatch', s_filename])
+        return
 
 
 def create_slurm_script(filename: Union[str, Path],
