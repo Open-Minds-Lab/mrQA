@@ -603,4 +603,6 @@ def create_index(data_root: Union[str, Path],
         # Add the path to the text file ( containing the
         # list of subjects for each job) to a list, return the list
         batch_ids_path_list.append(batch_filepath)
-    return batch_ids_path_list
+    list2txt(path=per_batch_ids,
+             list_=batch_ids_path_list)
+    return
