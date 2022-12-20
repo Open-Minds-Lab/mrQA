@@ -539,9 +539,9 @@ def create_index(data_source_folders: Union[str, Path],
 
     Parameters
     ----------
-    data_root : Union[str, Path]
+    data_source_folders : Union[str, Path]
         Path to the root directory of the data
-    output_path : Union[str, Path]
+    all_ids_path : Union[str, Path]
         Path to the output directory
     output_dir : Union[str, Path]
         Name of the output directory
