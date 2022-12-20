@@ -96,17 +96,9 @@ def _make_file_folders(output_dir):
     all_ids_path = output_dir / 'complete_id_list.txt'
     return folder_paths, files_per_batch, all_ids_path
 
-def parallel_dataset(data_root: Union[str, Path, Iterable] = None,
-                     style: str = 'dicom',
-                     include_phantom: bool = False,
-                     verbose: bool = False,
-                     output_dir: Union[str, Path] = None,
-                     debug: bool = False,
-                     subjects_per_job: int = None,
-                     submit_job: bool = False,
-                     hpc: bool = False,
-                     conda_dist: str = None,
-                     conda_env: str = None) -> None:
+
+def submit_jobs(debug: bool = False,
+                hpc: bool = False) -> None:
     """
     Given a folder(or List[folder]) it will divide the work into smaller
     jobs. Each job will contain a fixed number of subjects. These jobs can be
