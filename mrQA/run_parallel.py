@@ -47,7 +47,7 @@ def _check_args(data_source_folders: Union[str, Path, Iterable] = None,
         # Didn't find a good alternative to os.access
         # in pathlib, please raise a issue if you know one, happy to incorporate
         output_dir = data_source_folders.parent / (
-                data_source_folders.name + '_mrqa_files')
+            data_source_folders.name + '_mrqa_files')
 
         # Check if permission to create a folder in data_root.parent
         if os.access(data_source_folders.parent, os.W_OK):
@@ -70,7 +70,6 @@ def _check_args(data_source_folders: Union[str, Path, Iterable] = None,
 
 
 def _make_file_folders(output_dir):
-
     output_dir.mkdir(parents=True, exist_ok=True)
     # Create a folder id_lists for saving list of subject ids for each job
     # in a separate txt file.
