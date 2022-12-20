@@ -8,12 +8,12 @@ import logging
 import warnings
 from collections import Counter
 from pathlib import Path
-from typing import Union, List
+from typing import Union, List, Iterable
 
 import numpy as np
 from MRdataset.utils import is_hashable
-
-logger = logging.getLogger('root')
+from MRdataset.utils import valid_dirs, timestamp
+from MRdataset.log import logger
 
 
 def timestamp():
@@ -178,12 +178,12 @@ def execute_local(filename):
                                'User Time: %U',
                                'Sys Time: %S'])
     return subprocess.Popen([
-            '/usr/bin/time',
-            '-f',
-            format_params,
-            'bash',
-            filename
-        ])
+        '/usr/bin/time',
+        '-f',
+        format_params,
+        'bash',
+        filename
+    ])
 
 
 def get_outliers(data, m=25.0):
@@ -201,7 +201,7 @@ def get_outliers(data, m=25.0):
     """
     d = np.abs(data - np.median(data))
     mdev = np.median(d)
-    s = d/mdev if mdev else 0.
+    s = d / mdev if mdev else 0.
     if np.any(s > m):
         indices = np.argwhere(s > m).flatten()
         return indices
