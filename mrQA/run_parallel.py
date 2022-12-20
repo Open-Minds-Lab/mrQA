@@ -1,16 +1,13 @@
 import math
 import os
 import subprocess
-import warnings
-import logging
 from pathlib import Path
 from typing import Iterable, Union, Optional, List
 
-from MRdataset.base import save_mr_dataset
-from MRdataset.config import MRDS_EXT, setup_logger
-from MRdataset.utils import valid_dirs, timestamp
+from MRdataset.config import MRDS_EXT
+from MRdataset.log import logger
+from MRdataset.utils import valid_dirs
 
-from mrQA.run_subset import read_subset
 from mrQA.utils import execute_local, list2txt, split_list, \
     is_integer_number
 
