@@ -558,20 +558,20 @@ def create_index(data_source_folders: Union[str, Path],
         raise ValueError('subjects_per_job must be greater than 0')
 
     # Create the output path
-    output_path = Path(output_path)
+    all_ids_path = Path(all_ids_path)
     # List of paths to the text files containing the list of subjects for
     # each job
     batch_ids_path_list = []
 
     subject_list = []
     # Get the list of subject ids
-    for root, dirs, files in os.walk(data_root):
+    for root, dirs, files in os.walk(data_source_folders):
         if 'sub-' in Path(root).name:
             # Get the subject id
             subject_list.append(root)
     # Store the list of unique subject ids to a text file given by
     # output_path
-    list2txt(output_path, list(set(subject_list)))
+    list2txt(all_ids_path, list(set(subject_list)))
 
     # Get the list of subjects for each job
     workers = _get_num_workers(subjects_per_job, subject_list)
