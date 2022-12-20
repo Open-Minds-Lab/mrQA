@@ -290,6 +290,98 @@ def parallel_dataset(data_root: Union[str, Path, Iterable] = None,
     return
 
 
+def create_scripts(data_source_folders: Union[str, Path, Iterable] = None,
+                   style: str = 'dicom',
+                   include_phantom: bool = False,
+                   verbose: bool = False,
+                   output_dir: Union[str, Path] = None,
+                   debug: bool = False,
+                   subjects_per_job: int = None,
+                   submit_job: bool = False,
+                   hpc: bool = False,
+                   conda_dist: str = None,
+                   conda_env: str = None) -> None:
+    """
+    Given a folder(or List[folder]) it will divide the work into smaller
+    jobs. Each job will contain a fixed number of subjects. These jobs can be
+    executed in parallel to save time.
+
+    Parameters
+    ----------
+    data_source_folders: str or List[str]
+        /path/to/my/dataset containing files
+    style: str
+        Specify dataset type. Use one of [dicom]
+    include_phantom: bool
+        Include phantom scans in the dataset
+    verbose: bool
+        Print progress
+    output_dir: str
+        Path to save the output dataset
+    debug: bool
+        If True, the dataset will be created locally. This is useful for testing
+    subjects_per_job: int
+        Number of subjects per job. Recommended value is 50 or 100
+    submit_job: bool
+        If True, the scripts will be executed
+    hpc: bool
+        If True, the scripts will be generated for HPC, not for local execution
+    conda_dist: str
+        Name of conda distribution
+    conda_env: str
+        Name of conda environment
+
+    Returns
+    -------
+    None
+    """
+
+    data_src, output_dir, env, dist = _check_args(data_source_folders, style,
+                                                  output_dir, debug,
+                                                  subjects_per_job, hpc,
+                                                  conda_dist, conda_env)
+    folder_paths, files_per_batch, all_ids_path = _make_file_folders(output_dir)
+    ids_path_list = create_index(
+        data_src,
+        all_ids_path=all_ids_path,
+        per_batch_ids=files_per_batch['ids'],
+        output_dir=folder_paths['ids'],
+        subjects_per_job=subjects_per_job)
+
+    scripts_path_list = []
+    mrds_path_list = []
+    # create a slurm job script for each sub_group of subject ids
+    for ids_filepath in ids_path_list:
+        # Filename of the bash script should be same as text file.
+        # Say batch0000.txt points to set of 10 subjects. Then create a
+        # slurm script file batch0000.sh which will run for these 10 subjects,
+        # and the final partial mrds pickle file will have the name
+        # batch0000.mrds.pkl
+        script_filename = ids_filepath.stem + '.sh'
+        partial_mrds_filename = ids_filepath.stem + MRDS_EXT
+        script_filepath = folder_paths['scripts'] / script_filename
+        partial_mrds_filepath = folder_paths['mrds'] / partial_mrds_filename
+
+        # Keep storing the filenames. The entire list would be saved at the end
+        scripts_path_list.append(script_filepath)
+        mrds_path_list.append(partial_mrds_filepath)
+
+        # Finally create the slurm script and save to disk
+        create_slurm_script(filename=script_filepath,
+                            ids_filepath=ids_filepath,
+                            env=conda_env,
+                            conda_dist=conda_dist,
+                            num_subj_per_job=subjects_per_job,
+                            verbose=verbose,
+                            include_phantom=include_phantom,
+                            partial_mrds_filename=partial_mrds_filepath)
+
+    # Finally, save the all the paths to create mrds pickle files and all the
+    # paths to generated scripts in a text file for reference.
+    list2txt(path=files_per_batch['mrds'], list_=mrds_path_list)
+    list2txt(path=files_per_batch['scripts'], list_=scripts_path_list)
+
+
 def run_single_batch(debug: bool,
                      txt_filepath: str,
                      verbose: bool,
