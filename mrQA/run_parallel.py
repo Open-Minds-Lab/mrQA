@@ -14,7 +14,67 @@ from mrQA.run_subset import read_subset
 from mrQA.utils import execute_local, list2txt, split_list, \
     is_integer_number
 
-logger = logging.getLogger('root')
+
+def _check_args(data_source_folders: Union[str, Path, Iterable] = None,
+                style: str = 'dicom',
+                output_dir: Union[str, Path] = None,
+                debug: bool = False,
+                subjects_per_job: int = None,
+                hpc: bool = False,
+                conda_dist: str = None,
+                conda_env: str = None) -> dict:
+    # It is not possible to submit jobs while debugging, why would you submit
+    # a job, if code is still being debugged
+    if debug and hpc:
+        raise AttributeError('Dont debug on hpc!')
+    if style != 'dicom':
+        raise NotImplementedError(f'Expects dicom, Got {style}')
+    if not is_integer_number(subjects_per_job):
+        raise RuntimeError('Expects an integer value for subjects per job.'
+                           f'Got {subjects_per_job}')
+    if subjects_per_job < 1:
+        raise RuntimeError('subjects_per_job cannot be less than 1')
+
+    # Check if data_root is a valid directory, or list of valid directories
+    data_source_folders = valid_dirs(data_source_folders)
+
+    # Check if output_dir was provided.
+    # RULE : If not, it will be saved in 'mrqa_files'
+    # created in the parent folder of data_root
+    if not output_dir:
+        if isinstance(data_source_folders, Iterable):
+            # If data_root is a bunch of directories, the above RULE cannot
+            # be followed, just pass a directory to save the file.
+            raise RuntimeError("Need an output directory to store files")
+
+        # Didn't find a good alternative to os.access
+        # in pathlib, please raise a issue if you know one, happy to incorporate
+        output_dir = data_source_folders.parent / (
+                data_source_folders.name + '_mrqa_files')
+
+        # Check if permission to create a folder in data_root.parent
+        if os.access(data_source_folders.parent, os.W_OK):
+            logger.warning('Expected a directory to save job scripts. Using '
+                           'parent folder of --data_root instead.')
+        else:
+            raise PermissionError(f'You do not have write permission to'
+                                  f'create a folder in '
+                                  f'{data_source_folders.parent}'
+                                  f'Please provide output_dir')
+
+    # Information about conda env is required for creating slurm scripts
+    # The snippet below sets some defaults, may not be true for everyone.
+    # The user can use the arguments to specify
+    if not conda_env:
+        conda_env = 'mrqa' if hpc else 'mrcheck'
+    if not conda_dist:
+        conda_dist = 'miniconda3' if hpc else 'anaconda3'
+    return {
+        'data_source_folders': data_source_folders,
+        'output_dir': output_dir,
+        'conda_dist': conda_env,
+        'conda_env': conda_dist
+    }
 
 
 def parallel_dataset(data_root: Union[str, Path, Iterable] = None,
