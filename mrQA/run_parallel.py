@@ -119,120 +119,9 @@ def submit_jobs(debug: bool = False,
     None
     """
 
-    # It is not possible to submit jobs while debugging, why would you submit
-    # a job, if code is still being debugged
-    if debug and submit_job:
-        raise AttributeError('Cannot debug when submitting jobs')
-    if style != 'dicom':
-        raise NotImplementedError(f'Expects dicom, Got {style}')
-    if not is_integer_number(subjects_per_job):
-        raise RuntimeError('Expects an integer value for subjects per job.'
-                           f'Got {subjects_per_job}')
-    if subjects_per_job < 1:
-        raise RuntimeError('subjects_per_job cannot be less than 1')
-
-    # Check if data_root is a valid directory, or list of valid directories
-    data_root = valid_dirs(data_root)
-
-    # Check if output_dir was provided.
-    # RULE : If not, it will be saved in 'mrqa_files'
-    # created in the parent folder of data_root
-    if not output_dir:
-        if isinstance(data_root, Iterable):
-            # If data_root is a bunch of directories, the above RULE cannot
-            # be followed, just pass a directory to save the file.
-            raise RuntimeError("Need an output directory to store files")
-
-        # Didn't find a good alternative to os.access
-        # in pathlib, please raise a issue if
-        # you know one, happy to incorporate
-        output_dir = data_root.parent / (data_root.name+'_mrqa_files')
-
-        # Check if permission to create a folder in data_root.parent
-        if os.access(data_root.parent, os.W_OK):
-            warnings.warn('Expected a directory to save job scripts. Using '
-                          'parent folder of --data_root instead.')
-            output_dir.mkdir(exist_ok=True)
-        else:
-            raise PermissionError(f'You do not have write permission to'
-                                  f'create a folder in {data_root.parent}'
-                                  f'Please provide output_dir')
-    # user provided output_dir
-    if not Path(output_dir).is_dir():
-        # If the output_dir argument doesn't exist, or it is not a directory
-        # Need not check permissions, because this path is supplied by the user.
-        output_dir.mkdir(exist_ok=True, parents=True)
-    output_dir = Path(output_dir).resolve()
-
-    # Setup logger
-    log_filename = output_dir / '{}.log'.format(timestamp())
-
-    # Check if verbose is True, if so, set level to INFO
-    if verbose:
-        setup_logger('root', log_filename, logging.INFO)
-    else:
-        setup_logger('root', log_filename, logging.WARNING)
-
-    # Information about conda env is required for creating slurm scripts
-    # The snippet below sets some defaults, may not be true for everyone.
-    # The user can use the arguments to specify
-    if not conda_env:
-        conda_env = 'mrqa' if hpc else 'mrcheck'
-    if not conda_dist:
-        conda_dist = 'miniconda3' if hpc else 'anaconda3'
-
-    # Create a folder id_lists for storing list of subject ids for each job
-    # in a separate txt file. The files are saved as batch0000.txt,
-    # batch0001.txt etc. And store the original complete list (contains all
-    # subject ids) in "id_complete_list.txt"
-    id_folder = output_dir / 'id_lists'
-    id_folder.mkdir(parents=True, exist_ok=True)
-    complete_list_filepath = output_dir / 'complete_id_list.txt'
-    ids_path_list = create_index(data_root=data_root,
-                                 output_path=complete_list_filepath,
-                                 output_dir=id_folder,
-                                 subjects_per_job=subjects_per_job)
-    list2txt(path=output_dir / 'per_batch_id_list.txt', list_=ids_path_list)
-
-    # Create folder to save slurm scripts
-    scripts_folder = output_dir / 'bash_scripts'
-    scripts_folder.mkdir(parents=True, exist_ok=True)
-    # Create a text file to save paths to all the scripts that were generated
-    all_batches_scripts_filepath = output_dir / 'per_batch_script_list.txt'
-    # Create a folder to save partial mrds pickle files
-    partial_mrds_folder = output_dir / 'partial_mrds'
-    partial_mrds_folder.mkdir(parents=True, exist_ok=True)
-    # Create a text file to point to all the partial mrds pickle files
-    # which were created
-    all_batches_mrds_filepath = output_dir / 'per_batch_partial_mrds_list.txt'
-
-    scripts_path_list = []
-    mrds_path_list = []
     processes = []
-    # create a slurm job script for each sub_group of subject ids
-    for ids_filepath in ids_path_list:
-        # Filename of the bash script should be same as text file.
-        # Say batch0000.txt points to set of 10 subjects. Then create a
-        # slurm script file batch0000.sh which will run for these 10 subjects,
-        # and the final partial mrds pickle file will have the name
-        # batch0000.mrds.pkl
-        script_filepath = scripts_folder / (ids_filepath.stem + '.sh')
-        partial_mrds_filepath = partial_mrds_folder / (
-                ids_filepath.stem + MRDS_EXT)
-
-        # Keep storing the filenames. The entire list would be saved at the end
-        scripts_path_list.append(script_filepath)
-        mrds_path_list.append(partial_mrds_filepath)
-
-        # Finally create the slurm script and save to disk
-        create_slurm_script(filename=script_filepath,
-                            ids_filepath=ids_filepath,
-                            env=conda_env,
-                            conda_dist=conda_dist,
-                            num_subj_per_job=subjects_per_job,
-                            verbose=verbose,
-                            include_phantom=include_phantom,
-                            partial_mrds_filename=partial_mrds_filepath)
+    bash_scripts = txt2list()
+    for script_filename in path_list:
         # Run the script file
         output = run_single_batch(debug=debug,
                                   txt_filepath=ids_filepath,
@@ -242,18 +131,9 @@ def submit_jobs(debug: bool = False,
                                   submit_job=submit_job,
                                   hpc=hpc,
                                   partial_mrds_filename=partial_mrds_filepath)
-        # Keep track of processes started, if running locally. Useful to
-        # keep python script active until all scripts have completed
-        # execution. Not useful if running in debug mode or using hpc. In this
-        # case output is None
         processes.append(output)
-    # Finally, save the all the paths to create mrds pickle files and all the
-    # paths to generated scripts in a text file for reference.
-    list2txt(path=all_batches_mrds_filepath, list_=mrds_path_list)
-    list2txt(path=all_batches_scripts_filepath, list_=scripts_path_list)
-
     # Wait only if executing locally
-    if not (submit_job or debug or hpc):
+    if debug:
         exit_codes = [p.wait() for p in processes]
     return
 
