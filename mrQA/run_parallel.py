@@ -572,23 +572,10 @@ def create_index(data_root: Union[str, Path],
     # output_path
     list2txt(output_path, list(set(subject_list)))
 
-    if subjects_per_job < 1:
-        # If subjects_per_job is less than 1, processing should be done for
-        # all subjects in a single job. Stop execution.
-        raise RuntimeError("subjects_per_job cannot be less than 1.")
-    elif subjects_per_job > len(subject_list):
-        # If subjects_per_job is greater than the number of subjects,
-        # process all subjects in a single job. Stop execution.
-        raise RuntimeError("Trying to create more jobs than total number of "
-                           "subjects in the directory. Why?")
-    # Get the number of jobs
-    workers = len(subject_list) // subjects_per_job
-    if workers == 1:
-        # If there is only one job, process all subjects in a single job
-        raise RuntimeError("Decrease number of subjects per job. Expected"
-                           "workers > 1 for parallel processing. Got 1")
     # Get the list of subjects for each job
+    workers = _get_num_workers(subjects_per_job, subject_list)
     subject_subsets = split_list(subject_list, num_chunks=workers)
+
     # Create a directory to store the text files containing the list of
     # subjects for each job
     output_dir = Path(output_dir)
@@ -606,3 +593,20 @@ def create_index(data_root: Union[str, Path],
     list2txt(path=per_batch_ids,
              list_=batch_ids_path_list)
     return
+
+
+def _get_num_workers(subjects_per_job, subject_list):
+    if subjects_per_job > len(subject_list):
+        # If subjects_per_job is greater than the number of subjects,
+        # process all subjects in a single job. Stop execution.
+        raise RuntimeError("Trying to create more jobs than total number of "
+                           "subjects in the directory. Why?")
+
+    # Get the number of jobs
+    workers = len(subject_list) // subjects_per_job
+    if workers == 1:
+        # If there is only one job, process all subjects in a single job
+        raise RuntimeError("Decrease number of subjects per job. Expected"
+                           "workers > 1 for parallel processing. Got 1")
+
+    return workers
