@@ -527,10 +527,11 @@ def create_slurm_script(filename: Union[str, Path],
         )
 
 
-def create_index(data_root: Union[str, Path],
-                 output_path: Union[str, Path],
+def create_index(data_source_folders: Union[str, Path],
+                 all_ids_path: Union[str, Path],
+                 per_batch_ids,
                  output_dir: Union[str, Path],
-                 subjects_per_job: int = 50) -> List[Path]:
+                 subjects_per_job: int = 50):
     """
     Splits a given set of subjects into multiple jobs and creates separate
     text files containing the list of subjects. Each text file
