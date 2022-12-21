@@ -165,9 +165,6 @@ def split_ids_list(data_source_folders: Union[str, Path],
     batch_ids_path_list : list
         Paths to the text files, each containing a list of subjects
     """
-    # Check subjects_per_job is a positive integer
-    if subjects_per_job < 1:
-        raise ValueError('subjects_per_job must be greater than 0')
 
     # Create the output path
     all_ids_path = Path(all_ids_path)
