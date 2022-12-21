@@ -48,9 +48,9 @@ def _check_partial_datasets(mrds_list_filepath: str) -> List[Path]:
     return valid_mrds_paths
 
 
-def merge_and_save(name: str,
-                   mrds_path_list: List[Path],
-                   output_folder_path: str) -> None:
+def _merge_and_save(name: str,
+                    mrds_path_list: List[Path],
+                    output_folder_path: str) -> None:
     """
     Given a list of paths, each pointing to a partial mrds pickle file.
     Merges all mrds pickle file into a single mrds pickle, and saves to
