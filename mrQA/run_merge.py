@@ -50,7 +50,7 @@ def check_partial_datasets(mrds_list_filepath: str,
     # User may use the argument --force to skip invalid files and continue
     if len(valid_mrds_paths) < len(mrds_path_list):
         if force:
-            warnings.warn(
+            logger.warn(
                 f"Files for {len(mrds_path_list) - len(valid_mrds_paths)}"
                 f" batches were not found. Skipping! "
                 f"Using The Force to continue!")
