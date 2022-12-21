@@ -9,7 +9,7 @@ from MRdataset.log import logger
 from MRdataset.utils import valid_dirs
 
 from mrQA.utils import execute_local, list2txt, split_list, \
-    is_integer_number
+    is_integer_number, txt2list
 
 
 def _check_args(data_source_folders: Union[str, Path, Iterable] = None,
@@ -188,7 +188,8 @@ def create_scripts(data_source_folders: Union[str, Path, Iterable] = None,
         all_ids_path=all_ids_path,
         per_batch_ids=files_per_batch['ids'],
         output_dir=folder_paths['ids'],
-        subjects_per_job=subjects_per_job)
+        subjects_per_job=subjects_per_job
+    )
 
     scripts_path_list = []
     mrds_path_list = []
