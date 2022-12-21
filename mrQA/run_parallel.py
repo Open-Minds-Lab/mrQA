@@ -9,10 +9,10 @@ from mrQA.utils import list2txt, split_list, \
     txt2list
 
 
-def submit_jobs(scripts_list_filepath: Union[str, Path],
-                mrds_list_filepath: Union[str, Path],
-                debug: bool = False,
-                hpc: bool = False) -> None:
+def submit_job(scripts_list_filepath: Union[str, Path],
+               mrds_list_filepath: Union[str, Path],
+               debug: bool = False,
+               hpc: bool = False) -> None:
     """
     Given a folder(or List[folder]) it will divide the work into smaller
     jobs. Each job will contain a fixed number of subjects. These jobs can be
@@ -48,16 +48,16 @@ def submit_jobs(scripts_list_filepath: Union[str, Path],
     return
 
 
-def create_scripts(data_source_folders: Union[str, Path, Iterable] = None,
-                   style: str = 'dicom',
-                   include_phantom: bool = False,
-                   verbose: bool = False,
-                   output_dir: Union[str, Path] = None,
-                   debug: bool = False,
-                   subjects_per_job: int = None,
-                   hpc: bool = False,
-                   conda_dist: str = None,
-                   conda_env: str = None) -> None:
+def create_script(data_source_folders: Union[str, Path, Iterable] = None,
+                  style: str = 'dicom',
+                  include_phantom: bool = False,
+                  verbose: bool = False,
+                  output_dir: Union[str, Path] = None,
+                  debug: bool = False,
+                  subjects_per_job: int = None,
+                  hpc: bool = False,
+                  conda_dist: str = None,
+                  conda_env: str = None) -> None:
     """
     Given a folder(or List[folder]) it will divide the work into smaller
     jobs. Each job will contain a fixed number of subjects. These jobs can be

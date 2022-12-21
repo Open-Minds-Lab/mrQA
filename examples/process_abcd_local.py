@@ -7,7 +7,7 @@ from MRdataset.config import MRDS_EXT
 
 from mrQA import check_compliance
 from mrQA.run_merge import check_and_merge
-from mrQA.run_parallel import create_scripts, submit_jobs
+from mrQA.run_parallel import create_script, submit_job
 
 
 def main():
@@ -43,19 +43,19 @@ def main():
     # Choose a task, one of [debug|submit_job|merge|report]
     if args.task == 'create_script':
         # note that it will generate scripts only
-        create_scripts(data_source_folders=DATA_ROOT,
-                       subjects_per_job=3,
-                       conda_env='mrcheck',
-                       conda_dist='anaconda3',
-                       hpc=False,
-                       )
+        create_script(data_source_folders=DATA_ROOT,
+                      subjects_per_job=3,
+                      conda_env='mrcheck',
+                      conda_dist='anaconda3',
+                      hpc=False,
+                      )
     elif args.task == 'submit_job':
         # Generate slurm scripts and submit jobs, for local parallel processing
         SCRIPTS_LIST_PATH = OUTPUT_DIR / 'scripts_list.txt'
         MRDS_LIST_PATH = OUTPUT_DIR / 'per_batch_partial_mrds_list.txt'
-        submit_jobs(scripts_list_filepath=SCRIPTS_LIST_PATH,
-                    mrds_list_filepath=MRDS_LIST_PATH,
-                    hpc=False)
+        submit_job(scripts_list_filepath=SCRIPTS_LIST_PATH,
+                   mrds_list_filepath=MRDS_LIST_PATH,
+                   hpc=False)
 
     elif args.task == 'merge':
         # Merge partial datasets into a single dataset
