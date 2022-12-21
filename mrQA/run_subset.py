@@ -92,8 +92,8 @@ def read_subset(batch_ids_file: str,
         raise NotImplementedError(f"Expected style as dicom, Got {style}")
 
     subset = txt2list(batch_ids_file)
-    identifier = batch_ids_file.stem
-    partial_dataset = import_dataset(data_root=subset,
+    identifier = Path(batch_ids_file).stem
+    partial_dataset = import_dataset(data_source_folders=subset,
                                      style=style,
                                      name=identifier,
                                      verbose=verbose,
