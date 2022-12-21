@@ -183,7 +183,7 @@ def create_scripts(data_source_folders: Union[str, Path, Iterable] = None,
                                                   subjects_per_job, hpc,
                                                   conda_dist, conda_env)
     folder_paths, files_per_batch, all_ids_path = _make_file_folders(output_dir)
-    ids_path_list = create_index(
+    ids_path_list = split_ids_list(
         data_src,
         all_ids_path=all_ids_path,
         per_batch_ids=files_per_batch['ids'],
@@ -336,11 +336,11 @@ def _create_slurm_script(output_script_path: Union[str, Path],
         )
 
 
-def create_index(data_source_folders: Union[str, Path],
-                 all_ids_path: Union[str, Path],
-                 per_batch_ids,
-                 output_dir: Union[str, Path],
-                 subjects_per_job: int = 50):
+def split_ids_list(data_source_folders: Union[str, Path],
+                   all_ids_path: Union[str, Path],
+                   per_batch_ids,
+                   output_dir: Union[str, Path],
+                   subjects_per_job: int = 50):
     """
     Splits a given set of subjects into multiple jobs and creates separate
     text files containing the list of subjects. Each text file
