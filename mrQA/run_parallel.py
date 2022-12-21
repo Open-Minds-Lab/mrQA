@@ -252,7 +252,8 @@ def run_single_batch(s_filename: str,
         # to submit the script
         subprocess.call(['sbatch', s_filename])
     else:
-        logger.warning(f"{partial_mrds_filename} already exists, skipping")
+        logger.warning(f"{partial_mrds_filename} already exists, skipping"
+                       f"Use 'sbatch {s_filename} to overwrite")
 
 
 def create_slurm_script(filename: Union[str, Path],
