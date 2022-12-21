@@ -122,14 +122,14 @@ def submit_jobs(debug: bool = False,
     bash_scripts = txt2list()
     for script_filename in path_list:
         # Run the script file
-        output = run_single_batch(debug=debug,
-                                  txt_filepath=ids_filepath,
-                                  verbose=verbose,
-                                  include_phantom=include_phantom,
-                                  script_path=script_filepath,
-                                  submit_job=submit_job,
-                                  hpc=hpc,
-                                  output_mrds_path=partial_mrds_filepath)
+        output = _run_single_batch(debug=debug,
+                                   txt_filepath=ids_filepath,
+                                   verbose=verbose,
+                                   include_phantom=include_phantom,
+                                   script_path=script_filepath,
+                                   submit_job=submit_job,
+                                   hpc=hpc,
+                                   output_mrds_path=partial_mrds_filepath)
         processes.append(output)
     # Wait only if executing locally
     if debug:
@@ -226,9 +226,9 @@ def create_scripts(data_source_folders: Union[str, Path, Iterable] = None,
     list2txt(path=files_per_batch['scripts'], list_=scripts_path_list)
 
 
-def run_single_batch(script_path: str,
-                     hpc: bool,
-                     output_mrds_path: Union[str, Path]):
+def _run_single_batch(script_path: str,
+                      hpc: bool,
+                      output_mrds_path: Union[str, Path]):
     """
     Runs a single script file either locally or on hpc.
 
