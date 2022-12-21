@@ -116,8 +116,10 @@ def store(modality, run, subject_name, session_name):
         if not is_hashable(parameter):
             parameter = str(parameter)
 
-        modality.update(parameter, run.echo_time, ref_value, new_value,
-                        '{}_{}'.format(subject_name, session_name))
+        modality.add_non_compliant_param(
+            parameter, run.echo_time, ref_value, new_value,
+            '{}_{}'.format(subject_name, session_name)
+        )
 
 
 def generate_report(dataset: BaseDataset, output_dir: Union[Path, str]) -> None:
