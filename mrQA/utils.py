@@ -224,10 +224,11 @@ def _get_runs_by_echo(modality):
     def _sort_key(run):
         return run.echo_time
 
+    run_params_by_te = dict()
     runs_in_modality = sorted(runs_in_modality, key=_sort_key)
-    runs_by_te = {te: run.params for te, run in groupby(runs_in_modality,
-                                                        key=_sort_key)}
-    return runs_by_te
+    for te, group in groupby(runs_in_modality, key=_sort_key):
+        run_params_by_te[te] = [run.params for run in list(group)]
+    return run_params_by_te
 
 
 def _check_against_reference(modality):
