@@ -61,8 +61,7 @@ def main():
         save_mr_dataset(args.output_path, partial_dataset)
 
 
-def read_subset(output_path: Union[str, Path],
-                batch_ids_file: str,
+def read_subset(batch_ids_file: str,
                 style: str,
                 verbose: bool,
                 include_phantom: bool,
