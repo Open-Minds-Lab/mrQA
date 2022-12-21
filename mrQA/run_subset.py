@@ -73,8 +73,6 @@ def read_subset(batch_ids_file: str,
 
     Parameters
     ----------
-    output_path : str
-        where should the MRdataset object should be saved finally
     batch_ids_file : str
         path to a text file containing a list of paths (to several folders)
     style : str
