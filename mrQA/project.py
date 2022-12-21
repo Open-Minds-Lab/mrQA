@@ -13,8 +13,9 @@ def check_compliance(dataset: Project,
                      strategy: str = 'majority',
                      output_dir: Union[Path, str] = None):
     """
-    Main function for checking compliance. Infers the reference protocol according to
-     the user chosen strategy, and then generates a report in compliance
+    Main function for checking compliance. Infers the reference protocol
+    according to the user chosen strategy, and then generates a compliance
+    report
 
     Parameters
     ----------
@@ -22,8 +23,8 @@ def check_compliance(dataset: Project,
         Project instance for the dataset which is to be checked for compliance
 
     strategy : str
-        Strategy employed to specify or automatically infer the reference protocol.
-        Allowed options are 'majority'
+        Strategy employed to specify or automatically infer the
+        reference protocol. Allowed options are 'majority'
 
     output_dir: Union[Path, str]
         Path to save the report
@@ -45,8 +46,9 @@ def check_compliance(dataset: Project,
     if strategy == 'majority':
         dataset = compare_with_majority(dataset)
     else:
-        raise NotImplementedError('Only the following strategies are allowed : \n\t'
-                                  '{}'.format(STRATEGIES_ALLOWED))
+        raise NotImplementedError(
+            'Only the following strategies are allowed : \n\t'
+            '{}'.format(STRATEGIES_ALLOWED))
 
     generate_report(dataset, output_dir)
 
