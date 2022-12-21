@@ -130,9 +130,8 @@ def compare_with_majority(dataset: "Project") -> Project:
 
         # For each echo time, find the most common values
         for echo_time in run_by_echo.keys():
-            if run_by_echo[echo_time]:
-                reference = majority_attribute_values(run_by_echo[echo_time])
-                modality.set_reference(reference, echo_time)
+            reference = majority_attribute_values(run_by_echo[echo_time])
+            modality.set_reference(reference, echo_time)
 
         modality.compliant = _check_against_reference(modality)
         if modality.compliant:
