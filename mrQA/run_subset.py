@@ -1,11 +1,9 @@
 import argparse
 import sys
 from pathlib import Path
-from typing import Union
 
-import MRdataset.base
 from MRdataset import import_dataset, save_mr_dataset
-from MRdataset.config import CACHE_DIR
+from MRdataset.base import BaseDataset
 
 from mrQA.common import set_logging
 from mrQA.utils import txt2list
