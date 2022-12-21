@@ -75,7 +75,6 @@ def _merge_and_save(name: str,
     complete_dataset.is_complete = True
     complete_dataset.name = name
     filename = output_folder_path / (name + MRDS_EXT)
-    complete_dataset.cache_path = filename
     save_mr_dataset(filename, complete_dataset)
 
 
