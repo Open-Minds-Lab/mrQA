@@ -179,7 +179,7 @@ def _create_slurm_script(output_script_path: Union[str, Path],
         python_cmd += ' --verbose'
     if include_phantom:
         python_cmd += ' --include_phantom'
-    python_cmd += ' --is_partial --skip_save'
+    python_cmd += ' --is_partial'
 
     # Create the slurm script file
     with open(output_script_path, 'w') as fp:
