@@ -98,8 +98,6 @@ def read_subset(batch_ids_file: str,
                                      name=identifier,
                                      verbose=verbose,
                                      include_phantom=include_phantom,
-                                     metadata_root=output_dir,
-                                     cache_path=output_path,
                                      **_kwargs)
     # partial_dataset.walk(), import_dataset already does this
     return partial_dataset
