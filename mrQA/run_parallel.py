@@ -211,14 +211,14 @@ def create_scripts(data_source_folders: Union[str, Path, Iterable] = None,
         mrds_path_list.append(partial_mrds_filepath)
 
         # Finally create the slurm script and save to disk
-        create_slurm_script(filename=script_filepath,
-                            ids_filepath=ids_filepath,
-                            env=conda_env,
-                            conda_dist=conda_dist,
-                            num_subj_per_job=subjects_per_job,
-                            verbose=verbose,
-                            include_phantom=include_phantom,
-                            partial_mrds_filename=partial_mrds_filepath)
+        _create_slurm_script(output_script_path=script_filepath,
+                             ids_filepath=ids_filepath,
+                             env=conda_env,
+                             conda_dist=conda_dist,
+                             num_subj_per_job=subjects_per_job,
+                             verbose=verbose,
+                             include_phantom=include_phantom,
+                             output_mrds_path=partial_mrds_filepath)
 
     # Finally, save the all the paths to create mrds pickle files and all the
     # paths to generated scripts in a text file for reference.
@@ -256,14 +256,14 @@ def _run_single_batch(script_path: str,
                        f"Use 'sbatch {script_path} to overwrite")
 
 
-def create_slurm_script(output_script_path: Union[str, Path],
-                        ids_filepath: Union[str, Path],
-                        env: str = 'mrqa',
-                        conda_dist: str = 'anaconda3',
-                        num_subj_per_job: int = 50,
-                        verbose: bool = False,
-                        include_phantom: bool = False,
-                        output_mrds_path: bool = None) -> None:
+def _create_slurm_script(output_script_path: Union[str, Path],
+                         ids_filepath: Union[str, Path],
+                         env: str = 'mrqa',
+                         conda_dist: str = 'anaconda3',
+                         num_subj_per_job: int = 50,
+                         verbose: bool = False,
+                         include_phantom: bool = False,
+                         output_mrds_path: bool = None) -> None:
     """
     Creates a slurm script file which can be submitted to a hpc.
 
