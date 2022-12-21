@@ -293,13 +293,9 @@ def create_slurm_script(filename: Union[str, Path],
 
     # Memory and CPU time :  typical usage observed locally
 
-    # For subjects_per_job = 50
-    # Max RSS Size (Memory) ~150 MB,
-    # Sys Time (CPU Time) : 10 minutes
-
-    # For subjects_per_job = 100
-    # Max RSS Size (Memory) ~160 MB,
-    # Sys Time (CPU Time) : 20 minutes
+    # For subjects_per_job = 50             100
+    # Max RSS Size (Memory) ~150 MB,        ~160 MB
+    # Sys Time (CPU Time) : 10 minutes      20 minutes
 
     # Set the memory and cpu time limits
     mem_reqd = 2000  # MB;
