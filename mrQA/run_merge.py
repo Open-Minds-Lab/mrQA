@@ -22,10 +22,6 @@ def check_partial_datasets(mrds_list_filepath: str) -> List[Path]:
     mrds_list_filepath : str
     Path to a text file, which contains the paths to all partial mrds files
 
-    force : bool
-    If False, proceed only if paths are valid. If True, proceeds even if some
-    paths are invalid.
-
     Returns
     -------
     mrds_paths : List[Path]
