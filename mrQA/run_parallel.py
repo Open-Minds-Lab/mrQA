@@ -166,7 +166,6 @@ def split_ids_list(data_source_folders: Union[str, Path],
         Paths to the text files, each containing a list of subjects
     """
 
-    # Create the output path
     all_ids_path = Path(all_ids_path)
     # List of paths to the text files containing the list of subjects for
     # each job
