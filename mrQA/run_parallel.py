@@ -121,17 +121,13 @@ def submit_jobs(scripts_list_filepath: str,
     """
 
     processes = []
-    bash_scripts = txt2list()
-    for script_filename in path_list:
+    bash_scripts = txt2list(scripts_list_filepath)
+    mrds_files = txt2list(mrds_list_filepath)
+    for script_path, output_mrds_path in zip(bash_scripts, mrds_files):
         # Run the script file
-        output = _run_single_batch(debug=debug,
-                                   txt_filepath=ids_filepath,
-                                   verbose=verbose,
-                                   include_phantom=include_phantom,
-                                   script_path=script_filepath,
-                                   submit_job=submit_job,
+        output = _run_single_batch(script_path=script_path,
                                    hpc=hpc,
-                                   output_mrds_path=partial_mrds_filepath)
+                                   output_mrds_path=output_mrds_path)
         processes.append(output)
     # Wait only if executing locally
     if debug:
