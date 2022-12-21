@@ -175,24 +175,10 @@ def split_ids_list(data_source_folders: Union[str, Path],
     # each job
     batch_ids_path_list = []
 
-    subject_list = []
-    # Get the list of subject ids
-    for root, dirs, files in os.walk(data_source_folders):
-        if 'sub-' in Path(root).name:
-            # Get the subject id
-            subject_list.append(root)
-    # Store the list of unique subject ids to a text file given by
-    # output_path
-    list2txt(all_ids_path, list(set(subject_list)))
-
+    subject_list = _get_subject_ids(data_source_folders, all_ids_path)
     # Get the list of subjects for each job
     workers = _get_num_workers(subjects_per_job, subject_list)
     subject_subsets = split_list(subject_list, num_chunks=workers)
-
-    # Create a directory to store the text files containing the list of
-    # subjects for each job
-    output_dir = Path(output_dir)
-    output_dir.mkdir(exist_ok=True, parents=True)
 
     # Create a text file for each job
     for i, subset in enumerate(subject_subsets):
@@ -208,3 +194,30 @@ def split_ids_list(data_source_folders: Union[str, Path],
     return batch_ids_path_list
 
 
+def _get_subject_ids(data_source_folders: Union[str, Path],
+                     all_ids_path: Union[str, Path]) -> list:
+    """
+    Get the list of subject ids from the data source folder
+
+    Parameters
+    ----------
+    data_source_folders : Union[str, Path]
+        Path to the root directory of the data
+    all_ids_path : Union[str, Path]
+        Path to the output directory
+
+    Returns
+    -------
+    subject_list : list
+        List of subject ids
+    """
+    subject_list = []
+    # Get the list of subject ids
+    for root, dirs, files in os.walk(data_source_folders):
+        if 'sub-' in Path(root).name:
+            # Get the subject id
+            subject_list.append(root)
+    # Store the list of unique subject ids to a text file given by
+    # output_path
+    list2txt(all_ids_path, list(set(subject_list)))
+    return subject_list
