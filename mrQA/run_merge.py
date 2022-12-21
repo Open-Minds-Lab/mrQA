@@ -130,7 +130,7 @@ def check_and_merge(name: str,
     -------
 
     """
-    valid_mrds_list = check_partial_datasets(mrds_list_filepath)
+    valid_mrds_list = _check_partial_datasets(mrds_list_filepath)
     if save_dir is None:
         raise AttributeError("Pass a directory to save the file!")
-    merge_and_save(name, valid_mrds_list, save_dir)
+    _merge_and_save(name, valid_mrds_list, save_dir)
