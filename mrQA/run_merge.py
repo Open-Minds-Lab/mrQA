@@ -7,6 +7,7 @@ from MRdataset.log import logger
 from MRdataset import load_mr_dataset
 from MRdataset import save_mr_dataset
 from MRdataset.config import MRDS_EXT
+from MRdataset.base import BaseDataset
 
 from mrQA.utils import txt2list
 
