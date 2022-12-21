@@ -65,7 +65,7 @@ def read_subset(batch_ids_file: str,
                 style: str,
                 verbose: bool,
                 include_phantom: bool,
-                **_kwargs) -> MRdataset.base.Project:
+                **_kwargs) -> BaseDataset:
     """
     Given a list of folder paths, reads all dicom files in those folders
     and returns a MRdataset object. In context, when this function was created,
