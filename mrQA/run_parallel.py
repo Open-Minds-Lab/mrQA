@@ -227,15 +227,9 @@ def create_scripts(data_source_folders: Union[str, Path, Iterable] = None,
     list2txt(path=files_per_batch['scripts'], list_=scripts_path_list)
 
 
-def run_single_batch(debug: bool,
-                     txt_filepath: str,
-                     verbose: bool,
-                     include_phantom: bool,
-                     s_filename: str,
-                     submit_job: bool,
+def run_single_batch(s_filename: str,
                      hpc: bool,
-                     partial_mrds_filename: Union[str, Path]) \
-                     -> Optional[subprocess.Popen]:
+                     partial_mrds_filename: Union[str, Path]):
     """
     Runs a single script file either locally or on hpc.
 
