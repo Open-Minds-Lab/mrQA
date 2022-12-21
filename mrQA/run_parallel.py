@@ -1,13 +1,53 @@
+import time
 from pathlib import Path
 from typing import Iterable, Union, List
 
 from MRdataset.config import MRDS_EXT
 from MRdataset.utils import valid_paths
+from MRdataset import load_mr_dataset
 
 from mrQA.parallel_utils import _check_args, _make_file_folders, \
     _run_single_batch, _create_slurm_script, _get_num_workers, _get_subject_ids
 from mrQA.utils import list2txt, split_list, \
     txt2list
+from mrQA.run_merge import check_and_merge
+from mrQA import check_compliance
+
+
+def parallel_dataset(data_root,
+                     output_dir,
+                     output_path,
+                     name=None):
+    # One function to process them all!
+    # note that it will generate scripts only
+    create_script(data_source_folders=data_root,
+                  subjects_per_job=50,
+                  conda_env='mrcheck',
+                  conda_dist='anaconda3',
+                  hpc=False,
+                  )
+    # Generate slurm scripts and submit jobs, for local parallel processing
+    folder_paths, files_per_batch, all_ids_path = _make_file_folders(output_dir)
+
+    submit_job(scripts_list_filepath=files_per_batch['scripts'],
+               mrds_list_filepath=files_per_batch['mrds'],
+               hpc=False)
+
+    # wait until processing completes
+    mrds_files = valid_paths(txt2list(files_per_batch['mrds']))
+    for file in mrds_files:
+        while not file.exists():
+            time.sleep(100)
+
+    check_and_merge(
+        mrds_list_filepath=files_per_batch['mrds'],
+        output_path=output_path,
+        name=name
+    )
+    # Generate a report for the merged dataset
+    dataset = load_mr_dataset(output_dir / (name + MRDS_EXT), style='dicom')
+    check_compliance(dataset=dataset,
+                     output_dir=output_dir/'reports')
 
 
 def submit_job(scripts_list_filepath: Union[str, Path],
