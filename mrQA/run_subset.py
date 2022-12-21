@@ -24,7 +24,7 @@ def main():
     required.add_argument('-o', '--output_path', type=str, required=True,
                           help='complete path to pickle file for storing '
                                'partial dataset')
-    required.add_argument('-b', '--batch_txt_file', type=str, required=True,
+    required.add_argument('-b', '--batch_ids_file', type=str, required=True,
                           help='text file path specifying the folders to read')
     optional.add_argument('-h', '--help', action='help',
                           default=argparse.SUPPRESS,
@@ -50,7 +50,7 @@ def main():
     output_path = Path(args.output_path).resolve()
     if not output_path.exists():
         partial_dataset = read_subset(output_path=args.output_path,
-                                      batch_ids_file=args.batch_txt_file,
+                                      batch_ids_file=args.batch_ids_file,
                                       style='dicom',
                                       verbose=args.verbose,
                                       include_phantom=args.include_phantom,
