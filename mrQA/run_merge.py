@@ -71,7 +71,7 @@ def _merge_and_save(name: str,
         raise RuntimeError(f"Expect save_folder to be one of "
                            f"[str|pathlib.Path]. "
                            f"Got {type(output_folder_path)}")
-    complete_dataset = merge_from_disk(mrds_path_list)
+    complete_dataset = _merge_from_disk(mrds_path_list)
     complete_dataset.is_complete = True
     complete_dataset.name = name
     filename = output_folder_path / (name + MRDS_EXT)
