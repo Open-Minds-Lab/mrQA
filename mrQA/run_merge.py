@@ -100,9 +100,9 @@ def _merge_from_disk(mrds_path_list: Union[List[Path], List[str]]) \
     return complete_mrds
 
 
-def check_and_merge(name: str,
-                    mrds_list_filepath: Union[str, Path],
-                    save_dir: Union[str, Path] = None) -> None:
+def check_and_merge(mrds_list_filepath: Union[str, Path],
+                    output_path: Union[str, Path] = None,
+                    name: str = None) -> None:
     """
     Entry point function to merge partial datasets.
      Use this function, and other function will be called internally.
@@ -115,7 +115,7 @@ def check_and_merge(name: str,
     mrds_list_filepath : str
         Filepath to a text file which contains complete list of paths
         each pointing to a partial mrds file
-    save_dir : Union[str, Path]
+    output_path : Union[str, Path]
         Specify folder to save the final file
 
     Returns
@@ -123,6 +123,6 @@ def check_and_merge(name: str,
 
     """
     valid_mrds_list = _check_partial_datasets(mrds_list_filepath)
-    if save_dir is None:
-        raise AttributeError("Pass a directory to save the file!")
-    _merge_and_save(name, valid_mrds_list, save_dir)
+    if output_path is None:
+        raise AttributeError("Pass a file path to save the file!")
+    _merge_and_save(valid_mrds_list, output_path, name)
