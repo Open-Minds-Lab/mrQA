@@ -116,21 +116,14 @@ def _merge_from_disk(mrds_path_list: Union[List[Path], List[str]]) \
     """
     complete_mrds = None
     for file in mrds_path_list:
-        # Check if it is valid path to file, i.e. it exists, and
-        # it is not a directory
-        filepath = Path(file)
-        if filepath.is_file():
-            try:
-                # Load the partial mrds file
-                partial_mrds = load_mr_dataset(filepath)
-                if complete_mrds is None:
-                    # Add the first partial dataset
-                    complete_mrds = partial_mrds
-                else:
-                    # otherwise, keep aggregating, and return in the end
-                    complete_mrds.merge(partial_mrds)
-            except FileNotFoundError:
-                print(f"Unable to read file: {filepath}")
+        # Load the partial mrds file
+        partial_mrds = load_mr_dataset(file)
+        if complete_mrds is None:
+            # Add the first partial dataset
+            complete_mrds = partial_mrds
+        else:
+            # otherwise, keep aggregating, and return in the end
+            complete_mrds.merge(partial_mrds)
     return complete_mrds
 
 
