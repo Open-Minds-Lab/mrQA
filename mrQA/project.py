@@ -1,12 +1,13 @@
+from itertools import groupby
 from pathlib import Path
 from typing import Union
 
 from MRdataset.base import Project
 from MRdataset.utils import param_difference, is_hashable
 
+from mrQA.config import STRATEGIES_ALLOWED
 from mrQA.formatter import HtmlFormatter
 from mrQA.utils import timestamp, majority_attribute_values
-from mrQA.config import STRATEGIES_ALLOWED
 
 
 def check_compliance(dataset: Project,
