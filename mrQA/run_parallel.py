@@ -35,8 +35,7 @@ def _check_args(data_source_folders: Union[str, Path, Iterable] = None,
     # Check if data_root is a valid directory, or list of valid directories
     data_source_folders = valid_dirs(data_source_folders)
 
-    # Check if output_dir was provided.
-    # RULE : If not, it will be saved in 'mrqa_files'
+    # RULE : If output_dir not provided, output wil be saved in 'mrqa_files'
     # created in the parent folder of data_root
     if not output_dir:
         if isinstance(data_source_folders, Iterable):
