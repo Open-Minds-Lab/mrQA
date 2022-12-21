@@ -20,8 +20,8 @@ def check_compliance(dataset: BaseDataset,
 
     Parameters
     ----------
-    dataset : Project
-        Project instance for the dataset which is to be checked for compliance
+    dataset : BaseDataset
+        BaseDataset instance for the dataset to be checked for compliance
 
     strategy : str
         Strategy employed to specify or automatically infer the
@@ -106,21 +106,21 @@ def _check_against_reference(modality):
     return modality.compliant
 
 
-def compare_with_majority(dataset: "Project") -> Project:
+def compare_with_majority(dataset: "BaseDataset") -> BaseDataset:
     """
     Method for post-acquisition compliance. Infers the reference protocol/values
     by looking for the most frequent values, and then identifying deviations
 
     Parameters
     ----------
-    dataset : Project
-        MRdataset.base.Project instance for the dataset which is to be checked
+    dataset : BaseDataset
+        BaseDataset instance for the dataset which is to be checked
         for compliance
 
     Returns
     -------
-    dataset : Project
-        Adds the non-compliance information to the same Project instance and
+    dataset : BaseDataset
+        Adds the non-compliance information to the same BaseDataset instance and
         returns it.
     """
     # TODO: Check for subset, if incomplete dataset throw error and stop
@@ -171,15 +171,15 @@ def store(modality, run, subject_name, session_name):
                         '{}_{}'.format(subject_name, session_name))
 
 
-def generate_report(dataset: Project, output_dir: Union[Path, str]) -> None:
+def generate_report(dataset: BaseDataset, output_dir: Union[Path, str]) -> None:
     """
     Generates an HTML report aggregating and summarizing the non-compliance
     discovered in the dataset.
 
     Parameters
     ----------
-    dataset : Project
-        MRdataset.base.Project instance for the dataset which is to be checked
+    dataset : BaseDataset
+        BaseDataset instance for the dataset which is to be checked
     output_dir : Union[Path, str]
         Directory in which the generated report should be stored.
     """
@@ -204,8 +204,8 @@ def otg_report(dataset, report_name):
 
     Parameters
     ----------
-    dataset : Project
-        MRdataset.base.Project instance for the dataset which is to be checked
+    dataset : BaseDataset
+        BaseDataset instance for the dataset which is to be checked
     report_name : str
         Filename for the report
 
