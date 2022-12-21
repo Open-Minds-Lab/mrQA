@@ -64,23 +64,6 @@ def check_partial_datasets(mrds_list_filepath: str,
         if size > 0:
             # mrds_sizes.append(size)
             mrds_paths.append(file)
-
-    # outlier_idxs = get_outliers(mrds_sizes)
-    # if not outlier_idxs:
-    #     return mrds_paths
-    # bad_files = "\n".join([str(mrds_paths[i]) for i in outlier_idxs])
-    # if force:
-    #     warnings.warn(f"File size for these files seem too off, assuming that "
-    #                   f"subjects were equally divided among all the jobs\n"
-    #                   f"{bad_files}"
-    #                   f"Using The Force to merge anyway")
-    # else:
-    #     raise RuntimeError(f"File size for these files seem too off, "
-    #                        f"assuming that subjects were equally divided"
-    #                        f" among all the jobs\n"
-    #                        f"{bad_files}\n"
-    #                        f"Use The Force to merge anyway. Or re-submit "
-    #                        f"jobs for these files.")
     return mrds_paths
 
 
