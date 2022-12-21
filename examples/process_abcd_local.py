@@ -44,7 +44,7 @@ def main():
     if args.task == 'create_script':
         # note that it will generate scripts only
         create_script(data_source_folders=DATA_ROOT,
-                      subjects_per_job=3,
+                      subjects_per_job=50,
                       conda_env='mrcheck',
                       conda_dist='anaconda3',
                       hpc=False,
