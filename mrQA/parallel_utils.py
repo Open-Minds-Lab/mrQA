@@ -94,7 +94,7 @@ def _make_file_folders(output_dir):
     return folder_paths, files_per_batch, all_ids_path
 
 
-def _run_single_batch(script_path: str,
+def _run_single_batch(script_path: Union[str, Path],
                       hpc: bool,
                       output_mrds_path: Union[str, Path]):
     """
