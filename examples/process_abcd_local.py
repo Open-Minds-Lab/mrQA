@@ -40,16 +40,14 @@ def main():
     name = 'abcd-375'
 
     # Choose a task, one of [debug|submit_job|merge|report]
-    if args.task == 'debug':
-        # Debugging code, note that it will generate scripts and also run them
-        # sequentially, so it is not recommended to use this for large datasets
-        parallel_dataset(data_root=DATA_ROOT,
-                         subjects_per_job=3,
-                         debug=True,
-                         submit_job=False,
-                         conda_env='mrcheck',
-                         conda_dist='anaconda3',
-                         hpc=False)
+    if args.task == 'create_script':
+        # note that it will generate scripts only
+        create_scripts(data_source_folders=DATA_ROOT,
+                       subjects_per_job=3,
+                       conda_env='mrcheck',
+                       conda_dist='anaconda3',
+                       hpc=False,
+                       )
     elif args.task == 'submit_job':
         # Generate slurm scripts and submit jobs, for local parallel processing
         parallel_dataset(data_root=DATA_ROOT,
