@@ -50,14 +50,12 @@ def main():
                        )
     elif args.task == 'submit_job':
         # Generate slurm scripts and submit jobs, for local parallel processing
-        parallel_dataset(data_root=DATA_ROOT,
-                         subjects_per_job=100,
-                         debug=False,
-                         submit_job=False,
-                         conda_env='mrcheck',
-                         conda_dist='anaconda3',
-                         hpc=False,
-                         output_dir=OUTPUT_DIR)
+        SCRIPTS_LIST_PATH = OUTPUT_DIR / 'scripts_list.txt'
+        MRDS_LIST_PATH = OUTPUT_DIR / 'per_batch_partial_mrds_list.txt'
+        submit_jobs(scripts_list_filepath=SCRIPTS_LIST_PATH,
+                    mrds_list_filepath=MRDS_LIST_PATH,
+                    hpc=False)
+
     elif args.task == 'merge':
         # Merge partial datasets into a single dataset
         mrds_paths = OUTPUT_DIR / 'partial_mrds_paths.txt'
