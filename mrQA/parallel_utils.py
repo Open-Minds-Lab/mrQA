@@ -7,7 +7,7 @@ from typing import Union, Iterable
 from MRdataset.log import logger
 from MRdataset.utils import valid_dirs
 
-from mrQA.utils import is_integer_number, execute_local
+from mrQA.utils import is_integer_number, execute_local, list2txt
 
 
 def _check_args(data_source_folders: Union[str, Path, Iterable] = None,
@@ -221,3 +221,32 @@ def _get_num_workers(subjects_per_job, subject_list):
                            "workers > 1 for parallel processing. Got 1")
 
     return workers
+
+
+def _get_subject_ids(data_source_folders: Union[str, Path],
+                     all_ids_path: Union[str, Path]) -> list:
+    """
+    Get the list of subject ids from the data source folder
+
+    Parameters
+    ----------
+    data_source_folders : Union[str, Path]
+        Path to the root directory of the data
+    all_ids_path : Union[str, Path]
+        Path to the output directory
+
+    Returns
+    -------
+    subject_list : list
+        List of subject ids
+    """
+    subject_list = []
+    # Get the list of subject ids
+    for root, dirs, files in os.walk(data_source_folders):
+        if 'sub-' in Path(root).name:
+            # Get the subject id
+            subject_list.append(root)
+    # Store the list of unique subject ids to a text file given by
+    # output_path
+    list2txt(all_ids_path, list(set(subject_list)))
+    return subject_list

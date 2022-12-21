@@ -1,11 +1,10 @@
-import os
 from pathlib import Path
 from typing import Iterable, Union, List
 
 from MRdataset.config import MRDS_EXT
 
 from mrQA.parallel_utils import _check_args, _make_file_folders, \
-    _run_single_batch, _create_slurm_script, _get_num_workers
+    _run_single_batch, _create_slurm_script, _get_num_workers, _get_subject_ids
 from mrQA.utils import list2txt, split_list, \
     txt2list
 
@@ -189,30 +188,3 @@ def split_ids_list(data_source_folders: Union[str, Path],
     return batch_ids_path_list
 
 
-def _get_subject_ids(data_source_folders: Union[str, Path],
-                     all_ids_path: Union[str, Path]) -> list:
-    """
-    Get the list of subject ids from the data source folder
-
-    Parameters
-    ----------
-    data_source_folders : Union[str, Path]
-        Path to the root directory of the data
-    all_ids_path : Union[str, Path]
-        Path to the output directory
-
-    Returns
-    -------
-    subject_list : list
-        List of subject ids
-    """
-    subject_list = []
-    # Get the list of subject ids
-    for root, dirs, files in os.walk(data_source_folders):
-        if 'sub-' in Path(root).name:
-            # Get the subject id
-            subject_list.append(root)
-    # Store the list of unique subject ids to a text file given by
-    # output_path
-    list2txt(all_ids_path, list(set(subject_list)))
-    return subject_list
