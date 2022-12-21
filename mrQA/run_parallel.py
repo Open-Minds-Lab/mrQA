@@ -167,8 +167,8 @@ def split_ids_list(data_source_folders: Union[str, Path],
     """
 
     all_ids_path = Path(all_ids_path)
-    # List of paths to the text files containing the list of subjects for
-    # each job
+    # List of paths to the txt files,
+    # each containing the list of subjects per job
     batch_ids_path_list = []
 
     subject_list = _get_subject_ids(data_source_folders, all_ids_path)
@@ -185,8 +185,7 @@ def split_ids_list(data_source_folders: Union[str, Path],
         # Add the path to the text file ( containing the
         # list of subjects for each job) to a list, return the list
         batch_ids_path_list.append(batch_filepath)
-    list2txt(path=per_batch_ids,
-             list_=batch_ids_path_list)
+    list2txt(path=per_batch_ids, list_=batch_ids_path_list)
     return batch_ids_path_list
 
 
