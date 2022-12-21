@@ -1,12 +1,13 @@
+import argparse
+import sys
 from pathlib import Path
 
 from MRdataset import load_mr_dataset
 from MRdataset.config import MRDS_EXT
+
 from mrQA import check_compliance
 from mrQA.run_merge import check_and_merge
-from mrQA.run_parallel import parallel_dataset
-import argparse
-import sys
+from mrQA.run_parallel import create_scripts, submit_jobs
 
 
 def main():
@@ -35,7 +36,7 @@ def main():
     args = parser.parse_args()
     # Set constants
     DATA_ROOT = Path('/media/sinhah/extremessd/ABCD-375/dicom-baseline')
-    OUTPUT_DIR = DATA_ROOT.parent / (DATA_ROOT.stem+'_mrqa_files')
+    OUTPUT_DIR = DATA_ROOT.parent / (DATA_ROOT.stem + '_mrqa_files')
     # OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     name = 'abcd-375'
 
