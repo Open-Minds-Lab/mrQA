@@ -235,26 +235,12 @@ def run_single_batch(s_filename: str,
 
     Parameters
     ----------
-    debug : bool
-        If True, runs the script in debug mode
-    txt_filepath : str
-        Path to text file containing list of subject ids
-    verbose: bool
-        If True, prints the output of the script
-    include_phantom: bool
-        If True, includes phantom, localizer and calibration studies
     s_filename: str
         Path to slurm script file
-    submit_job: bool
-        If True, executes the script either locally or on hpc
     hpc: bool
         If True, runs the slurm script on a hpc
     partial_mrds_filename: str
         Path to the partial mrds pickle file
-
-    Returns
-    -------
-
     """
     # If debug mode, run the script in debug mode
     # The debug mode is used for local testing
