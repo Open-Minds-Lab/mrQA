@@ -67,6 +67,44 @@ def _get_runs_by_echo(modality):
                                                         key=_sort_key)}
     return runs_by_te
 
+
+def _check_against_reference(modality):
+    for subject in modality.subjects:
+        for session in subject.sessions:
+            for run in session.runs:
+                reference = modality.get_reference(run.echo_time)
+                run.delta = param_difference(run.params,
+                                             reference,
+                                             ignore=['modality',
+                                                     'phase_encoding_direction'])
+                if run.delta:
+                    modality.add_non_compliant_subject_name(subject.name)
+                    store(modality, run, subject.name, session.name)
+                    # If any of the runs are non-compliant, then the
+                    # session is non-compliant.
+                    session.compliant = False
+                    # If any of the sessions are non-compliant, then the
+                    # subject is non-compliant.
+                    subject.compliant = False
+                    # If any of the subjects are non-compliant, then the
+                    # modality is non-compliant.
+                    modality.compliant = False
+                    # If none of the subjects or modalities are found to
+                    # be non-compliant, flag will remain True, after the
+                    # loop is finished.
+            if session.compliant:
+                # If after all the runs, session is compliant, then the
+                # session is added to the list of compliant sessions.
+                subject.add_compliant_session_name(session.name)
+        if subject.compliant:
+            # If after all the sessions, subject is compliant, then the
+            # subject is added to the list of compliant subjects.
+            modality.add_compliant_subject_name(subject.name)
+    # If after all the subjects, modality is compliant, then the
+    # modality should be added to the list of compliant sessions.
+    return modality.compliant
+
+
 def compare_with_majority(dataset: "Project") -> Project:
     """
     Method for post-acquisition compliance. Infers the reference protocol/values
