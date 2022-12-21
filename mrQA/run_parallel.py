@@ -126,10 +126,10 @@ def submit_jobs(debug: bool = False,
                                   txt_filepath=ids_filepath,
                                   verbose=verbose,
                                   include_phantom=include_phantom,
-                                  s_filename=script_filepath,
+                                  script_path=script_filepath,
                                   submit_job=submit_job,
                                   hpc=hpc,
-                                  partial_mrds_filename=partial_mrds_filepath)
+                                  output_mrds_path=partial_mrds_filepath)
         processes.append(output)
     # Wait only if executing locally
     if debug:
@@ -226,34 +226,34 @@ def create_scripts(data_source_folders: Union[str, Path, Iterable] = None,
     list2txt(path=files_per_batch['scripts'], list_=scripts_path_list)
 
 
-def run_single_batch(s_filename: str,
+def run_single_batch(script_path: str,
                      hpc: bool,
-                     partial_mrds_filename: Union[str, Path]):
+                     output_mrds_path: Union[str, Path]):
     """
     Runs a single script file either locally or on hpc.
 
     Parameters
     ----------
-    s_filename: str
+    script_path: str
         Path to slurm script file
     hpc: bool
         If True, runs the slurm script on a hpc
-    partial_mrds_filename: str
-        Path to the partial mrds pickle file
+    output_mrds_path: str
+        Path to save partial mrds pickle file
     """
-    if isinstance(partial_mrds_filename, str):
-        partial_mrds_filename = Path(partial_mrds_filename)
-    if not partial_mrds_filename.exists():
+    if isinstance(output_mrds_path, str):
+        output_mrds_path = Path(output_mrds_path)
+    if not output_mrds_path.exists():
         if not hpc:
             # If running locally, and the user does not want to
             # submit the job, run the script using the bash command
-            return execute_local(s_filename)
+            return execute_local(script_path)
         # If running on a hpc, use the sbatch command
         # to submit the script
-        subprocess.call(['sbatch', s_filename])
+        subprocess.call(['sbatch', script_path])
     else:
-        logger.warning(f"{partial_mrds_filename} already exists, skipping"
-                       f"Use 'sbatch {s_filename} to overwrite")
+        logger.warning(f"{output_mrds_path} already exists, skipping"
+                       f"Use 'sbatch {script_path} to overwrite")
 
 
 def create_slurm_script(filename: Union[str, Path],
