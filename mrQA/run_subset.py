@@ -4,6 +4,7 @@ from pathlib import Path
 
 from MRdataset import import_dataset, save_mr_dataset
 from MRdataset.base import BaseDataset
+from MRdataset.log import logger
 
 from mrQA.common import set_logging
 from mrQA.utils import txt2list
@@ -35,7 +36,6 @@ def main():
     optional.add_argument('--include_phantom', action='store_true',
                           help='whether to include phantom, localizer, '
                                'aahead_scout')
-    logger = set_logging('root')
 
     if len(sys.argv) < 2:
         logger.critical('Too few arguments!')
@@ -44,6 +44,12 @@ def main():
 
     args = parser.parse_args()
     output_path = Path(args.output_path).resolve()
+
+    if args.verbose:
+        logger.setLevel('INFO')
+    else:
+        logger.setLevel('WARNING')
+
     if not output_path.exists():
         partial_dataset = read_subset(output_path=args.output_path,
                                       batch_ids_file=args.batch_ids_file,
