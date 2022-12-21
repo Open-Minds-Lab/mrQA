@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import List, Union
 
 import MRdataset
+from MRdataset.log import logger
 from MRdataset import load_mr_dataset
 from MRdataset import save_mr_dataset
 from MRdataset.config import MRDS_EXT
