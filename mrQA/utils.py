@@ -178,13 +178,16 @@ def execute_local(filename):
                                'Real Time: %E',
                                'User Time: %U',
                                'Sys Time: %S'])
-    return subprocess.Popen([
+    ret_code = subprocess.Popen([
         '/usr/bin/time',
         '-f',
         format_params,
         'bash',
         filename
     ])
+    ret_code.wait()
+    # TODO : check if file was created
+    return
 
 
 def get_outliers(data, m=25.0):

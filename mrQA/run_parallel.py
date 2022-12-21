@@ -38,14 +38,9 @@ def submit_job(scripts_list_filepath: Union[str, Path],
     mrds_files = txt2list(mrds_list_filepath)
     for script_path, output_mrds_path in zip(bash_scripts, mrds_files):
         # Run the script file
-        output = _run_single_batch(script_path=script_path,
+        _run_single_batch(script_path=script_path,
                                    hpc=hpc,
                                    output_mrds_path=output_mrds_path)
-        processes.append(output)
-    # Wait only if executing locally
-    if debug:
-        exit_codes = [p.wait() for p in processes]
-    return
 
 
 def create_script(data_source_folders: Union[str, Path, Iterable] = None,
