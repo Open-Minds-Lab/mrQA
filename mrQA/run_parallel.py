@@ -252,7 +252,8 @@ def run_single_batch(s_filename: str,
         # If running on a hpc, use the sbatch command
         # to submit the script
         subprocess.call(['sbatch', s_filename])
-        return
+    else:
+        logger.warning(f"{partial_mrds_filename} already exists, skipping")
 
 
 def create_slurm_script(filename: Union[str, Path],
