@@ -9,8 +9,8 @@ from mrQA.utils import list2txt, split_list, \
     txt2list
 
 
-def submit_jobs(scripts_list_filepath: str,
-                mrds_list_filepath: str,
+def submit_jobs(scripts_list_filepath: Union[str, Path],
+                mrds_list_filepath: Union[str, Path],
                 debug: bool = False,
                 hpc: bool = False) -> None:
     """
