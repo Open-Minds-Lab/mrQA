@@ -98,7 +98,7 @@
                 {% endfor %}
             </td>
             <td class="tg-0pky" colspan="2">
-                {% for parameter in modality.reasons_non_compliance()|sort %}
+                {% for parameter in modality.non_compliant_params()|sort %}
                     {{ parameter }},
                 {% endfor %}
             </td>
@@ -152,7 +152,7 @@
                 </tr>
                 </tbody>
             </table>
-            {% if modality.reasons_non_compliance(te).any() %}
+            {% if modality.non_compliant_params(te).any() %}
                 <table class="tg" id="with_margin">
                 <thead>
                 <tr>
@@ -172,8 +172,8 @@
                 </thead>
                 <tbody>
             {% endif %}
-        {% for parameter in modality.reasons_non_compliance(te)|sort %}
-            {# {% set reasons = modality.query(parameter, te) %}#}
+        {% for parameter in modality.non_compliant_params(te)|sort %}
+            {# {% set reasons = modality.query_by_param(parameter, te) %}#}
             <tr>
                 <td class="tg-0pky" colspan="4">{{ parameter }}</td>
                 <td class="tg-0pky" colspan="4">
