@@ -2,7 +2,6 @@ from pathlib import Path
 from typing import Union
 
 from MRdataset.base import BaseDataset
-from MRdataset.utils import is_hashable
 
 from mrQA.config import STRATEGIES_ALLOWED
 from mrQA.formatter import HtmlFormatter
@@ -89,36 +88,6 @@ def compare_with_majority(dataset: "BaseDataset") -> BaseDataset:
     # As we are updating the same dataset by adding non-compliant subject names,
     # and non-compliant modality names, we can return the same dataset
     return dataset
-
-
-def store(modality, run, subject_name, session_name):
-    """
-    Store the sources of non-compliance like flip angle, ped, tr, te
-
-    Parameters
-    ----------
-    modality : MRdataset.base.Modality
-        The modality node, in which these sources of non-compliance were found
-        so that these values can be stored
-    run : MRdataset.base.Run
-        Non-compliant which was found to be non-compliant w.r.t. the reference
-    subject_name : str
-        Non-compliant subject's name
-    session_name : str
-        Non-compliant session name
-    """
-    for entry in run.delta:
-        if entry[0] != 'change':
-            continue
-        _, parameter, [new_value, ref_value] = entry
-
-        if not is_hashable(parameter):
-            parameter = str(parameter)
-
-        modality.add_non_compliant_param(
-            parameter, run.echo_time, ref_value, new_value,
-            '{}_{}'.format(subject_name, session_name)
-        )
 
 
 def generate_report(dataset: BaseDataset, output_dir: Union[Path, str]) -> None:

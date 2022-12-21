@@ -16,8 +16,6 @@ from MRdataset.utils import is_hashable, param_difference
 from MRdataset.utils import valid_dirs, timestamp
 from MRdataset.log import logger
 
-from mrQA.project import store
-
 
 def timestamp():
     """Generate a timestamp as a string"""
@@ -245,7 +243,7 @@ def _check_against_reference(modality):
                                                      'phase_encoding_direction'])
                 if run.delta:
                     modality.add_non_compliant_subject_name(subject.name)
-                    store(modality, run, subject.name, session.name)
+                    _store(modality, run, subject.name, session.name)
                     # If any of the runs are non-compliant, then the
                     # session is non-compliant.
                     session.compliant = False
@@ -305,3 +303,33 @@ def _cli_report(dataset, report_name):
                      'See {1} for report'.format(dataset.name,
                                                  report_name)
     return ret_string
+
+
+def _store(modality, run, subject_name, session_name):
+    """
+    Store the sources of non-compliance like flip angle, ped, tr, te
+
+    Parameters
+    ----------
+    modality : MRdataset.base.Modality
+        The modality node, in which these sources of non-compliance were found
+        so that these values can be stored
+    run : MRdataset.base.Run
+        Non-compliant which was found to be non-compliant w.r.t. the reference
+    subject_name : str
+        Non-compliant subject's name
+    session_name : str
+        Non-compliant session name
+    """
+    for entry in run.delta:
+        if entry[0] != 'change':
+            continue
+        _, parameter, [new_value, ref_value] = entry
+
+        if not is_hashable(parameter):
+            parameter = str(parameter)
+
+        modality.add_non_compliant_param(
+            parameter, run.echo_time, ref_value, new_value,
+            '{}_{}'.format(subject_name, session_name)
+        )
