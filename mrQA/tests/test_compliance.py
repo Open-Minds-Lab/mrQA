@@ -54,7 +54,7 @@ def test_compliance_all_clean(num_subjects,
 
         assert set(sub_names_by_modality[modality.name]) == set(
             modality.compliant_subject_names)
-        assert len(modality.reasons_non_compliance) == 0
+        assert len(modality.non_compliant_params) == 0
 
         assert modality.compliant
         assert not modality.is_multi_echo()
