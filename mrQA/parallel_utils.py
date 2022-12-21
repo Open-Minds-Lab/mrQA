@@ -111,17 +111,24 @@ def _run_single_batch(script_path: Union[str, Path],
     """
     if isinstance(output_mrds_path, str):
         output_mrds_path = Path(output_mrds_path)
+
     if not output_mrds_path.exists():
-        if not hpc:
+        if hpc:
+            # If running on a hpc, use the sbatch command
+            # to submit the script
+            out = subprocess.Popen(['sbatch', script_path])
+            # print(out.stdout)
+            # some way to check was submitted/accepted
+
+        else:
             # If running locally, and the user does not want to
             # submit the job, run the script using the bash command
-            return execute_local(script_path)
-        # If running on a hpc, use the sbatch command
-        # to submit the script
-        subprocess.call(['sbatch', script_path])
+            execute_local(script_path)
+            # check successful completion, or log error
+
     else:
-        logger.warning(f"{output_mrds_path} already exists, skipping"
-                       f"Use 'sbatch {script_path} to overwrite")
+        logger.warning(f"{output_mrds_path} already exists, skipping. "
+                       f" Use 'sbatch {script_path} to overwrite")
 
 
 def _create_slurm_script(output_script_path: Union[str, Path],
