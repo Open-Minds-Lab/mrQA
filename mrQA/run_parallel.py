@@ -242,9 +242,6 @@ def run_single_batch(s_filename: str,
     partial_mrds_filename: str
         Path to the partial mrds pickle file
     """
-    # If debug mode, run the script in debug mode
-    # The debug mode is used for local testing
-    # and not for running on a hpc
     if isinstance(partial_mrds_filename, str):
         partial_mrds_filename = Path(partial_mrds_filename)
     if not partial_mrds_filename.exists():
