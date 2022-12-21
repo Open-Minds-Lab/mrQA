@@ -12,8 +12,7 @@ from MRdataset.base import BaseDataset
 from mrQA.utils import txt2list
 
 
-def check_partial_datasets(mrds_list_filepath: str,
-                           force: bool = False) -> List[Path]:
+def check_partial_datasets(mrds_list_filepath: str) -> List[Path]:
     """
     Given a list of paths, check if all of them are valid and all of them
     have a non-zero size. Return list of valid paths
