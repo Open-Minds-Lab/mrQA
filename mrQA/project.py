@@ -3,11 +3,12 @@ from pathlib import Path
 from typing import Union
 
 from MRdataset.base import BaseDataset
-from MRdataset.utils import param_difference, is_hashable
+from MRdataset.utils import is_hashable
 
 from mrQA.config import STRATEGIES_ALLOWED
 from mrQA.formatter import HtmlFormatter
-from mrQA.utils import timestamp, majority_attribute_values
+from mrQA.utils import timestamp, majority_attribute_values, _get_runs_by_echo, \
+    _check_against_reference, _cli_report
 
 
 def check_compliance(dataset: BaseDataset,
@@ -52,58 +53,6 @@ def check_compliance(dataset: BaseDataset,
             '{}'.format(STRATEGIES_ALLOWED))
 
     generate_report(dataset, output_dir)
-
-
-def _get_runs_by_echo(modality):
-    runs_in_modality = []
-    for subject in modality.subjects:
-        for session in subject.sessions:
-            runs_in_modality.extend(session.runs)
-
-    def _sort_key(run):
-        return run.echo_time
-
-    runs_in_modality = sorted(runs_in_modality, key=_sort_key)
-    runs_by_te = {te: run.params for te, run in groupby(runs_in_modality,
-                                                        key=_sort_key)}
-    return runs_by_te
-
-
-def _check_against_reference(modality):
-    for subject in modality.subjects:
-        for session in subject.sessions:
-            for run in session.runs:
-                reference = modality.get_reference(run.echo_time)
-                run.delta = param_difference(run.params,
-                                             reference,
-                                             ignore=['modality',
-                                                     'phase_encoding_direction'])
-                if run.delta:
-                    modality.add_non_compliant_subject_name(subject.name)
-                    store(modality, run, subject.name, session.name)
-                    # If any of the runs are non-compliant, then the
-                    # session is non-compliant.
-                    session.compliant = False
-                    # If any of the sessions are non-compliant, then the
-                    # subject is non-compliant.
-                    subject.compliant = False
-                    # If any of the subjects are non-compliant, then the
-                    # modality is non-compliant.
-                    modality.compliant = False
-                    # If none of the subjects or modalities are found to
-                    # be non-compliant, flag will remain True, after the
-                    # loop is finished.
-            if session.compliant:
-                # If after all the runs, session is compliant, then the
-                # session is added to the list of compliant sessions.
-                subject.add_compliant_session_name(session.name)
-        if subject.compliant:
-            # If after all the sessions, subject is compliant, then the
-            # subject is added to the list of compliant subjects.
-            modality.add_compliant_subject_name(subject.name)
-    # If after all the subjects, modality is compliant, then the
-    # modality should be added to the list of compliant sessions.
-    return modality.compliant
 
 
 def compare_with_majority(dataset: "BaseDataset") -> BaseDataset:
@@ -194,40 +143,6 @@ def generate_report(dataset: BaseDataset, output_dir: Union[Path, str]) -> None:
     output_path = output_dir / filename
     HtmlFormatter(filepath=output_path, params=dataset)
     # Print a small message on the console, about non-compliance of dataset
-    print(otg_report(dataset, filename))
+    print(_cli_report(dataset, filename))
 
 
-def otg_report(dataset, report_name):
-    """
-    On-the-Go report generator.
-    Generate a single line report for the dataset
-
-    Parameters
-    ----------
-    dataset : BaseDataset
-        BaseDataset instance for the dataset which is to be checked
-    report_name : str
-        Filename for the report
-
-    Returns
-    -------
-
-    """
-    result = {}
-    # For all the modalities calculate the percent of non-compliance
-    for modality in dataset.modalities:
-        percent_non_compliant = len(modality.non_compliant_subject_names) \
-                                / len(modality.subjects)
-        if percent_non_compliant > 0:
-            result[modality.name] = str(100 * percent_non_compliant)
-    # Format the result as a string
-    if result:
-        ret_string = 'In {0} dataset, modalities "{1}" are non-compliant. ' \
-                     'See {2} for report'.format(dataset.name,
-                                                 ", ".join(result.keys()),
-                                                 report_name)
-    else:
-        ret_string = 'In {0} dataset, all modalities are compliant. ' \
-                     'See {1} for report'.format(dataset.name,
-                                                 report_name)
-    return ret_string
