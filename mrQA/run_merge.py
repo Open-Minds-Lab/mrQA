@@ -12,7 +12,7 @@ from MRdataset.base import BaseDataset
 from mrQA.utils import txt2list
 
 
-def check_partial_datasets(text_filepath: str,
+def check_partial_datasets(mrds_list_filepath: str,
                            force: bool = False) -> List[Path]:
     """
     Given a list of paths, check if all of them are valid and all of them
@@ -20,7 +20,7 @@ def check_partial_datasets(text_filepath: str,
 
     Parameters
     ----------
-    text_filepath : str
+    mrds_list_filepath : str
     Path to a text file, which contains the paths to all partial mrds files
 
     force : bool
@@ -34,7 +34,7 @@ def check_partial_datasets(text_filepath: str,
     """
 
     # Read the text file to a list of paths
-    mrds_path_list = txt2list(text_filepath)
+    mrds_path_list = txt2list(mrds_list_filepath)
 
     # Check all the paths and cast them to pathlib.Path
     valid_mrds_paths = []
