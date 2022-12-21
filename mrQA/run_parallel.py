@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Iterable, Union, List
 
 from MRdataset.config import MRDS_EXT
+from MRdataset.utils import valid_paths
 
 from mrQA.parallel_utils import _check_args, _make_file_folders, \
     _run_single_batch, _create_slurm_script, _get_num_workers, _get_subject_ids
@@ -34,7 +35,7 @@ def submit_job(scripts_list_filepath: Union[str, Path],
     """
 
     processes = []
-    bash_scripts = txt2list(scripts_list_filepath)
+    bash_scripts = valid_paths(txt2list(scripts_list_filepath))
     mrds_files = txt2list(mrds_list_filepath)
     for script_path, output_mrds_path in zip(bash_scripts, mrds_files):
         # Run the script file
