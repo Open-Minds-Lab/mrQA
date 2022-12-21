@@ -96,7 +96,9 @@ def _make_file_folders(output_dir):
     return folder_paths, files_per_batch, all_ids_path
 
 
-def submit_jobs(debug: bool = False,
+def submit_jobs(scripts_list_filepath: str,
+                mrds_list_filepath: str,
+                debug: bool = False,
                 hpc: bool = False) -> None:
     """
     Given a folder(or List[folder]) it will divide the work into smaller
