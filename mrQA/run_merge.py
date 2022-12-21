@@ -45,9 +45,9 @@ def _check_partial_datasets(mrds_list_filepath: str) -> List[Path]:
     return valid_mrds_paths
 
 
-def _merge_and_save(name: str,
-                    mrds_path_list: List[Path],
-                    output_folder_path: str) -> None:
+def _merge_and_save(mrds_path_list: List[Path],
+                    output_path: str,
+                    name: str = None) -> None:
     """
     Given a list of paths, each pointing to a partial mrds pickle file.
     Merges all mrds pickle file into a single mrds pickle, and saves to
@@ -59,20 +59,16 @@ def _merge_and_save(name: str,
         Provide a name for final pickle file on disk
     mrds_path_list: List[Path]
         List of mrds pickle files to be merged
-    output_folder_path: str
+    output_path: str
         Folder to save the file
     """
-    if isinstance(output_folder_path, str):
-        output_folder_path = Path(output_folder_path)
-    if not isinstance(output_folder_path, Path):
-        raise RuntimeError(f"Expect save_folder to be one of "
-                           f"[str|pathlib.Path]. "
-                           f"Got {type(output_folder_path)}")
+    if isinstance(output_path, str):
+        output_path = Path(output_path)
     complete_dataset = _merge_from_disk(mrds_path_list)
     complete_dataset.is_complete = True
-    complete_dataset.name = name
-    filename = output_folder_path / (name + MRDS_EXT)
-    save_mr_dataset(filename, complete_dataset)
+    if name:
+        complete_dataset.name = name
+    save_mr_dataset(output_path, complete_dataset)
 
 
 def _merge_from_disk(mrds_path_list: Union[List[Path], List[str]]) \
