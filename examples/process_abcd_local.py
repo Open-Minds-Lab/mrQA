@@ -59,10 +59,11 @@ def main():
 
     elif args.task == 'merge':
         # Merge partial datasets into a single dataset
-        mrds_paths = OUTPUT_DIR / 'partial_mrds_paths.txt'
+        MRDS_LIST_PATH = OUTPUT_DIR / 'per_batch_partial_mrds_list.txt'
+        # TODO : directly pass the output path to final file, skip name
         check_and_merge(
             name=name,
-            mrds_list_filepath=mrds_paths,
+            mrds_list_filepath=MRDS_LIST_PATH,
             save_dir=OUTPUT_DIR
         )
     elif args.task == 'report':
