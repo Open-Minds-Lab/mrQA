@@ -107,10 +107,10 @@ def submit_jobs(scripts_list_filepath: str,
 
     Parameters
     ----------
-    include_phantom: bool
-        Include phantom scans in the dataset
-    verbose: bool
-        Print progress
+    scripts_list_filepath: str
+        Path to the file containing list of bash scripts to be executed
+    mrds_list_filepath: str
+        Path to the file containing list of partial mrds files to be created
     debug: bool
         If True, the dataset will be created locally. This is useful for testing
     hpc: bool
