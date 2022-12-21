@@ -54,8 +54,7 @@ def main():
                                       style='dicom',
                                       verbose=args.verbose,
                                       include_phantom=args.include_phantom,
-                                      is_complete=not args.is_partial,
-                                      save=not args.skip_save)
+                                      is_complete=not args.is_partial)
 
         partial_dataset.is_complete = False
         save_mr_dataset(args.output_path, partial_dataset)
