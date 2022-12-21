@@ -402,7 +402,7 @@ def split_ids_list(data_source_folders: Union[str, Path],
         batch_ids_path_list.append(batch_filepath)
     list2txt(path=per_batch_ids,
              list_=batch_ids_path_list)
-    return
+    return batch_ids_path_list
 
 
 def _get_num_workers(subjects_per_job, subject_list):
