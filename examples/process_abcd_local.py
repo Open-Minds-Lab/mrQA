@@ -51,7 +51,7 @@ def main():
                       )
     elif args.task == 'submit_job':
         # Generate slurm scripts and submit jobs, for local parallel processing
-        SCRIPTS_LIST_PATH = OUTPUT_DIR / 'scripts_list.txt'
+        SCRIPTS_LIST_PATH = OUTPUT_DIR / 'per_batch_script_list.txt'
         MRDS_LIST_PATH = OUTPUT_DIR / 'per_batch_partial_mrds_list.txt'
         submit_job(scripts_list_filepath=SCRIPTS_LIST_PATH,
                    mrds_list_filepath=MRDS_LIST_PATH,
