@@ -256,20 +256,20 @@ def _run_single_batch(script_path: str,
                        f"Use 'sbatch {script_path} to overwrite")
 
 
-def create_slurm_script(filename: Union[str, Path],
+def create_slurm_script(output_script_path: Union[str, Path],
                         ids_filepath: Union[str, Path],
                         env: str = 'mrqa',
                         conda_dist: str = 'anaconda3',
                         num_subj_per_job: int = 50,
                         verbose: bool = False,
                         include_phantom: bool = False,
-                        partial_mrds_filename: bool = None) -> None:
+                        output_mrds_path: bool = None) -> None:
     """
     Creates a slurm script file which can be submitted to a hpc.
 
     Parameters
     ----------
-    filename : str
+    output_script_path : str
         Path to slurm script file
     ids_filepath : str
         Path to text file containing list of subject ids
@@ -283,7 +283,7 @@ def create_slurm_script(filename: Union[str, Path],
         If True, prints the output of the script
     include_phantom : bool
         If True, includes phantom, localizer and calibration studies
-    partial_mrds_filename : str
+    output_mrds_path : str
         Path to the partial mrds pickle file
 
     Returns
@@ -304,7 +304,7 @@ def create_slurm_script(filename: Union[str, Path],
     # Set the number of hours to 3 if less than 3
     time_limit = 3 if num_hours < 3 else num_hours
     # Setup python command to run
-    python_cmd = f'mrpc_subset -o {partial_mrds_filename} -b {ids_filepath}'
+    python_cmd = f'mrpc_subset -o {output_mrds_path} -b {ids_filepath}'
 
     # Add flags to python command
     if verbose:
@@ -314,7 +314,7 @@ def create_slurm_script(filename: Union[str, Path],
     python_cmd += ' --is_partial --skip_save'
 
     # Create the slurm script file
-    with open(filename, 'w') as fp:
+    with open(output_script_path, 'w') as fp:
         fp.writelines("\n".join([
             '#!/bin/bash',
             '#SBATCH -A med220005p',
