@@ -51,6 +51,20 @@ def check_compliance(dataset: Project,
     generate_report(dataset, output_dir)
 
 
+def _get_runs_by_echo(modality):
+    runs_in_modality = []
+    for subject in modality.subjects:
+        for session in subject.sessions:
+            runs_in_modality.extend(session.runs)
+
+    def _sort_key(run):
+        return run.echo_time
+
+    runs_in_modality = sorted(runs_in_modality, key=_sort_key)
+    runs_by_te = {te: run.params for te, run in groupby(runs_in_modality,
+                                                        key=_sort_key)}
+    return runs_by_te
+
 def compare_with_majority(dataset: "Project") -> Project:
     """
     Method for post-acquisition compliance. Infers the reference protocol/values
