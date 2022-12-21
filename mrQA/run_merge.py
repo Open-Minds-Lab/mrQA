@@ -33,33 +33,19 @@ def check_partial_datasets(mrds_list_filepath: str) -> List[Path]:
 
     # Check all the paths and cast them to pathlib.Path
     valid_mrds_paths = []
+    invalid_mrds_paths = []
     for file in mrds_path_list:
         filepath = Path(file)
         # Check for existence of regular file
-        # and checks if not directory
-        if filepath.is_file():
+        if filepath.is_file() and filepath.stat().st_size > 0:
             valid_mrds_paths.append(filepath)
-
-    # Check if all the files in mrds_path_list are valid!
-    # Otherwise, raise error.
-    # User may use the argument --force to skip invalid files and continue
-    if len(valid_mrds_paths) < len(mrds_path_list):
-        if force:
-            logger.warn(
-                f"Files for {len(mrds_path_list) - len(valid_mrds_paths)}"
-                f" batches were not found. Skipping! "
-                f"Using The Force to continue!")
         else:
-            raise FileNotFoundError("Some txt files were not found!")
+            invalid_mrds_paths.append(filepath)
 
-    mrds_paths = []
-    # mrds_sizes = []
-    for file in valid_mrds_paths:
-        size = file.stat().st_size
-        if size > 0:
-            # mrds_sizes.append(size)
-            mrds_paths.append(file)
-    return mrds_paths
+    if len(invalid_mrds_paths) > 0:
+        raise FileNotFoundError(f"Invalid mrds files: {invalid_mrds_paths}")
+
+    return valid_mrds_paths
 
 
 def merge_and_save(name: str,
