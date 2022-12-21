@@ -91,10 +91,6 @@ def read_subset(batch_ids_file: str,
     if style != 'dicom':
         raise NotImplementedError(f"Expected style as dicom, Got {style}")
 
-    if Path(batch_ids_file).is_file():
-        batch_ids_file = Path(batch_ids_file)
-    else:
-        raise FileNotFoundError(f'Invalid path : {batch_ids_file}')
     subset = txt2list(batch_ids_file)
     identifier = batch_ids_file.stem
     partial_dataset = import_dataset(data_root=subset,
