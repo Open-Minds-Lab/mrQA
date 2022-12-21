@@ -195,48 +195,6 @@
         {% endfor %}
         </tbody>
         </table>
-
-            {##}
-            {#            <table class="tg" id="with_margin">#}
-            {#                {% for subject in modality.subjects %}#}
-            {#                    {% for session in subject.sessions %}#}
-            {#                        {% for run in session.runs %}#}
-            {#                            {% if run.delta and (run.echo_time == echo_time) %}#}
-            {#                                <thead>#}
-            {#                                <tr>#}
-            {#                                    <th class="tg-c3ow" colspan="4">Subject</th>#}
-            {#                                    <th class="tg-c3ow"#}
-            {#                                        colspan="4">Session#}
-            {#                                    </th>#}
-            {#                                    {% for item in run.delta %}#}
-            {#                                        <th class="" tg=-0pky"#}
-            {#                                            colspan="2">{{ "Ref. : "+item[1] }}</th>#}
-            {#                                        <th class="" tg=-0pky"#}
-            {#                                            colspan="2">{{ "Found: "+item[1] }}</th>#}
-            {#                                    {% endfor %}#}
-            {#                                </tr>#}
-            {#                                </thead>#}
-            {#                                <tbody>#}
-            {#                                <tr>#}
-            {#                                    <td class="tg-0pky"#}
-            {#                                        colspan="4">{{ subject.name }}</td>#}
-            {#                                    <td class="tg-0pky"#}
-            {#                                        colspan="4">{{ session.name }}</td>#}
-            {#                                    {% for item in run.delta %}#}
-            {#                                        <td class="tg-0pky"#}
-            {#                                            colspan="2">{{ item[2][1] }}</td>#}
-            {#                                        <td class="tg-0pky"#}
-            {#                                            colspan="2">{{ item[2][0] }}</td>#}
-            {#                                    {% endfor %}#}
-            {#                                </tr>#}
-            {#                                </tbody>#}
-            {#                            {% endif %}#}
-            {#                        {% endfor %}#}
-            {##}
-            {#                    {% endfor %}#}
-            {##}
-            {#                {% endfor %}#}
-            {#            </table>#}
         {% endfor %}
     {% endif %}
 {% endfor %}
