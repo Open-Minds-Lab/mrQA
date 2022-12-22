@@ -24,6 +24,7 @@ def process_parallel(data_root,
                   subjects_per_job=25,
                   conda_env='mrcheck',
                   conda_dist='anaconda3',
+                  output_dir=output_dir,
                   hpc=False,
                   )
     # Generate slurm scripts and submit jobs, for local parallel processing
