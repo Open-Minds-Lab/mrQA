@@ -45,10 +45,7 @@ def process_parallel(data_root,
         output_path=output_path,
         name=name
     )
-    # Generate a report for the merged dataset
-    dataset = load_mr_dataset(output_dir / (name + MRDS_EXT), style='dicom')
-    check_compliance(dataset=dataset,
-                     output_dir=output_dir/'reports')
+
 
 
 def submit_job(scripts_list_filepath: Union[str, Path],
