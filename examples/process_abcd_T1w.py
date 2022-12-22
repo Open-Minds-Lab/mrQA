@@ -7,7 +7,7 @@ from MRdataset.config import MRDS_EXT
 
 from mrQA import check_compliance
 from mrQA.run_merge import check_and_merge
-from mrQA.run_parallel import parallel_dataset
+from mrQA.run_parallel import create_script, submit_job
 
 
 def main():
