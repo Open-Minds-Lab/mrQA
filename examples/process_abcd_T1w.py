@@ -31,7 +31,7 @@ def main():
 
     args = parser.parse_args()
     ARCHIVE = Path('/ocean/projects/med220005p/sinhah')
-    DATA_ROOT = ARCHIVE / 'ABCD/t1w/dicom'
+    DATA_ROOT = ARCHIVE / 'ABCD/t1w/subset101_dicom'
     name = 'abcd-T1w-baseline'
     OUTPUT_DIR = DATA_ROOT.parent / (DATA_ROOT.stem + '_mrqa_files')
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -39,7 +39,7 @@ def main():
     if args.task == 'create_script':
         # Create scripts but do not submit jobs
         create_script(data_source_folders=DATA_ROOT,
-                      subjects_per_job=100,
+                      subjects_per_job=50,
                       conda_env='mrcheck',
                       conda_dist='anaconda3',
                       hpc=True,
