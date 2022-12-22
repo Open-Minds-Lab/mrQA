@@ -4,14 +4,12 @@ from typing import Iterable, Union, List
 
 from MRdataset.config import MRDS_EXT
 from MRdataset.utils import valid_paths
-from MRdataset import load_mr_dataset
 
 from mrQA.parallel_utils import _check_args, _make_file_folders, \
     _run_single_batch, _create_slurm_script, _get_num_workers, _get_subject_ids
+from mrQA.run_merge import check_and_merge
 from mrQA.utils import list2txt, split_list, \
     txt2list
-from mrQA.run_merge import check_and_merge
-from mrQA import check_compliance
 
 
 def process_parallel(data_root,
@@ -45,7 +43,6 @@ def process_parallel(data_root,
         output_path=output_path,
         name=name
     )
-
 
 
 def submit_job(scripts_list_filepath: Union[str, Path],
