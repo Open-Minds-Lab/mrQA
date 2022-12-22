@@ -38,14 +38,12 @@ def main():
 
     if args.task == 'create_script':
         # Create scripts but do not submit jobs
-        parallel_dataset(data_root=DATA_ROOT,
-                         subjects_per_job=100,
-                         debug=False,
-                         submit_job=False,
-                         conda_env='mrqa',
-                         conda_dist='miniconda3',
-                         hpc=True,
-                         output_dir=OUTPUT_DIR)
+        create_script(data_source_folders=DATA_ROOT,
+                      subjects_per_job=50,
+                      conda_env='mrcheck',
+                      conda_dist='anaconda3',
+                      hpc=True,
+                      )
     elif args.task == 'submit_job':
         # Create scripts and submit jobs simultaneously
         parallel_dataset(data_root=DATA_ROOT,
