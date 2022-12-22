@@ -64,7 +64,7 @@ def main():
         check_and_merge(
             name=name,
             mrds_list_filepath=MRDS_LIST_PATH,
-            save_dir=OUTPUT_DIR
+            output_path=OUTPUT_DIR / (name + MRDS_EXT)
         )
     elif args.task == 'report':
         # Generate a report for the merged dataset
