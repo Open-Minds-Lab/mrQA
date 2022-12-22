@@ -46,8 +46,9 @@ def diff(file1, file2):
     with open(file2, 'r') as f:
         lines_file2 = set(f.readlines())
 
-    open('file3.txt', 'w').close()  # Create the file
+    if list(lines_file1 - lines_file2):
+        return True
+    return False
 
-    with open('file3.txt', 'a') as f:
-        for line in list(d - e):
-            f.write(line)
+if __name__ == '__main__':
+    test_equivalence_seq_vs_parallel('/media/sinhah/extremessd/ABCD-375/dicom-baseline-subset/')
