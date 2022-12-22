@@ -14,7 +14,7 @@ from mrQA.run_merge import check_and_merge
 from mrQA import check_compliance
 
 
-def parallel_dataset(data_root,
+def process_parallel(data_root,
                      output_dir,
                      output_path,
                      name=None):

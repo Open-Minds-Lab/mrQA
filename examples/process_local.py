@@ -7,4 +7,4 @@ OUTPUT_DIR = DATA_ROOT.parent  / (DATA_ROOT.stem + '_mrqa_files')
 name = 'abcd-375'
 output_path = OUTPUT_DIR / f'{name}{MRDS_EXT}'
 
-parallel_dataset(DATA_ROOT, OUTPUT_DIR, output_path, name)
+process_parallel(DATA_ROOT, OUTPUT_DIR, output_path, name)
