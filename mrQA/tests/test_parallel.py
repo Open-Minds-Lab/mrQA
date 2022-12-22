@@ -41,10 +41,10 @@ def test_equivalence_seq_vs_parallel(data_source):
 
 def diff(file1, file2):
     with open(file1, 'r') as f:
-        d = set(f.readlines())
+        lines_file1 = set(f.readlines())
 
     with open(file2, 'r') as f:
-        e = set(f.readlines())
+        lines_file2 = set(f.readlines())
 
     open('file3.txt', 'w').close()  # Create the file
 
