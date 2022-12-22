@@ -51,12 +51,12 @@ def main():
                    mrds_list_filepath=MRDS_LIST_PATH,
                    hpc=False)
     elif args.task == 'merge':
-        # Merge created partial datasets
-        mrds_paths = OUTPUT_DIR / 'per_batch_partial_mrds_list.txt'
+        # Merge partial datasets into a single dataset
+        MRDS_LIST_PATH = OUTPUT_DIR / 'per_batch_partial_mrds_list.txt'
         check_and_merge(
             name=name,
-            mrds_list_filepath=mrds_paths,
-            save_dir=OUTPUT_DIR
+            mrds_list_filepath=MRDS_LIST_PATH,
+            output_path=OUTPUT_DIR / (name + MRDS_EXT)
         )
     elif args.task == 'report':
         # Generate the final report
