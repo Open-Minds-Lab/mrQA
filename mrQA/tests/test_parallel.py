@@ -36,7 +36,7 @@ def test_equivalence_seq_vs_parallel(data_source):
                                      output_dir=output_dir)
     }
 
-    compare(report_path['sequential'], report_path['parallel'])
+    assert not diff(report_path['sequential'], report_path['parallel'])
 
 
 def compare(file1, file2):
