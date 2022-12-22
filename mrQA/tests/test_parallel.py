@@ -39,7 +39,7 @@ def test_equivalence_seq_vs_parallel(data_source):
     assert not diff(report_path['sequential'], report_path['parallel'])
 
 
-def compare(file1, file2):
+def diff(file1, file2):
     with open(file1, 'r') as f:
         d = set(f.readlines())
 
