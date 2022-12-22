@@ -21,7 +21,7 @@ def process_parallel(data_root,
     # One function to process them all!
     # note that it will generate scripts only
     create_script(data_source_folders=data_root,
-                  subjects_per_job=25,
+                  subjects_per_job=5,
                   conda_env='mrcheck',
                   conda_dist='anaconda3',
                   output_dir=output_dir,
