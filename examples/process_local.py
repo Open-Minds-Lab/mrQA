@@ -1,4 +1,4 @@
-from mrQA.run_parallel import parallel_dataset
+from mrQA.run_parallel import process_parallel
 from pathlib import Path
 from MRdataset.config import MRDS_EXT
 
