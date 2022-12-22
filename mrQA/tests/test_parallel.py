@@ -3,8 +3,10 @@ from mrQA import check_compliance
 from pathlib import Path
 from mrQA.run_parallel import process_parallel
 from MRdataset.config import MRDS_EXT
+from MRdataset.log import logger
 
 dummy_DS = []
+logger.setLevel('WARNING')
 
 
 def test_equivalence_seq_vs_parallel(data_source):
