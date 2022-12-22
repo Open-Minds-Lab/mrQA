@@ -64,12 +64,15 @@ def test_equivalence_seq_vs_parallel(data_source):
 #             name=f'subset{i}'
 #         )
 
-    with open(file2, 'r') as f:
-        lines_file2 = set(f.readlines())
 
-    if list(lines_file1 - lines_file2):
-        return True
-    return False
+def is_same(file1, file2):
+    file1, file2 = valid_paths([file1, file2])
+    with open(file1) as f1, open(file2) as f2:
+        for line1, line2 in zip(f1, f2):
+            if line1 != line2:
+                return False
+    return True
+
 
 if __name__ == '__main__':
     test_equivalence_seq_vs_parallel('/media/sinhah/extremessd/ABCD-375/dicom-baseline-subset/')
