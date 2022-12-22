@@ -16,7 +16,7 @@ def test_equivalence_seq_vs_parallel(data_source):
         'parallel': output_dir / ('parallel' + MRDS_EXT)
     }
 
-    sequential_ds = import_dataset(data_root=data_source,
+    sequential_ds = import_dataset(data_source_folders=data_source,
                                    style='dicom',
                                    name='sequential')
     save_mr_dataset(output_path['parallel'], sequential_ds)
