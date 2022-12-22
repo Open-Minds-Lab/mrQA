@@ -10,7 +10,7 @@ logger.setLevel('WARNING')
 
 
 def test_equivalence_seq_vs_parallel(data_source):
-    output_dir = Path(data_source) / 'test_mrqa_files'
+    output_dir = Path(data_source).parent / 'test_mrqa_files'
     output_path = {
         'sequential': output_dir / ('sequential' + MRDS_EXT),
         'parallel': output_dir / ('parallel' + MRDS_EXT)
