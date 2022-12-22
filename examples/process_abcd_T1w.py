@@ -39,7 +39,7 @@ def main():
     if args.task == 'create_script':
         # Create scripts but do not submit jobs
         create_script(data_source_folders=DATA_ROOT,
-                      subjects_per_job=50,
+                      subjects_per_job=100,
                       conda_env='mrcheck',
                       conda_dist='anaconda3',
                       hpc=True,
