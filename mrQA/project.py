@@ -50,7 +50,8 @@ def check_compliance(dataset: BaseDataset,
             'Only the following strategies are allowed : \n\t'
             '{}'.format(STRATEGIES_ALLOWED))
 
-    generate_report(dataset, output_dir)
+    report_path = generate_report(dataset, output_dir)
+    return report_path
 
 
 def compare_with_majority(dataset: "BaseDataset") -> BaseDataset:
@@ -90,7 +91,7 @@ def compare_with_majority(dataset: "BaseDataset") -> BaseDataset:
     return dataset
 
 
-def generate_report(dataset: BaseDataset, output_dir: Union[Path, str]) -> None:
+def generate_report(dataset: BaseDataset, output_dir: Union[Path, str]):
     """
     Generates an HTML report aggregating and summarizing the non-compliance
     discovered in the dataset.
@@ -113,6 +114,8 @@ def generate_report(dataset: BaseDataset, output_dir: Union[Path, str]) -> None:
     output_path = output_dir / filename
     HtmlFormatter(filepath=output_path, params=dataset)
     # Print a small message on the console, about non-compliance of dataset
-    print(_cli_report(dataset, filename))
+    print(_cli_report(dataset, str(output_path)))
+    return output_path
+
 
 
