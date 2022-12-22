@@ -45,15 +45,11 @@ def main():
                       hpc=True,
                       )
     elif args.task == 'submit_job':
-        # Create scripts and submit jobs simultaneously
-        parallel_dataset(data_root=DATA_ROOT,
-                         subjects_per_job=100,
-                         debug=False,
-                         submit_job=True,
-                         conda_env='mrqa',
-                         conda_dist='miniconda3',
-                         hpc=True,
-                         output_dir=OUTPUT_DIR)
+        SCRIPTS_LIST_PATH = OUTPUT_DIR / 'per_batch_script_list.txt'
+        MRDS_LIST_PATH = OUTPUT_DIR / 'per_batch_partial_mrds_list.txt'
+        submit_job(scripts_list_filepath=SCRIPTS_LIST_PATH,
+                   mrds_list_filepath=MRDS_LIST_PATH,
+                   hpc=False)
     elif args.task == 'merge':
         # Merge created partial datasets
         mrds_paths = OUTPUT_DIR / 'per_batch_partial_mrds_list.txt'
