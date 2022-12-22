@@ -49,7 +49,7 @@ def main():
         MRDS_LIST_PATH = OUTPUT_DIR / 'per_batch_partial_mrds_list.txt'
         submit_job(scripts_list_filepath=SCRIPTS_LIST_PATH,
                    mrds_list_filepath=MRDS_LIST_PATH,
-                   hpc=False)
+                   hpc=True)
     elif args.task == 'merge':
         # Merge partial datasets into a single dataset
         MRDS_LIST_PATH = OUTPUT_DIR / 'per_batch_partial_mrds_list.txt'
