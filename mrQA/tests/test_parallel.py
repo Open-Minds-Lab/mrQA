@@ -73,7 +73,8 @@ def test_merging(data_source):
         output_dir=folder_paths['ids'],
         subjects_per_job=5
     )
-    output_path = {i: f'seq{i}{MRDS_EXT}' for i in range(len(ids_path_list))}
+    output_path = {i: output_dir/f'seq{i}{MRDS_EXT}'
+                   for i in range(len(ids_path_list))}
     ds_list = []
     for i, filepath in enumerate(ids_path_list):
         folders = txt2list(filepath)
