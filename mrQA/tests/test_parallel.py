@@ -52,6 +52,52 @@ def test_equivalence_seq_vs_parallel(data_source):
         print('Reports are different')
 
 
+def test_merging(data_source):
+    # Sequential complete processing of the dataset
+    output_dir = Path(data_source).parent / 'test_merge_mrqa_files'
+    output_path_seq = output_dir / ('sequential' + MRDS_EXT)
+
+    if not output_path_seq.exists():
+        sequential_ds = import_dataset(data_source_folders=data_source,
+                                       style='dicom',
+                                       name='sequential')
+        save_mr_dataset(output_path_seq, sequential_ds)
+    else:
+        sequential_ds = load_mr_dataset(output_path_seq)
+
+    # Start processing in batches
+    folder_paths, files_per_batch, all_ids_path = _make_file_folders(output_dir)
+    ids_path_list = split_ids_list(
+        data_source,
+        all_ids_path=all_ids_path,
+        per_batch_ids=files_per_batch['ids'],
+        output_dir=folder_paths['ids'],
+        subjects_per_job=5
+    )
+    output_path = {i: f'seq{i}{MRDS_EXT}' for i in range(len(ids_path_list))}
+    ds_list = []
+    for i, filepath in enumerate(ids_path_list):
+        folders = txt2list(filepath)
+        if not output_path[i].exists():
+            ds = import_dataset(data_source_folders=folders,
+                                style='dicom',
+                                name=f'seq{i}')
+            save_mr_dataset(output_path[i], ds)
+        else:
+            ds = load_mr_dataset(output_path['sequential'])
+        ds_list.append(ds)
+
+    # Merge batches
+    combined_mrds = None
+    for ds in ds_list:
+        if combined_mrds is None:
+            # Add the first partial dataset
+            combined_mrds = ds
+        else:
+            # otherwise, keep aggregating, and return in the end
+            combined_mrds.merge(ds)
+
+
 # def test_equivalence_in_combinations(data_source):
 #     subsets = itertools.combinations(mrds_files, 2)
 #     subset_dir = output_dir/'subsets'
