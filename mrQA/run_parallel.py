@@ -18,28 +18,27 @@ def process_parallel(data_root,
                      name=None):
     # One function to process them all!
     # note that it will generate scripts only
-    create_script(data_source_folders=data_root,
-                  subjects_per_job=5,
-                  conda_env='mrcheck',
-                  conda_dist='anaconda3',
-                  output_dir=output_dir,
-                  hpc=False,
-                  )
+    script_list_filepath, mrds_list_filepath = create_script(
+                                                data_source_folders=data_root,
+                                                subjects_per_job=5,
+                                                conda_env='mrcheck',
+                                                conda_dist='anaconda3',
+                                                output_dir=output_dir,
+                                                hpc=False,
+                                                )
     # Generate slurm scripts and submit jobs, for local parallel processing
-    folder_paths, files_per_batch, all_ids_path = _make_file_folders(output_dir)
-
-    submit_job(scripts_list_filepath=files_per_batch['scripts'],
-               mrds_list_filepath=files_per_batch['mrds'],
+    submit_job(scripts_list_filepath=script_list_filepath,
+               mrds_list_filepath=mrds_list_filepath,
                hpc=False)
 
     # wait until processing completes
-    mrds_files = valid_paths(txt2list(files_per_batch['mrds']))
+    mrds_files = valid_paths(txt2list(mrds_list_filepath))
     for file in mrds_files:
         while not file.exists():
             time.sleep(100)
 
     check_and_merge(
-        mrds_list_filepath=files_per_batch['mrds'],
+        mrds_list_filepath=mrds_list_filepath,
         output_path=output_path,
         name=name
     )
@@ -88,7 +87,7 @@ def create_script(data_source_folders: Union[str, Path, Iterable] = None,
                   subjects_per_job: int = None,
                   hpc: bool = False,
                   conda_dist: str = None,
-                  conda_env: str = None) -> None:
+                  conda_env: str = None):
     """
     Given a folder(or List[folder]) it will divide the work into smaller
     jobs. Each job will contain a fixed number of subjects. These jobs can be
@@ -116,10 +115,6 @@ def create_script(data_source_folders: Union[str, Path, Iterable] = None,
         Name of conda distribution
     conda_env: str
         Name of conda environment
-
-    Returns
-    -------
-    None
     """
 
     data_src, output_dir, env, dist = _check_args(data_source_folders, style,
@@ -167,6 +162,7 @@ def create_script(data_source_folders: Union[str, Path, Iterable] = None,
     # paths to generated scripts in a text file for reference.
     list2txt(path=files_per_batch['mrds'], list_=mrds_path_list)
     list2txt(path=files_per_batch['scripts'], list_=scripts_path_list)
+    return files_per_batch['scripts'], files_per_batch['mrds']
 
 
 def split_ids_list(data_source_folders: Union[str, Path],
