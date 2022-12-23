@@ -83,7 +83,7 @@ def test_merging(data_source):
                                 name=f'seq{i}')
             save_mr_dataset(output_path[i], ds)
         else:
-            ds = load_mr_dataset(output_path['sequential'])
+            ds = load_mr_dataset(output_path[i])
         ds_list.append(ds)
 
     # Merge batches
