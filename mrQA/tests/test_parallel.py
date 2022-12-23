@@ -98,7 +98,25 @@ def test_merging(data_source):
 
 
 
-
+def is_same_dataset(dataset1, dataset2):
+    modalities_list1 = sorted(dataset1.modalities)
+    modalities_list2 = sorted(dataset2.modalities)
+    for modality1, modality2 in zip(modalities_list1, modalities_list2):
+        assert modality1.name == modality2.name
+        subjects_list1 = sorted(modality1.subjects)
+        subjects_list2 = sorted(modality2.subjects)
+        for subject1, subject2 in zip(subjects_list1, subjects_list2):
+            assert subject1.name == subject2.name
+            sessions_list1 = sorted(subject1.sessions)
+            sessions_list2 = sorted(subject2.sessions)
+            for session1, session2 in zip(sessions_list1, sessions_list2):
+                assert session1.name == session2.name
+                runs_list1 = sorted(session1.runs)
+                runs_list2 = sorted(session2.runs)
+                for run1, run2 in zip(runs_list1, runs_list2):
+                    assert run1.name == run2.name
+                    assert run1.params == run2.params
+    return True
 
 
 def is_same(file1, file2):
