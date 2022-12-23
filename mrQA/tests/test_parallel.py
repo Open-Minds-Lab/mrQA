@@ -131,6 +131,6 @@ def is_same(file1, file2):
 
 
 if __name__ == '__main__':
-    test_equivalence_seq_vs_parallel(
-        '/media/sinhah/extremessd/ABCD-375/dicom-baseline-subset/')
-    # test_equivalence_in_combinations()
+    # test_equivalence_seq_vs_parallel(
+    #     '/media/sinhah/extremessd/ABCD-375/dicom-baseline-subset/')
+    test_merging('/media/sinhah/extremessd/ABCD-375/dicom-baseline-subset/')
