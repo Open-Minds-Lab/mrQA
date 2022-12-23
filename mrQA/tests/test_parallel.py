@@ -1,7 +1,7 @@
 from MRdataset import import_dataset, save_mr_dataset, load_mr_dataset
 from mrQA import check_compliance
 from pathlib import Path
-from mrQA.run_parallel import process_parallel
+from mrQA.run_parallel import process_parallel, split_ids_list
 from MRdataset.config import MRDS_EXT
 from MRdataset.log import logger
 from mrQA.run_parallel import create_script, submit_job
@@ -11,7 +11,6 @@ from mrQA.utils import txt2list, list2txt
 import time
 import itertools
 from mrQA.run_merge import check_and_merge
-
 
 dummy_DS = []
 logger.setLevel('WARNING')
@@ -98,17 +97,8 @@ def test_merging(data_source):
             combined_mrds.merge(ds)
 
 
-# def test_equivalence_in_combinations(data_source):
-#     subsets = itertools.combinations(mrds_files, 2)
-#     subset_dir = output_dir/'subsets'
-#     for i, item in enumerate(subsets):
-#         subset_filepath = subset_dir / f'subset{i}.txt'
-#         list2txt(subset_filepath, item)
-#         check_and_merge(
-#             mrds_list_filepath=subset_filepath,
-#             output_path=subset_dir / f'parallel{i}{MRDS_EXT}',
-#             name=f'subset{i}'
-#         )
+
+
 
 
 def is_same(file1, file2):
@@ -121,5 +111,6 @@ def is_same(file1, file2):
 
 
 if __name__ == '__main__':
-    test_equivalence_seq_vs_parallel('/media/sinhah/extremessd/ABCD-375/dicom-baseline-subset/')
+    test_equivalence_seq_vs_parallel(
+        '/media/sinhah/extremessd/ABCD-375/dicom-baseline-subset/')
     # test_equivalence_in_combinations()
