@@ -96,6 +96,7 @@ def test_merging(data_source):
             # otherwise, keep aggregating, and return in the end
             combined_mrds.merge(ds)
 
+    assert is_same_dataset(combined_mrds, sequential_ds)
 
 
 def is_same_dataset(dataset1, dataset2):
