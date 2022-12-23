@@ -1,16 +1,14 @@
-from MRdataset import import_dataset, save_mr_dataset, load_mr_dataset
-from mrQA import check_compliance
 from pathlib import Path
-from mrQA.run_parallel import process_parallel, split_ids_list
+
+from MRdataset import import_dataset, save_mr_dataset, load_mr_dataset
 from MRdataset.config import MRDS_EXT
 from MRdataset.log import logger
-from mrQA.run_parallel import create_script, submit_job
 from MRdataset.utils import valid_paths
+
+from mrQA import check_compliance
 from mrQA.parallel_utils import _make_file_folders
-from mrQA.utils import txt2list, list2txt
-import time
-import itertools
-from mrQA.run_merge import check_and_merge
+from mrQA.run_parallel import process_parallel, split_ids_list
+from mrQA.utils import txt2list
 
 dummy_DS = []
 logger.setLevel('WARNING')
