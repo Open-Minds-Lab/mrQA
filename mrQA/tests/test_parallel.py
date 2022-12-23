@@ -64,6 +64,8 @@ def test_merging(data_source):
 
     # Start processing in batches
     folder_paths, files_per_batch, all_ids_path = _make_file_folders(output_dir)
+
+    # For each batch create the list of ids to be processed
     ids_path_list = split_ids_list(
         data_source,
         all_ids_path=all_ids_path,
@@ -71,13 +73,17 @@ def test_merging(data_source):
         output_dir=folder_paths['ids'],
         subjects_per_job=5
     )
+
+    # The paths to the output files
     output_path = {i: output_dir/f'seq{i}{MRDS_EXT}'
                    for i in range(len(ids_path_list))}
     ds_list = []
     for i, filepath in enumerate(ids_path_list):
-        folders = txt2list(filepath)
+        # Read the list of subject ids to be processed
+        subject_folders_list = txt2list(filepath)
         if not output_path[i].exists():
-            ds = import_dataset(data_source_folders=folders,
+            # Process the batch of subjects
+            ds = import_dataset(data_source_folders=subject_folders_list,
                                 style='dicom',
                                 name=f'seq{i}')
             save_mr_dataset(output_path[i], ds)
@@ -92,9 +98,10 @@ def test_merging(data_source):
             # Add the first partial dataset
             combined_mrds = ds
         else:
-            # otherwise, keep aggregating, and return in the end
+            # otherwise, keep aggregating
             combined_mrds.merge(ds)
 
+    # Check if both datasets are the same
     assert is_same_dataset(combined_mrds, sequential_ds)
 
 
