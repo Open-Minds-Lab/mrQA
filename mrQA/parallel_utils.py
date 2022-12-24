@@ -252,7 +252,9 @@ def _get_subject_ids(data_source_folders: Union[str, Path],
     for root, dirs, files in os.walk(data_source_folders):
         if 'sub-' in Path(root).name:
             # Get the subject id
-            subject_list.append(root)
+            num_files_in_root =  len(list(Path(root).rglob('*/*')))
+            if num_files_in_root > 0:
+                subject_list.append(root)
     # Store the list of unique subject ids to a text file given by
     # output_path
     list2txt(all_ids_path, list(set(subject_list)))
