@@ -15,6 +15,13 @@ import numpy as np
 from MRdataset.utils import is_hashable, param_difference, make_hashable
 from MRdataset.utils import valid_dirs, timestamp
 from MRdataset.log import logger
+from itertools import takewhile
+
+
+def get_items_upto_count(dict_, rank=1):
+    values_desc_order = dict_.most_common()
+    value_at_rank = values_desc_order[rank-1][1]
+    return list(takewhile(lambda x: x[1] >= value_at_rank, values_desc_order))
 
 
 def timestamp():
@@ -77,9 +84,40 @@ def extract_reasons(data):
     return list(zip(*data))[1]
 
 
+def pick_majority(counter_, default=None):
+    if len(counter_) == 0:
+        raise ValueError("Expected atleast one entry in counter. Got 0")
+    if len(counter_) == 1:
+        return list(counter_.keys())[0]
+    # there are more than 1 value, remove default, and computer majority
+    _ = counter_.pop(default, None)
+    items_rank1 = get_items_upto_count(counter_, rank=1)
+    # If there are many values for rank 1 with equal count, cannot say which is majority
+    if len(items_rank1) > 1:
+        return None
+    return items_rank1[0][0]
+
+
 def default_thread_count():
     workers = min(32, os.cpu_count() + 4)
     return workers
+
+
+def _check_args_validity(list_of_dicts):
+    if list_of_dicts is None:
+        raise ValueError('Expected a list of dicts, Got NoneType')
+    if len(list_of_dicts) == 0:
+        raise ValueError('List is empty.')
+    for dict_ in list_of_dicts:
+        if len(dict_) == 0:
+            raise ValueError("Atleast one of dictionaries is empty.")
+    if len(list_of_dicts) < 3:
+        logger.error("Cannot compute majority attribute values. Got less than 3 values for each "
+                     "parameter. Returns majority values as None.")
+        maj_attr_values = dict()
+        for key in list_of_dicts[0].keys():
+            maj_attr_values[key] = None
+        return maj_attr_values
 
 
 def split_list(dir_index: list, num_chunks: int) -> typing.Iterable[List[str]]:
