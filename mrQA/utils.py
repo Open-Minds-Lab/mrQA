@@ -305,11 +305,29 @@ def _check_against_reference(modality, decimals):
     for subject in modality.subjects:
         for session in subject.sessions:
             for run in session.runs:
-                reference = modality.get_reference(run.echo_time)
-                run.delta = param_difference(run.params,
-                                             reference,
-                                             ignore=['modality',
-                                                     'phase_encoding_direction'])
+                te = round_if_number(run.echo_time, decimals)
+                reference = modality.get_reference(te)
+                params = apply_round(run.params, decimals)
+                if _validate_reference(reference):
+                    te_ref = reference.get('EchoTime', None)
+                    run.delta = param_difference(params,
+                                                 reference,
+                                                 ignore=['modality'])
+                else:
+                    any_te = modality.get_echo_times()
+                    if any_te:
+                        te = any_te[0]
+                        reference = modality.get_reference(te)
+                        te_ref = reference.get('EchoTime', None)
+                        run.delta = param_difference(params,
+                                                     reference,
+                                                     ignore=['modality'])
+                    else:
+                        te_ref = None
+                        run.delta = params
+                        logger.warning(f'There is no reference set for the '
+                                       f'modality : {modality}')
+
                 if run.delta:
                     modality.add_non_compliant_subject_name(subject.name)
                     _store(modality, run, subject.name, session.name)
