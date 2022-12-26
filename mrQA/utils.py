@@ -281,6 +281,14 @@ def _get_runs_by_echo(modality, decimals=3):
     return run_params_by_te
 
 
+def _validate_reference(dict_, default=None):
+    if not dict_:
+        return False
+    if all(value == default for value in dict_.values()):
+        return False
+    return True
+
+
 def round_if_number(value, decimals=3):
     # For historical reasons, bool is a type of int, but we cannot
     # apply np.round on bool
