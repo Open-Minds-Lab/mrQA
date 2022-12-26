@@ -261,7 +261,7 @@ def is_integer_number(n: Union[int, float]) -> bool:
     return False
 
 
-def _get_runs_by_echo(modality):
+def _get_runs_by_echo(modality, decimals=3):
     runs_in_modality = []
     for subject in modality.subjects:
         for session in subject.sessions:
@@ -273,7 +273,11 @@ def _get_runs_by_echo(modality):
     run_params_by_te = dict()
     runs_in_modality = sorted(runs_in_modality, key=_sort_key)
     for te, group in groupby(runs_in_modality, key=_sort_key):
-        run_params_by_te[te] = [run.params for run in list(group)]
+        te_ = round_if_number(te, decimals)
+        for run in list(group):
+            if te_ not in run_params_by_te:
+                run_params_by_te[te_] = []
+            run_params_by_te[te_].append(apply_round(run.params, decimals))
     return run_params_by_te
 
 
