@@ -92,7 +92,8 @@ def pick_majority(counter_, default=None):
     # there are more than 1 value, remove default, and computer majority
     _ = counter_.pop(default, None)
     items_rank1 = get_items_upto_count(counter_, rank=1)
-    # If there are many values for rank 1 with equal count, cannot say which is majority
+    # If there are many values for rank 1 with equal count,
+    # cannot say which is majority
     if len(items_rank1) > 1:
         return None
     return items_rank1[0][0]
@@ -112,7 +113,8 @@ def _check_args_validity(list_of_dicts):
         if len(dict_) == 0:
             raise ValueError("Atleast one of dictionaries is empty.")
     if len(list_of_dicts) < 3:
-        logger.error("Cannot compute majority attribute values. Got less than 3 values for each "
+        logger.error("Cannot compute majority attribute values. "
+                     "Got less than 3 values for each "
                      "parameter. Returns majority values as None.")
         maj_attr_values = dict()
         for key in list_of_dicts[0].keys():
