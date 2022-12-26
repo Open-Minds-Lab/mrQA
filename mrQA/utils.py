@@ -277,6 +277,16 @@ def _get_runs_by_echo(modality):
     return run_params_by_te
 
 
+def round_if_number(value, decimals=3):
+    # For historical reasons, bool is a type of int, but we cannot
+    # apply np.round on bool
+    if isinstance(value, bool):
+        return value
+    elif isinstance(value, (int, float)):
+        return np.around(value, decimals=decimals)
+    return value
+
+
 def _check_against_reference(modality):
     for subject in modality.subjects:
         for session in subject.sessions:
