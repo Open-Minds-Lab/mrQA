@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Union, List, Iterable
 
 import numpy as np
-from MRdataset.utils import is_hashable, param_difference
+from MRdataset.utils import is_hashable, param_difference, make_hashable
 from MRdataset.utils import valid_dirs, timestamp
 from MRdataset.log import logger
 
@@ -23,16 +23,16 @@ def timestamp():
     return time_string
 
 
-def majority_attribute_values(iterable, missing=None):
+def majority_attribute_values(list_of_dicts, default=None):
     """
     Given a list of dictionaries, it generates the most common
     values for each key
 
     Parameters
     ----------
-    iterable : list
+    list_of_dicts : list
         a list of dictionaries
-    missing : python object, default None
+    default : python object, default None
         a default value if the key is missing in any dictionary
 
     Returns
@@ -40,23 +40,24 @@ def majority_attribute_values(iterable, missing=None):
     dict
         Key-value pairs specifying the most common values for each key
     """
-    counts = {}
-    categories = set(counts)
-    for length, element in enumerate(iterable):
-        categories.update(element)
-        for cat in categories:
-            try:
-                counter = counts[cat]
-            except KeyError:
-                counts[cat] = counter = Counter({missing: 0})
-            value = element.get(cat, missing)
-            if not is_hashable(value):
-                value = str(value)
+    maj_attr_vals = _check_args_validity(list_of_dicts)
+    if not (maj_attr_vals is None):
+        return maj_attr_vals
+
+    counters_dict = dict()
+    categories = set()
+    for dict_ in list_of_dicts:
+        categories.update(dict_.keys())
+        for key, value in dict_.items():
+            counter = counters_dict.get(key, Counter({default: 0}))
+            value = make_hashable(value)
             counter[value] += 1
-    params = {}
-    for k in counts.keys():
-        params[k] = counts[k].most_common(1)[0][0]
-    return params
+            counters_dict[key] = counter
+
+    majority_attr_dict = {}
+    for k in counters_dict.keys():
+        majority_attr_dict[k] = pick_majority(counters_dict[k])
+    return majority_attr_dict
 
 
 def extract_reasons(data):
