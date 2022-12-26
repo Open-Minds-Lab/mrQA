@@ -70,7 +70,8 @@ def main():
         # Generate a report for the merged dataset
         dataset = load_mr_dataset(OUTPUT_DIR / (name + MRDS_EXT), style='dicom')
         check_compliance(dataset=dataset,
-                         output_dir=OUTPUT_DIR/'reports')
+                         output_dir=OUTPUT_DIR/'reports',
+                         decimals=1)
     else:
         # Invalid task
         raise NotImplementedError(f"Expected one of [submit_job|merge|report], "

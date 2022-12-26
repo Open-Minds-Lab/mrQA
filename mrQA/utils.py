@@ -291,7 +291,7 @@ def round_if_number(value, decimals=3):
     return value
 
 
-def _check_against_reference(modality):
+def _check_against_reference(modality, decimals):
     for subject in modality.subjects:
         for session in subject.sessions:
             for run in session.runs:

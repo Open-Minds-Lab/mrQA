@@ -11,6 +11,7 @@ from mrQA.utils import timestamp, majority_attribute_values, _get_runs_by_echo, 
 
 def check_compliance(dataset: BaseDataset,
                      strategy: str = 'majority',
+                     decimals: int = 3,
                      output_dir: Union[Path, str] = None):
     """
     Main function for checking compliance. Infers the reference protocol
@@ -44,7 +45,7 @@ def check_compliance(dataset: BaseDataset,
         raise ValueError("Dataset is empty.")
 
     if strategy == 'majority':
-        dataset = compare_with_majority(dataset)
+        dataset = compare_with_majority(dataset, decimals)
     else:
         raise NotImplementedError(
             'Only the following strategies are allowed : \n\t'
@@ -54,7 +55,8 @@ def check_compliance(dataset: BaseDataset,
     return report_path
 
 
-def compare_with_majority(dataset: "BaseDataset") -> BaseDataset:
+def compare_with_majority(dataset: "BaseDataset",
+                          decimals: int = 3) -> BaseDataset:
     """
     Method for post-acquisition compliance. Infers the reference protocol/values
     by looking for the most frequent values, and then identifying deviations
@@ -75,14 +77,14 @@ def compare_with_majority(dataset: "BaseDataset") -> BaseDataset:
 
     for modality in dataset.modalities:
         # Infer reference protocol for each echo_time
-        run_by_echo = _get_runs_by_echo(modality)
+        run_by_echo = _get_runs_by_echo(modality, decimals)
 
         # For each echo time, find the most common values
         for echo_time in run_by_echo.keys():
             reference = majority_attribute_values(run_by_echo[echo_time])
             modality.set_reference(reference, echo_time)
 
-        modality.compliant = _check_against_reference(modality)
+        modality.compliant = _check_against_reference(modality, decimals)
         if modality.compliant:
             dataset.add_compliant_modality_name(modality.name)
 
