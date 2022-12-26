@@ -330,7 +330,8 @@ def _check_against_reference(modality, decimals):
 
                 if run.delta:
                     modality.add_non_compliant_subject_name(subject.name)
-                    _store(modality, run, subject.name, session.name)
+                    _store(modality, run.delta, te_ref,
+                           subject.name, session.name)
                     # If any of the runs are non-compliant, then the
                     # session is non-compliant.
                     session.compliant = False
@@ -392,7 +393,7 @@ def _cli_report(dataset, report_name):
     return ret_string
 
 
-def _store(modality, run, subject_name, session_name):
+def _store(modality, delta, echo_time, subject_name, session_name):
     """
     Store the sources of non-compliance like flip angle, ped, tr, te
 
@@ -401,14 +402,12 @@ def _store(modality, run, subject_name, session_name):
     modality : MRdataset.base.Modality
         The modality node, in which these sources of non-compliance were found
         so that these values can be stored
-    run : MRdataset.base.Run
-        Non-compliant which was found to be non-compliant w.r.t. the reference
     subject_name : str
         Non-compliant subject's name
     session_name : str
         Non-compliant session name
     """
-    for entry in run.delta:
+    for entry in delta:
         if entry[0] != 'change':
             continue
         _, parameter, [new_value, ref_value] = entry
@@ -417,6 +416,6 @@ def _store(modality, run, subject_name, session_name):
             parameter = str(parameter)
 
         modality.add_non_compliant_param(
-            parameter, run.echo_time, ref_value, new_value,
+            parameter, echo_time, ref_value, new_value,
             '{}_{}'.format(subject_name, session_name)
         )
