@@ -246,6 +246,13 @@ def get_outliers(data, m=25.0):
     return None
 
 
+def apply_round(dict_, decimals):
+    new_dict = dict_.copy()
+    for key, value in new_dict.items():
+        new_dict[key] = round_if_number(value, decimals)
+    return new_dict
+
+
 def is_integer_number(n: Union[int, float]) -> bool:
     if isinstance(n, int):
         return True
