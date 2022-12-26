@@ -36,9 +36,12 @@ def main():
     optional.add_argument('-h', '--help', action='help',
                           default=argparse.SUPPRESS,
                           help='show this help message and exit')
+    optional.add_argument('--decimals', type=int, default=3,
+                          help='number of decimal places to round to '
+                               '(default:0). If decimals are negative it '
+                               'specifies the number of positions to the left'
+                               'of the decimal point.')
     # TODO: use this flag to store cache
-    optional.add_argument('-r', '--reindex', action='store_true',
-                          help='reindex dataset & regenerate mrQA report')
     optional.add_argument('-v', '--verbose', action='store_true',
                           help='allow verbose output on console')
     optional.add_argument('-ref', '--reference_path', type=str,
@@ -49,8 +52,6 @@ def main():
     optional.add_argument('--include_phantom', action='store_true',
                           help='whether to include phantom, localizer, '
                                'aahead_scout')
-    optional.add_argument('--metadata_root', type=str,
-                          help='directory containing cache')
     # Experimental features, not implemented yet.
     optional.add_argument('-l', '--logging', type=int, default=40,
                           help='set logging to appropriate level')
@@ -81,16 +82,15 @@ def main():
             except OSError as exc:
                 raise exc
 
-    dataset = import_dataset(data_root=args.data_root,
+    dataset = import_dataset(data_source_folders=args.data_root,
                              style=args.style,
                              name=args.name,
-                             reindex=args.reindex,
                              verbose=args.verbose,
-                             include_phantom=args.include_phantom,
-                             metadata_root=args.metadata_root)
+                             include_phantom=args.include_phantom)
     check_compliance(dataset=dataset,
                      strategy=args.strategy,
                      output_dir=args.output_dir,
+                     decimals=args.decimals,
                      reference_path=args.reference_path)
     return 0
 
