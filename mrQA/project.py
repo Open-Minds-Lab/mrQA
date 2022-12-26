@@ -6,7 +6,7 @@ from MRdataset.base import BaseDataset
 from mrQA.config import STRATEGIES_ALLOWED
 from mrQA.formatter import HtmlFormatter
 from mrQA.utils import timestamp, majority_attribute_values, _get_runs_by_echo, \
-    _check_against_reference, _cli_report
+    _check_against_reference, _cli_report, _validate_reference
 
 
 def check_compliance(dataset: BaseDataset,
@@ -82,7 +82,8 @@ def compare_with_majority(dataset: "BaseDataset",
         # For each echo time, find the most common values
         for echo_time in run_by_echo.keys():
             reference = majority_attribute_values(run_by_echo[echo_time])
-            modality.set_reference(reference, echo_time)
+            if _validate_reference(reference):
+                modality.set_reference(reference, echo_time)
 
         modality.compliant = _check_against_reference(modality, decimals)
         if modality.compliant:
