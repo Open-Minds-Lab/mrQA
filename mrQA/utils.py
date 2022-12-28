@@ -408,14 +408,29 @@ def _store(modality, delta, echo_time, subject_name, session_name):
         Non-compliant session name
     """
     for entry in delta:
-        if entry[0] != 'change':
-            continue
-        _, parameter, [new_value, ref_value] = entry
+        if entry[0] == 'change':
+            _, parameter, [new_value, ref_value] = entry
+            if new_value is None:
+                new_value = 'None'
+            if ref_value is None:
+                ref_value = 'None'
+            if echo_time is None:
+                echo_time = 1.0
+            # parameter = make_hashable(parameter)
+            ref_value = make_hashable(ref_value)
+            new_value = make_hashable(new_value)
 
-        if not is_hashable(parameter):
-            parameter = str(parameter)
-
-        modality.add_non_compliant_param(
-            parameter, echo_time, ref_value, new_value,
-            '{}_{}'.format(subject_name, session_name)
-        )
+            modality.add_non_compliant_param(
+                parameter, echo_time, ref_value, new_value,
+                '{}_{}'.format(subject_name, session_name)
+            )
+        elif entry[0] == 'add':
+            for key, value in entry[2]:
+                if value is None:
+                    value = 'None'
+                if echo_time is None:
+                    echo_time = 1.0
+                modality.add_non_compliant_param(
+                    key, echo_time, value, 'None',
+                    '{}_{}'.format(subject_name, session_name)
+                )
