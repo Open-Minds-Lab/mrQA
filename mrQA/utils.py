@@ -4,23 +4,21 @@ import pickle
 import subprocess
 import time
 import typing
-import logging
 import warnings
 from collections import Counter
 from itertools import groupby
+from itertools import takewhile
 from pathlib import Path
-from typing import Union, List, Iterable
+from typing import Union, List
 
 import numpy as np
-from MRdataset.utils import is_hashable, param_difference, make_hashable
-from MRdataset.utils import valid_dirs, timestamp
 from MRdataset.log import logger
-from itertools import takewhile
+from MRdataset.utils import param_difference, make_hashable
 
 
 def get_items_upto_count(dict_, rank=1):
     values_desc_order = dict_.most_common()
-    value_at_rank = values_desc_order[rank-1][1]
+    value_at_rank = values_desc_order[rank - 1][1]
     return list(takewhile(lambda x: x[1] >= value_at_rank, values_desc_order))
 
 
