@@ -52,6 +52,9 @@ def main():
     optional.add_argument('--include_phantom', action='store_true',
                           help='whether to include phantom, localizer, '
                                'aahead_scout')
+    optional.add_argument('--include_nifti_header', action='store_true',
+                          help='whether to check nifti headers for compliance,'
+                               'only used when --style==bids')
     # Experimental features, not implemented yet.
     optional.add_argument('-l', '--logging', type=int, default=40,
                           help='set logging to appropriate level')
@@ -86,12 +89,12 @@ def main():
                              style=args.style,
                              name=args.name,
                              verbose=args.verbose,
-                             include_phantom=args.include_phantom)
+                             include_phantom=args.include_phantom,
+                             include_nifti_header=args.include_nifti_header)
     check_compliance(dataset=dataset,
                      strategy=args.strategy,
                      output_dir=args.output_dir,
-                     decimals=args.decimals,
-                     reference_path=args.reference_path)
+                     decimals=args.decimals)
     return 0
 
 
