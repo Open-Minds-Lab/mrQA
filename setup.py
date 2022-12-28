@@ -13,11 +13,11 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    "mrdataset",
+    "mrdataset>=0.1.3",
     "pydicom",
     "nibabel",
     "dictdiffer",
-    "jinja2",
+    "jinja2>=3.0.3",
 ]
 
 test_requirements = ['pytest>=3', 'hypothesis']

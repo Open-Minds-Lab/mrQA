@@ -177,17 +177,17 @@
             <tr>
                 <td class="tg-0pky" colspan="4">{{ parameter }}</td>
                 <td class="tg-0pky" colspan="4">
-                    {% for value in modality.query_by_param(parameter, te, 'ref_value')|sort %}
+                    {% for value in modality.query_by_param(parameter, te, 'ref_value') %}
                         {{ value }},
                     {% endfor %}
                 </td>
                 <td class="tg-0pky" colspan="4">
-                    {% for value in modality.query_by_param(parameter, te, 'new_value')|sort %}
+                    {% for value in modality.query_by_param(parameter, te, 'new_value') %}
                         {{ value }},
                     {% endfor %}
                 </td>
                 <td class="tg-0pky" colspan="2">
-                    {% for subject in modality.query_by_param(parameter, te, 'subjects')|sort %}
+                    {% for subject in modality.query_by_param(parameter, te, 'subjects') %}
                         {{ subject }},
                     {% endfor %}
                 </td>
