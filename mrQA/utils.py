@@ -301,55 +301,59 @@ def round_if_number(value, decimals=3):
     return value
 
 
+def _check_single_run(modality, decimals, run_te, run_params):
+    te = round_if_number(run_te, decimals)
+    reference = modality.get_reference(te)
+    params = apply_round(run_params, decimals)
+    if _validate_reference(reference):
+        te_ref = reference.get('EchoTime', None)
+        delta = param_difference(params,
+                                 reference,
+                                 ignore=['modality'])
+    else:
+        # Reference was set, but value for each key is None
+        any_te = modality.get_echo_times()
+        if any_te:
+            te = any_te[0]
+            reference = modality.get_reference(te)
+            te_ref = reference.get('EchoTime', None)
+            delta = param_difference(params,
+                                     reference,
+                                     ignore=['modality'])
+        # Reference is an empty dict or None
+        else:
+            te_ref = None
+            delta = params
+            logger.warning(f'There is no reference set for the '
+                           f'modality : {modality}')
+    return delta, te_ref
+
+
 def _check_against_reference(modality, decimals):
     for subject in modality.subjects:
         for session in subject.sessions:
             for run in session.runs:
-                te = round_if_number(run.echo_time, decimals)
-                reference = modality.get_reference(te)
-                params = apply_round(run.params, decimals)
-                if _validate_reference(reference):
-                    te_ref = reference.get('EchoTime', None)
-                    run.delta = param_difference(params,
-                                                 reference,
-                                                 ignore=['modality'])
-                else:
-                    any_te = modality.get_echo_times()
-                    if any_te:
-                        te = any_te[0]
-                        reference = modality.get_reference(te)
-                        te_ref = reference.get('EchoTime', None)
-                        run.delta = param_difference(params,
-                                                     reference,
-                                                     ignore=['modality'])
-                    else:
-                        te_ref = None
-                        run.delta = params
-                        logger.warning(f'There is no reference set for the '
-                                       f'modality : {modality}')
-
+                run.delta, te_ref = _check_single_run(modality,
+                                                      decimals,
+                                                      run.echo_time,
+                                                      run.params)
                 if run.delta:
                     modality.add_non_compliant_subject_name(subject.name)
                     _store(modality, run.delta, te_ref,
                            subject.name, session.name)
-                    # If any of the runs are non-compliant, then the
-                    # session is non-compliant.
+                    # NC = non_compliant
+                    # If any run is NC, then session is NC.
                     session.compliant = False
-                    # If any of the sessions are non-compliant, then the
-                    # subject is non-compliant.
+                    # If any session is NC, then subject is NC.
                     subject.compliant = False
-                    # If any of the subjects are non-compliant, then the
-                    # modality is non-compliant.
+                    # If any subject is NC, then modality is NC.
                     modality.compliant = False
-                    # If none of the subjects or modalities are found to
-                    # be non-compliant, flag will remain True, after the
-                    # loop is finished.
             if session.compliant:
-                # If after all the runs, session is compliant, then the
+                # If after all runs, session is still compliant, then the
                 # session is added to the list of compliant sessions.
                 subject.add_compliant_session_name(session.name)
         if subject.compliant:
-            # If after all the sessions, subject is compliant, then the
+            # If after all sessions, subject is still compliant, then the
             # subject is added to the list of compliant subjects.
             modality.add_compliant_subject_name(subject.name)
     # If after all the subjects, modality is compliant, then the
