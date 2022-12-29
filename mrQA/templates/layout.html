@@ -64,17 +64,19 @@
 </head>
 <body>
 
+{% set utils = imp0rt('mrQA.utils') %}
+
 <h2>Summary of non-compliance:</h2>
 <table class="tg">
     <thead>
     <tr>
-        <th class="tg-0pky" colspan="2">Modality</th>
-        <th class="tg-0pky" colspan="2"># non-compliant (%)</th>
-        <th class="tg-0pky" colspan="2">Non-compliant subjects</th>
-        <th class="tg-0pky" colspan="2">Reasons</th>
-        <th class="tg-0pky" colspan="2"># compliant (%)</th>
-        <th class="tg-0pky" colspan="2"># subjects</th>
-        <th class="tg-0pky" colspan="2"># Echo-Times</th>
+        <th class="tg-0pky" colspan="1">Modality</th>
+        <th class="tg-0pky" colspan="1"># non-compliant (%)</th>
+        <th class="tg-0pky" colspan="3">Non-compliant subjects</th>
+        <th class="tg-0pky" colspan="1">Reasons</th>
+        <th class="tg-0pky" colspan="1"># compliant (%)</th>
+        <th class="tg-0pky" colspan="1"># subjects</th>
+        <th class="tg-0pky" colspan="1"># Echo-Times</th>
 
 
         {#        <th class="tg-0pky" colspan="2">errors</th>#}
@@ -83,33 +85,37 @@
     <tbody>
     {% for modality in dataset.modalities|sort %}
         <tr>
-            <td class="tg-0pky" colspan="2">{{ modality.name }}</td>
+            <td class="tg-0pky" colspan="1">{{ modality.name }}</td>
             {% set percent_non_compliant = 100 * modality.non_compliant_subject_names|length|float / modality.subjects|length|float %}
             {% set percent_compliant = 100 * modality.compliant_subject_names|length|float / modality.subjects|length|float %}
 
-            <td class="tg-0pky" colspan="2">
+            <td class="tg-0pky" colspan="1">
                 {{ modality.non_compliant_subject_names|length }}
                 ({{ percent_non_compliant|round(2, 'floor') }} %)
             </td>
 
-            <td class="tg-0pky" colspan="2">
-                {% for name in modality.non_compliant_subject_names|sort %}
-                    {{ name }},
-                {% endfor %}
+            <td class="tg-0pky" colspan="3">
+                {% if modality.non_compliant_subject_names|length < 50 %}
+                    {% for name in modality.non_compliant_subject_names|sort %}
+                        {{ name }},
+                    {% endfor %}
+                {% else %}
+                    Too long list. Click <a href={{subject_list[modality.name]}}>here</a> for full list.
+                {% endif %}
             </td>
-            <td class="tg-0pky" colspan="2">
+            <td class="tg-0pky" colspan="1">
                 {% for parameter in modality.non_compliant_params()|sort %}
                     {{ parameter }},
                 {% endfor %}
             </td>
-            <td class="tg-0pky" colspan="2">
+            <td class="tg-0pky" colspan="1">
                 {{ modality.compliant_subject_names|length }}
                 ( {{ percent_compliant|round(2, 'floor') }} %)
             </td>
-            <td class="tg-0pky" colspan="2">
+            <td class="tg-0pky" colspan="1">
                 {{ modality.subjects|length }}
             </td>
-            <td class="tg-0pky" colspan="2">
+            <td class="tg-0pky" colspan="1">
                 {{ modality.get_echo_times() | length }}
             </td>
             {#            <td class="tg-0pky" colspan="2">#}
@@ -124,12 +130,16 @@
 {% for modality in dataset.modalities|sort %}
 
     {% if not modality.compliant %}
-        <h2>Modality : {{ modality.name }}</h2>
+        {% if modality.get_echo_times() %}
+            <h2>Modality : {{ modality.name }}</h2>
+        {% endif %}
         {% for echo_time in modality.get_echo_times()|sort %}
             {% set te = echo_time %}
             {% set reference = modality.get_reference(echo_time) %}
+            {% set runs_by_echo = utils._get_runs_by_echo(modality, 3) %}
             {% if modality.is_multi_echo() %}
-                <h4>Reference {{ loop.index }}</h4>
+                <h4>Reference {{ loop.index }} | Number of Runs
+                    : {{ runs_by_echo[te]|length }}</h4>
             {% else %}
                 <h4>Reference</h4>
             {% endif %}
@@ -215,8 +225,7 @@
                 <thead>
                 <tr>
                     {% for key in reference.keys()|sort %}
-                        <th class="tg-0pky"
-                            colspan="2">{{ key }}</th>
+                        <th class="tg-0pky" colspan="2">{{ key }}</th>
                     {% endfor %}
                 </tr>
 

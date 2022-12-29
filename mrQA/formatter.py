@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from email import encoders
 from email.mime import base, multipart, text
 from pathlib import Path
-
+import importlib
 import jinja2
 
 
@@ -115,7 +115,9 @@ class HtmlFormatter(BaseFormatter):
         template = template_env.get_template(template_file)
 
         output_text = template.render(
-            dataset=self.params
+            dataset=self.params['ds'],
+            subject_list=self.params['subject_list'],
+            imp0rt=importlib.import_module
         )
         # self.output = weasyprint.HTML(string=output_text)
         f = open(self.filepath, 'w')
