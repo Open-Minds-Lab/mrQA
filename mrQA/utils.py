@@ -284,6 +284,17 @@ def is_integer_number(n: Union[int, float]) -> bool:
     return False
 
 
+def subject_list2txt(dataset, output_dir=None):
+    output_dir.mkdir(exist_ok=True, parents=True)
+    filepaths = {}
+    for modality in dataset.modalities:
+        if len(modality.non_compliant_subject_names) > 50:
+            filepath = output_dir / slugify(modality.name)
+            list2txt(filepath, modality.non_compliant_subject_names)
+            filepaths[modality.name] = filepath
+    return filepaths
+
+
 def _get_runs_by_echo(modality, decimals=3):
     runs_in_modality = []
     for subject in modality.subjects:
