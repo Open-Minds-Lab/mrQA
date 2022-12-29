@@ -6,7 +6,7 @@ from MRdataset.base import BaseDataset
 from mrQA.config import STRATEGIES_ALLOWED
 from mrQA.formatter import HtmlFormatter
 from mrQA.utils import timestamp, majority_attribute_values, _get_runs_by_echo, \
-    _check_against_reference, _cli_report, _validate_reference
+    _check_against_reference, _cli_report, _validate_reference, subject_list2txt
 
 
 def check_compliance(dataset: BaseDataset,
@@ -115,7 +115,13 @@ def generate_report(dataset: BaseDataset, output_dir: Union[Path, str]):
     filename = '{}_{}.html'.format(dataset.name, timestamp())
     # Generate the HTML report and save it to the output_path
     output_path = output_dir / filename
-    HtmlFormatter(filepath=output_path, params=dataset)
+    subject_list_dir = output_dir / 'subject_lists'
+    subjectlist_files = subject_list2txt(dataset, subject_list_dir)
+    args = {
+        'ds': dataset,
+        'subject_list': subjectlist_files
+    }
+    HtmlFormatter(filepath=output_path, params=args)
     # Print a small message on the console, about non-compliance of dataset
     print(_cli_report(dataset, str(output_path)))
     return output_path
