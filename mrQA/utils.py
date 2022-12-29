@@ -351,7 +351,7 @@ def _check_single_run(modality, decimals, run_te, run_params):
             te_ref = reference.get('EchoTime', None)
             delta = param_difference(params,
                                      reference,
-                                     ignore=['modality'])
+                                     ignore=['modality', 'BodyPartExamined'])
         # Reference is an empty dict or None
         else:
             te_ref = None
