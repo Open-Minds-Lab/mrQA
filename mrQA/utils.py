@@ -63,7 +63,7 @@ def majority_attribute_values(list_of_dicts, default=None):
 
     majority_attr_dict = {}
     for k in counters_dict.keys():
-        majority_attr_dict[k] = pick_majority(counters_dict[k])
+        majority_attr_dict[k] = pick_majority(counters_dict[k], k)
     return majority_attr_dict
 
 
@@ -84,7 +84,7 @@ def extract_reasons(data):
     return list(zip(*data))[1]
 
 
-def pick_majority(counter_, default=None):
+def pick_majority(counter_, parameter, default=None):
     if len(counter_) == 0:
         raise ValueError("Expected atleast one entry in counter. Got 0")
     if len(counter_) == 1:
@@ -94,8 +94,12 @@ def pick_majority(counter_, default=None):
     items_rank1 = get_items_upto_count(counter_, rank=1)
     # If there are many values for rank 1 with equal count,
     # cannot say which is majority
+    values = ", ".join([str(x[0]) for x in items_rank1])
     if len(items_rank1) > 1:
-        return None
+        logger.warning(
+            f"Could not compute reference for {parameter}. Got multiple values"
+            f" {values} with same count = {items_rank1[0][1]}.")
+        return 'Cannot Compute Majority:\nEqual Count'
     return items_rank1[0][0]
 
 
