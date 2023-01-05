@@ -20,9 +20,11 @@ mrQA suite of tools
 CLI usage
 ---------
 A protocol compliance report can be generated directly from the command line
-interface. For a DICOM dataset::
+interface. 
 
-    mr_proto_compl --data_root /path/to/dataset --style xnat
+For a DICOM dataset::
+
+    mr_proto_compl --data_root /path/to/dataset --style dicom
 
 For a BIDS dataset::
 
@@ -54,7 +56,7 @@ For details on ``MRdataset``, please see its documentation. ::
     data_root = '/home/user/datasets/ABCD'
     output_dir = '/home/user/MR_reports/'
     dataset = import_dataset(data_root=data_root,
-                             style='xnat',
+                             style='dicom',
                              name='ABCD')
 
     check_compliance(dataset=dataset, output_dir=output_dir)
@@ -62,6 +64,6 @@ For details on ``MRdataset``, please see its documentation. ::
 And that's it! Please note some important points:
 
 * It will generate a corresponding HTML file in the ``output_dir`` which contains the complete report.
-* ``style`` denotes the specific format of neuroimaging dataset. For example, use *xnat* for DICOM datasets and *bids* for BIDS datasets
+* ``style`` denotes the specific format of neuroimaging dataset. For example, use *dicom* for DICOM datasets and *bids* for BIDS datasets
 * ``name`` is an identifier which can be used to reload the the cached files later.If no name is specified, it uses a random identifier.
 
