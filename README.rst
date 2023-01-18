@@ -17,10 +17,18 @@ mrQA suite of tools
  - Documentation: https://open-minds-lab.github.io/mrQA/
  - Tutorial: https://nbviewer.org/github/Open-Minds-Lab/mrQA/blob/master/examples/usage.ipynb
 
-CLI usage
----------
+
+Simple schematic of the library:
+
+.. image:: docs/schematic_mrQA.png
+
+
+``mrQA`` uses ``MRDataset`` to efficiently parse various neuroimaging dataset formats, which is available `here <github.com/Open-Minds-Lab/MRdataset>`_.
+
+Command line usage
+------------------
 A protocol compliance report can be generated directly from the command line
-interface. 
+interface.
 
 For a DICOM dataset::
 
@@ -30,8 +38,9 @@ For a BIDS dataset::
 
     mr_proto_compl --data_root /path/to/dataset --style bids
 
-Python usage
-------------
+
+Programmatic / API usage
+------------------------
 To use  mrQA in a project::
 
     import  mrQA
