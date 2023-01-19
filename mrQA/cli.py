@@ -22,12 +22,12 @@ def main():
     optional = parser.add_argument_group('optional arguments')
 
     # Add help
-    required.add_argument('-d', '--data_root', type=str, required=True,
+    required.add_argument('-d', '--data-root', type=str, required=True,
                           help='directory containing downloaded dataset with '
                                'dicom files, supports nested hierarchies')
-    optional.add_argument('-o', '--output_dir', type=str,
+    optional.add_argument('-o', '--output-dir', type=str,
                           help='specify the directory where the report'
-                               ' would be saved. By default, the --data_root '
+                               ' would be saved. By default, the --data-root '
                                'directory will be used to save reports')
     optional.add_argument('-s', '--style', type=str, default='dicom',
                           help='type of dataset, one of [dicom|bids|other]')
@@ -41,15 +41,15 @@ def main():
                           help='reindex dataset & regenerate mrQA report')
     optional.add_argument('-v', '--verbose', action='store_true',
                           help='allow verbose output on console')
-    optional.add_argument('-ref', '--reference_path', type=str,
+    optional.add_argument('-ref', '--reference-path', type=str,
                           help='.yaml file containing protocol specification')
     optional.add_argument('--strategy', type=str, default='majority',
                           help='how to examine parameters [majority|reference].'
-                               '--reference_path required if using reference')
-    optional.add_argument('--include_phantom', action='store_true',
+                               '--reference-path required if using reference')
+    optional.add_argument('--include-phantom', action='store_true',
                           help='whether to include phantom, localizer, '
                                'aahead_scout')
-    optional.add_argument('--metadata_root', type=str,
+    optional.add_argument('--metadata-root', type=str,
                           help='directory containing cache')
     # Experimental features, not implemented yet.
     optional.add_argument('-l', '--logging', type=int, default=40,
@@ -66,11 +66,11 @@ def main():
 
     args = parser.parse_args()
     if not Path(args.data_root).is_dir():
-        raise OSError('Expected valid directory for --data_root argument, '
+        raise OSError('Expected valid directory for --data-root argument, '
                       'Got {0}'.format(args.data_root))
 
     if args.output_dir is None:
-        logger.info('Use --output_dir to specify dir for final directory. '
+        logger.info('Use --output-dir to specify dir for final directory. '
                     'By default, report will be saved at present working '
                     'directory')
         args.output_dir = Path().cwd()
