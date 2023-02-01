@@ -335,13 +335,16 @@ def round_if_number(value, decimals=3):
 
 def _check_single_run(modality, decimals, run_te, run_params):
     te = round_if_number(run_te, decimals)
-    reference = modality.get_reference(te)
     params = apply_round(run_params, decimals)
-    if _validate_reference(reference):
-        te_ref = reference.get('EchoTime', None)
-        delta = param_difference(params,
-                                 reference,
-                                 ignore=['modality'])
+    if te in modality.get_echo_times():
+        reference = modality.get_reference(te)
+        if _validate_reference(reference):
+            te_ref = reference.get('EchoTime', None)
+            delta = param_difference(params,
+                                     reference,
+                                     ignore=['modality', 'BodyPartExamined'])
+        else:
+            print(reference)
     else:
         # Reference was set, but value for each key is None
         any_te = modality.get_echo_times()
