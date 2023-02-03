@@ -13,8 +13,8 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    "mrdataset>=0.1.3",
-    "pydicom",
+    "mrdataset",
+    "pydicom>=2.4.2",
     "nibabel",
     "dictdiffer",
     "jinja2>=3.0.3",
@@ -40,8 +40,8 @@ setup(
                 "protocol compliance",
     entry_points={
         'console_scripts': [
-            'protocol_compliance=mrQA.cli:main',
-            'mr_proto_compl=mrQA.cli:main',
+            'mrqa=mrQA.cli:main',
+            'mrqa_monitor=mrQA.run_monitor:main',
             'mrpc_subset=mrQA.run_subset:main'
         ],
     },
