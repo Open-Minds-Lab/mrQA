@@ -1,3 +1,4 @@
+from pathlib import Path
 
 STRATEGIES_ALLOWED = ['majority', ]
 
@@ -11,6 +12,12 @@ PARAMETER_NAMES = [
     'PixelBandwidth',
     'NumberOfPhaseEncodingSteps',
     ]
+
+
+PATH_CONFIG = {
+    'data_source': Path.home() / 'scan_data',
+    'output_dir': Path.home() / 'mrqa_reports',
+}
 
 
 class ComplianceException(Exception):
