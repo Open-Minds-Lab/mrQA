@@ -473,3 +473,23 @@ def _store(modality, delta, echo_time, subject_name, session_name):
                     key, echo_time, value, None,
                     '{}_{}'.format(subject_name, session_name)
                 )
+
+
+def _projects_processed(folder, ignore_case=True):
+    """
+    Add function to retrieve the names of projects that have been processed in
+    the past
+    
+    Parameters
+    ----------
+    folder
+    ignore_case
+
+    Returns
+    -------
+
+    """
+    if not ignore_case:
+        return [x.name for x in folder.iterdir() if x.is_dir()]
+    else:
+        return [x.name.lower() for x in folder.iterdir() if x.is_dir()]
