@@ -4,14 +4,14 @@ import sys
 from pathlib import Path
 
 from MRdataset import import_dataset
+# from mrQA.common import set_logging
+from MRdataset.log import logger
 
 from mrQA import check_compliance
-from mrQA.common import set_logging
-
-import logging
+from mrQA.config import PATH_CONFIG
 
 
-def main():
+def get_parser():
     """Console script for mrQA."""
     parser = argparse.ArgumentParser(
         description='Protocol Compliance of MRI scans',
@@ -31,7 +31,7 @@ def main():
                                'directory will be used to save reports')
     optional.add_argument('-s', '--style', type=str, default='dicom',
                           help='type of dataset, one of [dicom|bids|other]')
-    optional.add_argument('-n', '--name', type=str,
+    optional.add_argument('-n', '--name', type=str.lower,
                           help='provide a identifier/name for the dataset')
     optional.add_argument('-h', '--help', action='help',
                           default=argparse.SUPPRESS,
@@ -61,29 +61,16 @@ def main():
     optional.add_argument('--skip', nargs='+',
                           help='skip these parameters')
 
-    logger = set_logging('root')
-
     if len(sys.argv) < 2:
         logger.critical('Too few arguments!')
         parser.print_help()
         parser.exit(1)
 
-    args = parser.parse_args()
-    if not Path(args.data_root).is_dir():
-        raise OSError('Expected valid directory for --data_root argument, '
-                      'Got {0}'.format(args.data_root))
+    return parser
 
-    if args.output_dir is None:
-        logger.info('Use --output_dir to specify dir for final directory. '
-                    'By default, report will be saved at present working '
-                    'directory')
-        args.output_dir = Path().cwd()
-    else:
-        if not Path(args.output_dir).is_dir():
-            try:
-                Path(args.output_dir).mkdir(parents=True, exist_ok=True)
-            except OSError as exc:
-                raise exc
+
+def mrqa_main():
+    args = parse_args()
 
     dataset = import_dataset(data_source_folders=args.data_root,
                              style=args.style,
@@ -91,6 +78,7 @@ def main():
                              verbose=args.verbose,
                              include_phantom=args.include_phantom,
                              include_nifti_header=args.include_nifti_header)
+
     check_compliance(dataset=dataset,
                      strategy=args.strategy,
                      output_dir=args.output_dir,
@@ -98,5 +86,31 @@ def main():
     return 0
 
 
+def parse_args():
+    parser = get_parser()
+    args = parser.parse_args()
+
+    if args.verbose:
+        logger.setLevel('INFO')
+    else:
+        logger.setLevel('WARNING')
+
+    if not Path(args.data_root).is_dir():
+        raise OSError('Expected valid directory for --data_root argument, '
+                      'Got {0}'.format(args.data_root))
+
+    if args.output_dir is None:
+        logger.info('Use --output_dir to specify dir for final directory. '
+                    'Using default')
+        args.output_dir = PATH_CONFIG['output_dir'] / args.name.lower()
+    else:
+        if not Path(args.output_dir).is_dir():
+            try:
+                Path(args.output_dir).mkdir(parents=True, exist_ok=True)
+            except OSError as exc:
+                raise exc
+    return args
+
+
 if __name__ == "__main__":
-    sys.exit(main())  # pragma: no cover
+    sys.exit(mrqa_main())  # pragma: no cover
