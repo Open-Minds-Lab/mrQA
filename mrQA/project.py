@@ -1,7 +1,10 @@
+from datetime import datetime
+from datetime import timezone
 from pathlib import Path
 from typing import Union
 
 from MRdataset.base import BaseDataset
+from MRdataset import save_mr_dataset, MRDS_EXT
 
 from mrQA.config import STRATEGIES_ALLOWED
 from mrQA.formatter import HtmlFormatter
@@ -112,19 +115,41 @@ def generate_report(dataset: BaseDataset, output_dir: Union[Path, str]):
     if not Path(output_dir).is_dir():
         raise OSError('Expected valid output_directory, '
                       'Got {0}'.format(output_dir))
-    filename = '{}_{}.html'.format(dataset.name, timestamp())
+    filename = '{}_{}'.format(dataset.name, timestamp())
+    save_mr_dataset(output_dir / f'{filename}{MRDS_EXT}', dataset)
     # Generate the HTML report and save it to the output_path
-    output_path = output_dir / filename
+    output_path = output_dir / f'{filename}.html'
     subject_list_dir = output_dir / 'subject_lists'
     subjectlist_files = subject_list2txt(dataset, subject_list_dir)
+    time_dict = get_time()
     args = {
         'ds': dataset,
-        'subject_list': subjectlist_files
+        'subject_list': subjectlist_files,
+        'time': time_dict
     }
     HtmlFormatter(filepath=output_path, params=args)
     # Print a small message on the console, about non-compliance of dataset
     print(_cli_report(dataset, str(output_path)))
+    export_log(output_dir, filename, dataset.name, time_dict)
     return output_path
+
+
+def export_log(output_dir, filename, ds_name, time):
+    with open(output_dir / 'log.txt', 'a') as fp:
+        fp.write(f"{ds_name},{time['utc']},{filename},"
+                 f"{time['date_time']}\n")
+    return
+
+
+def get_time():
+    now = datetime.now(timezone.utc)
+    now = now.replace(tzinfo=timezone.utc)
+    ts = datetime.timestamp(now)
+    date_time = now.strftime("%m/%d/%Y %H:%M:%S%z")
+    return {
+        "utc": ts,
+        "date_time": date_time
+    }
 
 
 

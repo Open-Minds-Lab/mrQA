@@ -117,6 +117,7 @@ class HtmlFormatter(BaseFormatter):
         output_text = template.render(
             dataset=self.params['ds'],
             subject_list=self.params['subject_list'],
+            time=self.params['time'],
             imp0rt=importlib.import_module
         )
         # self.output = weasyprint.HTML(string=output_text)
