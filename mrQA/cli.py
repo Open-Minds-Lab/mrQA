@@ -95,9 +95,9 @@ def parse_args():
     else:
         logger.setLevel('WARNING')
 
-    if not Path(args.data_root).is_dir():
-        raise OSError('Expected valid directory for --data_root argument, '
-                      'Got {0}'.format(args.data_root))
+    # if not Path(args.data_root).is_dir():
+    #     raise OSError('Expected valid directory for --data_root argument, '
+    #                   'Got {0}'.format(args.data_root))
 
     if args.output_dir is None:
         logger.info('Use --output_dir to specify dir for final directory. '
