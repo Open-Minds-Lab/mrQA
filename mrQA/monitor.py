@@ -119,9 +119,20 @@ def check_valid_files(values, folder_path):
 
 def mrqa_monitor():
     args = parse_args()
-    name, mtime, fname, _ = get_last_filenames(args.name)
+    mtime, fname, _ = get_last_filenames(args)
+    modified_files = get_files_by_mtime(args.data_root, mtime)
 
-    pass
+    last_mrds_fpath = Path(args.output_dir) / f"{fname}{MRDS_EXT}"
+    last_mrds = load_mr_dataset(last_mrds_fpath)
+    partial_dataset = import_dataset(data_source_folders=modified_files,
+                                     style='dicom',
+                                     name=args.name,
+                                     verbose=args.verbose,
+                                     include_phantom=args.include_phantom)
+    last_mrds.merge(partial_dataset)
+    check_compliance(dataset=last_mrds,
+                     output_dir=args.output_dir)
+    return
 
 
 if __name__ == "__main__":
