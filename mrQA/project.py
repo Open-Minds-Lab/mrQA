@@ -119,7 +119,7 @@ def generate_report(dataset: BaseDataset, output_dir: Union[Path, str]):
     save_mr_dataset(output_dir / f'{filename}{MRDS_EXT}', dataset)
     # Generate the HTML report and save it to the output_path
     output_path = output_dir / f'{filename}.html'
-    subject_list_dir = output_dir / 'subject_lists'
+    subject_list_dir = output_dir / f'{filename}_files'
     subjectlist_files = subject_list2txt(dataset, subject_list_dir)
     time_dict = get_time()
     args = {
@@ -130,13 +130,13 @@ def generate_report(dataset: BaseDataset, output_dir: Union[Path, str]):
     HtmlFormatter(filepath=output_path, params=args)
     # Print a small message on the console, about non-compliance of dataset
     print(_cli_report(dataset, str(output_path)))
-    export_log(output_dir, filename, dataset.name, time_dict)
+    export_log(output_dir, filename, time_dict)
     return output_path
 
 
-def export_log(output_dir, filename, ds_name, time):
+def export_log(output_dir, filename, time):
     with open(output_dir / 'log.txt', 'a') as fp:
-        fp.write(f"{ds_name},{time['utc']},{filename},"
+        fp.write(f"{time['utc']},{filename},"
                  f"{time['date_time']}\n")
     return
 
