@@ -76,7 +76,7 @@ def parse_args():
         raise FileNotFoundError('Invalid data_root specified '
                                 'for reading files.')
 
-    valid_names = _projects_processed(args.data_root, ignore_case=True)
+    valid_names = _projects_processed(PATH_CONFIG["output_dir"], ignore_case=True)
     if args.name not in valid_names:
         raise ValueError("Need valid project name to monitor! "
                          f"Expected one of {valid_names}. Got {args.name}")
@@ -84,7 +84,7 @@ def parse_args():
     if args.output_dir is None:
         logger.info('Use --output_dir to specify dir for final directory. '
                     'Using default')
-        args.output_dir = PATH_CONFIG["output_dir"]
+        args.output_dir = PATH_CONFIG["output_dir"] / args.name
     else:
         if not Path(args.output_dir).is_dir():
             try:
