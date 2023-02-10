@@ -1,18 +1,14 @@
 """Console script for mrQA."""
 import argparse
-import logging
 import sys
 from pathlib import Path
 
-from MRdataset import load_mr_dataset
-# from mrQA.common import set_logging
+from MRdataset import MRDS_EXT, import_dataset, load_mr_dataset
 from MRdataset.log import logger
-from MRdataset import MRDS_EXT
 
-# from mrQA.cli import mrqa_main
+from mrQA import check_compliance
 from mrQA.config import PATH_CONFIG
-from mrQA.utils import extract_timestamp_from_report, _projects_processed, \
-    _prev_files_exist
+from mrQA.utils import get_files_by_mtime, _projects_processed
 
 
 def get_parser():
