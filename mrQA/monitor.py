@@ -24,7 +24,7 @@ def get_parser():
     # Add help
     optional.add_argument('-n', '--name', type=str.lower,
                           help='provide a identifier/name for the dataset')
-    optional.add_argument('-d', '--data_root', type=str,
+    required.add_argument('-d', '--data_root', type=str, required=True,
                           help='directory containing downloaded dataset with '
                                'dicom files, supports nested hierarchies')
     optional.add_argument('-o', '--output_dir', type=str,
@@ -71,9 +71,6 @@ def parse_args():
         logger.setLevel('INFO')
     else:
         logger.setLevel('WARNING')
-
-    if not args.data_root:
-        args.data_root = PATH_CONFIG["data_source"]
 
     if not Path(args.data_root).is_dir():
         raise FileNotFoundError('Invalid data_root specified '
