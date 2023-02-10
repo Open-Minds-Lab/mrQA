@@ -94,23 +94,21 @@ def parse_args():
     return args
 
 
-def get_last_filenames(arg_name):
-    folder_path = PATH_CONFIG["output_dir"] / arg_name
-    log_filepath = folder_path / PATH_CONFIG["log"]
+def get_last_filenames(args):
+    folder_path = args.output_dir
+    log_filepath = folder_path / 'log.txt'
     with open(log_filepath, 'r') as fp:
         for line in fp.readlines():
             values = line.split(',')
-            if arg_name == values[0]:
-                if check_valid_files(values):
-                    return values
+            if check_valid_files(values, folder_path):
+                return values
         else:
-            raise ValueError(f"Project {arg_name} not processed. "
+            raise ValueError(f"Project {args.name} not processed. "
                              f"Consider running mrqa, before mrqa_monitor")
 
 
-def check_valid_files(values):
-    name, mtime, fname, _ = values
-    folder_path = PATH_CONFIG["output_dir"] / name
+def check_valid_files(values, folder_path):
+    mtime, fname, _ = values
     report_path = folder_path / f'{fname}.html'
     mrds_path = folder_path / f'{fname}{MRDS_EXT}'
     if report_path.is_file() and mrds_path.is_file():
