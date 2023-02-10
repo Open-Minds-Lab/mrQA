@@ -273,7 +273,8 @@ def slugify(value, allow_unicode=False):
     if allow_unicode:
         value = unicodedata.normalize('NFKC', value)
     else:
-        value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
+        value = unicodedata.normalize(
+            'NFKD', value).encode('ascii', 'ignore').decode('ascii')
     value = re.sub(r'[^\w\s-]', '', value.lower())
     return re.sub(r'[-\s]+', '-', value).strip('-_')
 
@@ -338,6 +339,8 @@ def round_if_number(value, decimals=3):
 def _check_single_run(modality, decimals, run_te, run_params):
     te = round_if_number(run_te, decimals)
     params = apply_round(run_params, decimals)
+    te_ref = None
+    delta = None
     if te in modality.get_echo_times():
         reference = modality.get_reference(te)
         if _validate_reference(reference):
@@ -451,13 +454,8 @@ def _store(modality, delta, echo_time, subject_name, session_name):
     for entry in delta:
         if entry[0] == 'change':
             _, parameter, [new_value, ref_value] = entry
-            # if new_value is None:
-            #     new_value = 'NoneX'
-            # if ref_value is None:
-            #     ref_value = 'NoneX'
             if echo_time is None:
                 echo_time = 1.0
-            # parameter = make_hashable(parameter)
             ref_value = make_hashable(ref_value)
             new_value = make_hashable(new_value)
 
@@ -467,8 +465,6 @@ def _store(modality, delta, echo_time, subject_name, session_name):
             )
         elif entry[0] == 'add':
             for key, value in entry[2]:
-                # if value is None:
-                    # value = 'NoneX'
                 if echo_time is None:
                     echo_time = 1.0
                 modality.add_non_compliant_param(
