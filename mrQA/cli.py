@@ -22,7 +22,7 @@ def get_parser():
     optional = parser.add_argument_group('optional arguments')
 
     # Add help
-    required.add_argument('-d', '--data_root', type=str, required=True,
+    required.add_argument('-d', '--data_root', nargs='+', required=True,
                           help='directory containing downloaded dataset with '
                                'dicom files, supports nested hierarchies')
     optional.add_argument('-o', '--output_dir', type=str,

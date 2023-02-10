@@ -117,9 +117,9 @@ def _check_args_validity(list_of_dicts):
         if len(dict_) == 0:
             raise ValueError("Atleast one of dictionaries is empty.")
     if len(list_of_dicts) < 3:
-        logger.error("Cannot compute majority attribute values. "
-                     "Got less than 3 values for each "
-                     "parameter. Returns majority values as None.")
+        logger.warning("Cannot compute majority attribute values. "
+                       "Got less than 3 values for each "
+                       "parameter. Returns majority values as None.")
         maj_attr_values = dict()
         for key in list_of_dicts[0].keys():
             maj_attr_values[key] = None
