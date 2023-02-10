@@ -477,7 +477,7 @@ def _projects_processed(folder, ignore_case=True):
     """
     Add function to retrieve the names of projects that have been processed in
     the past
-    
+
     Parameters
     ----------
     folder
@@ -491,3 +491,28 @@ def _projects_processed(folder, ignore_case=True):
         return [x.name for x in folder.iterdir() if x.is_dir()]
     else:
         return [x.name.lower() for x in folder.iterdir() if x.is_dir()]
+
+
+def get_files_by_mtime(dir_path, mtime, time_format='timestamp'):
+    str_format = "%m/%d/%Y %H:%M:%S"
+    if time_format == 'timestamp':
+        mod_time = datetime.fromtimestamp(float(mtime)).strftime(str_format)
+    elif time_format == 'datetime':
+        try:
+            mod_time = parser.parse(mtime, dayfirst=False)
+        except ValueError:
+            raise ValueError(f"Invalid time format. Use {str_format}.")
+    else:
+        raise NotImplementedError("Expected one of ['timestamp', 'datetime']."
+                                  f"Got {time_format}")
+
+    cmd = f"find {str(dir_path)} -type f -newermt '{mod_time}'"
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE, shell=True)
+    o, e = proc.communicate()
+    if proc.returncode:
+        raise RuntimeError(e.decode('utf8'))
+
+    modified_files = o.decode('utf8').split('\n')
+    valid_files = [f for f in modified_files if Path(f).is_file()]
+    return valid_files
