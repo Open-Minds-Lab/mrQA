@@ -135,7 +135,8 @@ def is_same_dataset(dataset1, dataset2):
 def is_same(file1, file2):
     file1, file2 = valid_paths([file1, file2])
     with open(file1) as f1, open(file2) as f2:
-        for line1, line2 in zip(f1, f2):
+        # Check after timestamps. Don't check 1st 3 lines
+        for line1, line2 in list(zip(f1, f2))[3:]:
             if line1 != line2:
                 return False
     return True
