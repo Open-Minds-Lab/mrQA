@@ -33,9 +33,6 @@ def check_compliance(dataset: BaseDataset,
     output_dir: Union[Path, str]
         Path to save the report
 
-    Returns
-    -------
-    None
 
     Raises
     ------
@@ -79,6 +76,7 @@ def compare_with_majority(dataset: "BaseDataset",
     # TODO: Check for subset, if incomplete dataset throw error and stop
 
     for modality in dataset.modalities:
+        modality.clear_non_compliant_data()
         # Infer reference protocol for each echo_time
         run_by_echo = _get_runs_by_echo(modality, decimals)
 
