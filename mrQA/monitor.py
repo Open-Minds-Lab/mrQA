@@ -94,17 +94,18 @@ def parse_args():
     return args
 
 
-def get_last_filenames(args):
-    folder_path = args.output_dir
+def get_last_filenames(name, output_dir):
+    folder_path = output_dir
     log_filepath = folder_path / 'log.txt'
     with open(log_filepath, 'r') as fp:
-        for line in fp.readlines():
-            values = line.split(',')
-            if check_valid_files(values, folder_path):
-                return values
-        else:
-            raise ValueError(f"Project {args.name} not processed. "
-                             f"Consider running mrqa, before mrqa_monitor")
+        # we only need the last line, and reading all the lines is inefficient
+        # in future, implement an approach to directly access the EOF.
+        # See https://stackoverflow.com/a/54278929/3140172
+        last_line = fp.readlines()[-1]
+        # for line in fp.readlines():
+        values = last_line.split(',')
+        if check_valid_files(values, folder_path):
+            return values
 
 
 def check_valid_files(values, folder_path):
@@ -122,17 +123,24 @@ def main():
     mrqa_monitor(args.name, args.data_source, args.output_dir)
 
 
-    last_mrds_fpath = Path(args.output_dir) / f"{fname}{MRDS_EXT}"
+def mrqa_monitor(name, data_source, output_dir):
+    values = get_last_filenames(name, output_dir)
+    if not values:
+        raise ValueError(f'Dataset {name} not found in log. Consider using mrqa'
+                         f'before mrqa_monitor')
+    mtime, fname, _ = values
+    modified_files = get_files_by_mtime(data_source, mtime)
+
+    last_mrds_fpath = Path(output_dir) / f"{fname}{MRDS_EXT}"
     last_mrds = load_mr_dataset(last_mrds_fpath)
+    # TODO : Add other arguments of import_dataset here?
     partial_dataset = import_dataset(data_source_folders=modified_files,
                                      style='dicom',
-                                     name=args.name,
-                                     verbose=args.verbose,
-                                     include_phantom=args.include_phantom)
+                                     name=name)
     last_mrds.merge(partial_dataset)
-    check_compliance(dataset=last_mrds,
-                     output_dir=args.output_dir)
-    return
+    report_path = check_compliance(dataset=last_mrds,
+                     output_dir=output_dir)
+    return report_path
 
 
 if __name__ == "__main__":
