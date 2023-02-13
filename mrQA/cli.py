@@ -69,7 +69,7 @@ def get_parser():
     return parser
 
 
-def mrqa_main():
+def main():
     args = parse_args()
 
     dataset = import_dataset(data_source_folders=args.data_root,
@@ -113,4 +113,4 @@ def parse_args():
 
 
 if __name__ == "__main__":
-    sys.exit(mrqa_main())  # pragma: no cover
+    sys.exit(main())  # pragma: no cover

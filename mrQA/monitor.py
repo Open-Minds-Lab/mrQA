@@ -24,12 +24,12 @@ def get_parser():
     # Add help
     optional.add_argument('-n', '--name', type=str.lower,
                           help='provide a identifier/name for the dataset')
-    required.add_argument('-d', '--data_root', type=str, required=True,
+    required.add_argument('-d', '--data_source', type=str, required=True,
                           help='directory containing downloaded dataset with '
                                'dicom files, supports nested hierarchies')
     optional.add_argument('-o', '--output_dir', type=str,
                           help='specify the directory where the report'
-                               ' would be saved. By default, the --data_root '
+                               ' would be saved. By default, the --data_source '
                                'directory will be used to save reports')
     optional.add_argument('-s', '--style', type=str, default='dicom',
                           help='type of dataset, one of [dicom|bids|other]')
@@ -72,8 +72,8 @@ def parse_args():
     else:
         logger.setLevel('WARNING')
 
-    if not Path(args.data_root).is_dir():
-        raise FileNotFoundError('Invalid data_root specified '
+    if not Path(args.data_source).is_dir():
+        raise FileNotFoundError('Invalid data_source specified '
                                 'for reading files.')
 
     valid_names = _projects_processed(PATH_CONFIG["output_dir"], ignore_case=True)
@@ -117,10 +117,10 @@ def check_valid_files(values, folder_path):
                             f' {report_path} and {mrds_path}.')
 
 
-def mrqa_monitor():
+def main():
     args = parse_args()
-    mtime, fname, _ = get_last_filenames(args)
-    modified_files = get_files_by_mtime(args.data_root, mtime)
+    mrqa_monitor(args.name, args.data_source, args.output_dir)
+
 
     last_mrds_fpath = Path(args.output_dir) / f"{fname}{MRDS_EXT}"
     last_mrds = load_mr_dataset(last_mrds_fpath)
@@ -136,4 +136,4 @@ def mrqa_monitor():
 
 
 if __name__ == "__main__":
-    sys.exit(mrqa_monitor())  # pragma: no cover
+    sys.exit(main())  # pragma: no cover

@@ -41,7 +41,7 @@ setup(
     entry_points={
         'console_scripts': [
             'mrqa=mrQA.cli:main',
-            'mrqa_monitor=mrQA.run_monitor:main',
+            'mrqa_monitor=mrQA.monitor:main',
             'mrpc_subset=mrQA.run_subset:main'
         ],
     },
