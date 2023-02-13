@@ -370,8 +370,15 @@ def _check_single_run(modality, decimals, run_te, run_params):
 
 
 def _check_against_reference(modality, decimals):
+    # Set default flags as True, if there is some non-compliance
+    # flags will be set to false. Default value in modality class is True
+    # but we cannot rely on that default value.
+    # modality.clear_non_compliant_data()
+    modality.compliant = True
     for subject in modality.subjects:
+        subject.compliant = True
         for session in subject.sessions:
+            session.compliant = True
             for run in session.runs:
                 run.delta, te_ref = _check_single_run(modality,
                                                       decimals,
