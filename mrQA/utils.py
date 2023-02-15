@@ -353,6 +353,18 @@ def slugify(value, allow_unicode=False):
 
 
 def is_integer_number(n: Union[int, float]) -> bool:
+    """
+    Check if a number is an integer.
+    Parameters
+    ----------
+    n : int or float
+        number to check
+
+    Returns
+    -------
+    bool
+        True if the number is an integer, False otherwise
+    """
     if isinstance(n, int):
         return True
     if isinstance(n, float):
