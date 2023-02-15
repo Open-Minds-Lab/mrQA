@@ -82,8 +82,8 @@ def majority_attribute_values(list_of_dicts: list, default=None):
             counters_dict[key] = counter
 
     majority_attr_dict = {}
-    for k in counters_dict.keys():
-        majority_attr_dict[k] = pick_majority(counters_dict[k], k)
+    for parameter, counter in counters_dict.items():
+        majority_attr_dict[parameter] = pick_majority(counter, parameter)
     return majority_attr_dict
 
 
