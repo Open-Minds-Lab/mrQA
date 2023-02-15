@@ -311,7 +311,23 @@ def get_outliers(data: list, m=25.0) -> Union[list, None]:
     return None
 
 
-def apply_round(dict_, decimals):
+def round_dict_values(dict_: dict, decimals: int) -> dict:
+    """
+    Round all the values in a dictionary to a given number of decimals.
+
+    Parameters
+    ----------
+    dict_ : dict
+        dictionary of key, value pairs. Values can be numbers or strings.
+        The function will only round the values that are numbers.
+    decimals : int
+        number of decimals to round to
+
+    Returns
+    -------
+    dict
+        dictionary with all the values rounded to the given number of decimals
+    """
     new_dict = dict_.copy()
     for key, value in new_dict.items():
         new_dict[key] = round_if_number(value, decimals)
