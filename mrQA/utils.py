@@ -142,27 +142,32 @@ def pick_majority(counter_: Counter, parameter: str, default=None):
     return items_rank1[0][0]
 
 
-def default_thread_count():
-    workers = min(32, os.cpu_count() + 4)
-    return workers
+def _check_args_validity(list_of_dicts: List[dict]) -> bool:
+    """
+    Checks if the arguments are valid for computing majority attribute values
+    Parameters
+    ----------
+    list_of_dicts : list
+        a list of dictionaries
 
-
-def _check_args_validity(list_of_dicts):
+    Returns
+    -------
+    bool
+        True if arguments are valid, False otherwise
+    """
     if list_of_dicts is None:
         raise ValueError('Expected a list of dicts, Got NoneType')
     if len(list_of_dicts) == 0:
         raise ValueError('List is empty.')
     for dict_ in list_of_dicts:
         if len(dict_) == 0:
-            raise ValueError("Atleast one of dictionaries is empty.")
+            raise ValueError('Atleast one of dictionaries is empty.')
     if len(list_of_dicts) < 3:
-        logger.warning("Cannot compute majority attribute values. "
-                       "Got less than 3 values for each "
-                       "parameter. Returns majority values as None.")
-        maj_attr_values = dict()
-        for key in list_of_dicts[0].keys():
-            maj_attr_values[key] = None
-        return maj_attr_values
+        logger.warning('Cannot compute majority attribute values. '
+                       'Got less than 3 values for each '
+                       'parameter. Returns majority values as None.')
+        return False
+    return True
 
 
 def split_list(dir_index: list, num_chunks: int) -> typing.Iterable[List[str]]:
