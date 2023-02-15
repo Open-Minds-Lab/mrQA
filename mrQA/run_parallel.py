@@ -160,8 +160,8 @@ def create_script(data_source: Union[str, Path, Iterable] = None,
 
     # Finally, save the all the paths to create mrds pickle files and all the
     # paths to generated scripts in a text file for reference.
-    list2txt(path=files_per_batch['mrds'], list_=mrds_path_list)
-    list2txt(path=files_per_batch['scripts'], list_=scripts_path_list)
+    list2txt(fpath=files_per_batch['mrds'], list_=mrds_path_list)
+    list2txt(fpath=files_per_batch['scripts'], list_=scripts_path_list)
     return files_per_batch['scripts'], files_per_batch['mrds']
 
 
@@ -177,7 +177,7 @@ def split_ids_list(data_source: Union[str, Path],
 
     Parameters
     ----------
-    data_source_folders : Union[str, Path]
+    data_source : Union[str, Path]
         Path to the root directory of the data
     all_ids_path : Union[str, Path]
         Path to the output directory
@@ -211,7 +211,7 @@ def split_ids_list(data_source: Union[str, Path],
         # Add the path to the text file ( containing the
         # list of subjects for each job) to a list, return the list
         batch_ids_path_list.append(batch_filepath)
-    list2txt(path=per_batch_ids, list_=batch_ids_path_list)
+    list2txt(fpath=per_batch_ids, list_=batch_ids_path_list)
     return batch_ids_path_list
 
 
