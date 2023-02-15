@@ -297,12 +297,10 @@ def get_outliers(data: list, m=25.0) -> Union[list, None]:
     https://stackoverflow.com/a/16562028/3140172
     Parameters
     ----------
-    data
-    m
-
-    Returns
-    -------
-
+    data : list
+        list of values
+    m : float
+        number of standard deviations to use as threshold
     """
     d = np.abs(data - np.median(data))
     mdev = np.median(d)
