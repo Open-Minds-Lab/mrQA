@@ -372,14 +372,34 @@ def is_integer_number(n: Union[int, float]) -> bool:
     return False
 
 
-def subject_list2txt(dataset, output_dir=None):
+def subject_list2txt(dataset: BaseDataset,
+                     output_dir: Path) -> dict:
+    """
+    Given a dataset, write a text file for each modality containing the
+    subject names that are non-compliant with the reference protocol.
+    Return a dictionary with the modality name as key and the filepath to the
+    text file as value.
+
+    Parameters
+    ----------
+    dataset: BaseDataset
+        the text files will be generated for each modality in this dataset
+    output_dir: Path
+        absolute path to the output directory where the text files
+         will be stored
+
+    Returns
+    -------
+    dict
+        dictionary with the modality name as key and the filepath to the
+        text file as value
+    """
     output_dir.mkdir(exist_ok=True, parents=True)
     filepaths = {}
     for modality in dataset.modalities:
-        if len(modality.non_compliant_subject_names) > 50:
-            filepath = output_dir / slugify(modality.name)
-            list2txt(filepath, modality.non_compliant_subject_names)
-            filepaths[modality.name] = filepath
+        filepath = output_dir / slugify(modality.name)
+        list2txt(filepath, modality.non_compliant_subject_names)
+        filepaths[modality.name] = filepath
     return filepaths
 
 
