@@ -20,7 +20,24 @@ from MRdataset.utils import param_difference, make_hashable
 from dateutil import parser
 
 
-def get_items_upto_count(dict_, rank=1):
+def get_items_upto_count(dict_: Counter, rank: int = 1):
+    """
+    Given a dictionary, it returns a list of key-value pairs
+    upto the rank specified. If rank is 1, it returns the most
+    common value. If rank is 2, it returns the second most common
+    value and so on.
+
+    Parameters
+    ----------
+    dict_: Counter
+        A Counter object, which is a dictionary with values as counts
+    rank : int, default 1
+        The rank upto which the key-value pairs are to be returned
+
+    Returns
+    -------
+
+    """
     values_desc_order = dict_.most_common()
     value_at_rank = values_desc_order[rank - 1][1]
     return list(takewhile(lambda x: x[1] >= value_at_rank, values_desc_order))
