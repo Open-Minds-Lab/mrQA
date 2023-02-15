@@ -66,11 +66,12 @@ def majority_attribute_values(list_of_dicts: list, default=None):
     dict
         Key-value pairs specifying the most common values for each key
     """
-    maj_attr_vals = _check_args_validity(list_of_dicts)
-    if not (maj_attr_vals is None):
-        return maj_attr_vals
-
-    counters_dict = dict()
+    if not _check_args_validity(list_of_dicts):
+        maj_attr_values = {}
+        for key in list_of_dicts[0].keys():
+            maj_attr_values[key] = None
+        return maj_attr_values
+    counters_dict = {}
     categories = set()
     for dict_ in list_of_dicts:
         categories.update(dict_.keys())
