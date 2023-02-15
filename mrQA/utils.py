@@ -253,25 +253,42 @@ def list2txt(fpath: Path, list_: list) -> None:
         fp.write('\n'.join(list_))
 
 
-def save2pickle(dataset):
-    if not dataset.modalities:
-        raise EOFError('Dataset is empty!')
-    with open(dataset.cache_path, "wb") as f:
-        pickle.dump(dataset, f)
+def execute_local(script_path: str) -> None:
+    """
+    Execute a bash script locally and time it.
 
+    Parameters
+    ----------
+    script_path : str
+        path to the bash script
 
-def execute_local(filename):
-    format_params = "\n".join(['File system outputs: %O',
+    Returns
+    -------
+    None
+    """
+    if not Path(script_path).is_file():
+        raise FileNotFoundError(f'Could not find {script_path}')
+
+    format_params = '\n'.join(['File system outputs: %O',
                                'Maximum RSS size: %M',
                                'CPU percentage used: %P',
                                'Real Time: %E',
                                'User Time: %U',
                                'Sys Time: %S'])
-    ret_code = subprocess.Popen(['/usr/bin/time', '-f', format_params,
-                                'bash', filename])
-    ret_code.wait()
-    # TODO : check if file was created
-    return
+    cmd = ['/usr/bin/time', '-f', format_params, 'bash', script_path]
+    try:
+        run(cmd, check=True, shell=True)
+    except FileNotFoundError as exc:
+        logger.error(
+            "Process failed because 'bash' could not be found.\n %s", exc)
+    except CalledProcessError as exc:
+        logger.error(
+            'Process failed because did not return a successful'
+            ' return code. Returned %s \n %s', exc.returncode, exc
+        )
+    except TimeoutExpired as exc:
+        logger.error('Process timed out.\n %s', exc)
+    # TODO : check if file was created successfully
 
 
 def get_outliers(data: list, m=25.0) -> Union[list, None]:
