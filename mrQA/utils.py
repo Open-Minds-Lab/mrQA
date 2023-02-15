@@ -610,17 +610,22 @@ def _projects_processed(dir_path, ignore_case=True):
 
     Parameters
     ----------
-    folder
-    ignore_case
+    dir_path : str or Path
+        Absolute path to the folder where the processed projects are stored
+    ignore_case : bool
+        If True, the names of the projects will be searched in lower case.
+        If False, the names of the projects will be searched in the original
+        case.
 
     Returns
     -------
 
     """
     if not ignore_case:
-        return [x.name for x in folder.iterdir() if x.is_dir()]
+        return [x.name for x in dir_path.iterdir() if x.is_dir()]
     else:
-        return [x.name.lower() for x in folder.iterdir() if x.is_dir()]
+        return [x.name.lower() for x in dir_path.iterdir() if x.is_dir()]
+
 
 def files_modified_since(dir_path: Union[str, Path],
                          mtime: str,
