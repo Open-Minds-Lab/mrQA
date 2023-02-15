@@ -458,7 +458,7 @@ def round_if_number(value, decimals=3):
 
 def _check_single_run(modality, decimals, run_te, run_params):
     te = round_if_number(run_te, decimals)
-    params = apply_round(run_params, decimals)
+    params = round_dict_values(run_params, decimals)
     te_ref = None
     delta = None
     if te in modality.get_echo_times():
@@ -484,14 +484,14 @@ def _check_single_run(modality, decimals, run_te, run_params):
         else:
             te_ref = None
             delta = params
-            logger.warning(f'There is no reference set for the '
-                           f'modality : {modality}')
+            logger.warning('There is no reference set for the '
+                           'modality : %s', modality.name)
     return delta, te_ref
 
 
 def _check_against_reference(modality, decimals):
     # Set default flags as True, if there is some non-compliance
-    # flags will be set to false. Default value in modality class is True
+    # flags will be set to false. Default value in modality class is True,
     # but we cannot rely on that default value.
     # modality.clear_non_compliant_data()
     modality.compliant = True
@@ -499,14 +499,14 @@ def _check_against_reference(modality, decimals):
         subject.compliant = True
         for session in subject.sessions:
             session.compliant = True
-            for run in session.runs:
-                run.delta, te_ref = _check_single_run(modality,
-                                                      decimals,
-                                                      run.echo_time,
-                                                      run.params)
-                if run.delta:
+            for i_run in session.runs:
+                i_run.delta, te_ref = _check_single_run(modality,
+                                                        decimals,
+                                                        i_run.echo_time,
+                                                        i_run.params)
+                if i_run.delta:
                     modality.add_non_compliant_subject_name(subject.name)
-                    _store(modality, run.delta, te_ref,
+                    _store(modality, i_run.delta, te_ref,
                            subject.name, session.name)
                     # NC = non_compliant
                     # If any run is NC, then session is NC.
@@ -553,14 +553,14 @@ def _cli_report(dataset: BaseDataset, report_name):
             result[modality.name] = str(100 * percent_non_compliant)
     # Format the result as a string
     if result:
-        ret_string = 'In {0} dataset, modalities "{1}" are non-compliant. ' \
-                     'See {2} for report'.format(dataset.name,
-                                                 ", ".join(result.keys()),
-                                                 report_name)
+        modalities = ', '.join(result.keys())
+        ret_string = f'In {dataset.name} dataset,' \
+                     f' modalities "{modalities}" are non-compliant. ' \
+                     f'See {report_name} for report'
     else:
-        ret_string = 'In {0} dataset, all modalities are compliant. ' \
-                     'See {1} for report'.format(dataset.name,
-                                                 report_name)
+        ret_string = f'In {dataset.name} dataset, all modalities are compliant. ' \
+                     f'See {report_name} for report.'
+
     return ret_string
 
 
@@ -592,7 +592,7 @@ def _store(modality: Modality,
 
             modality.add_non_compliant_param(
                 parameter, echo_time, ref_value, new_value,
-                '{}_{}'.format(subject_name, session_name)
+                f'{subject_name}_{session_name}'
             )
         elif entry[0] == 'add':
             for key, value in entry[2]:
@@ -600,8 +600,7 @@ def _store(modality: Modality,
                     echo_time = 1.0
                 modality.add_non_compliant_param(
                     key, echo_time, value, None,
-                    '{}_{}'.format(subject_name, session_name)
-                )
+                    f'{subject_name}_{session_name}')
 
 
 def _projects_processed(dir_path, ignore_case=True):
