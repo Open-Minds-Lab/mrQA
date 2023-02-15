@@ -192,15 +192,15 @@ def split_list(dir_index: list, num_chunks: int) -> typing.Iterable[List[str]]:
     tuple of all subsets
     """
     if not is_integer_number(num_chunks):
-        raise RuntimeError(f"Number of chunks must be an integer. "
-                           f"Got {num_chunks}")
+        raise RuntimeError(f'Number of chunks must be an integer. '
+                           f'Got {num_chunks}')
     if num_chunks == 0:
-        raise RuntimeError("Cannot divide list into chunks of size 0")
+        raise RuntimeError('Cannot divide list into chunks of size 0')
     if len(dir_index) == 0:
-        raise RuntimeError("List of directories is empty!")
+        raise RuntimeError('List of directories is empty!')
     if len(dir_index) < num_chunks:
-        warnings.warn(f"Got num_chunks={num_chunks}, list_size={len(dir_index)}"
-                      f"Expected num_chunks < list_size",
+        warnings.warn(f'Got num_chunks={num_chunks}, list_size={len(dir_index)}'
+                      f'Expected num_chunks < list_size',
                       stacklevel=2)
         num_chunks = len(dir_index)
     k, m = divmod(len(dir_index), num_chunks)
