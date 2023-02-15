@@ -104,9 +104,28 @@ def extract_reasons(data: list):
     return list(zip(*data))[1]
 
 
-def pick_majority(counter_, parameter, default=None):
+def pick_majority(counter_: Counter, parameter: str, default=None):
+    """
+    Given a counter object, it returns the most common value.
+
+    Parameters
+    ----------
+    counter_ : Counter
+        A Counter object, which is a dictionary with values as counts
+        keys are various possible values for a parameter, for ex, for PED
+        keys will be ROW, COL ... etc
+    parameter: str
+        The parameter for which the majority is being computed
+    default : python object, default None
+        a default value if the key is missing in any dictionary
+
+    Returns
+    -------
+    parameter name : str
+        The most common value for the parameter
+    """
     if len(counter_) == 0:
-        raise ValueError("Expected atleast one entry in counter. Got 0")
+        raise ValueError('Expected atleast one entry in counter. Got 0')
     if len(counter_) == 1:
         return list(counter_.keys())[0]
     # there are more than 1 value, remove default, and computer majority
@@ -114,11 +133,11 @@ def pick_majority(counter_, parameter, default=None):
     items_rank1 = get_items_upto_count(counter_, rank=1)
     # If there are many values for rank 1 with equal count,
     # cannot say which is majority
-    values = ", ".join([str(x[0]) for x in items_rank1])
+    values = ', '.join([str(x[0]) for x in items_rank1])
     if len(items_rank1) > 1:
         logger.warning(
-            f"Could not compute reference for {parameter}. Got multiple values"
-            f" {values} with same count = {items_rank1[0][1]}.")
+            'Could not compute reference for %s. Got multiple values'
+            ' %s with same count = %s.', parameter, values, items_rank1[0][1])
         return 'Cannot Compute Majority:\nEqual Count'
     return items_rank1[0][0]
 
