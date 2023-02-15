@@ -45,7 +45,7 @@ def get_items_upto_count(dict_: Counter, rank: int = 1):
 
 def timestamp():
     """Generate a timestamp as a string"""
-    time_string = time.strftime("%m_%d_%Y_%H_%M_%S")
+    time_string = time.strftime('%m_%d_%Y_%H_%M_%S')
     return time_string
 
 
