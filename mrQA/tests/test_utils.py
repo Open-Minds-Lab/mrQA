@@ -187,3 +187,46 @@ class TestTxt2List(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             txt2list(file_path)
 
+
+class TestModifiedTimeDirectory(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # super().__init__()
+        cls.temp_ds = cls.create_dummy_directory()
+
+    def test_invalid_path(self):
+        with self.assertRaises(FileNotFoundError):
+            now = datetime.now(timezone.utc)
+            files_modified_since('/tmp/mrqa', now.strftime("%m/%d/%Y %H:%M:%S"))
+
+    @staticmethod
+    def create_dummy_directory():
+        temp_dir = Path(tempfile.gettempdir())
+        temp_folder_name = temp_dir / random_name()
+        temp_folder_name.mkdir(parents=True, exist_ok=True)
+
+        num_folder = 10
+        num_files = 5
+        for i in range(num_folder):
+            temp_subdir_path = temp_folder_name / random_name()
+            temp_subdir_path.mkdir(parents=True, exist_ok=True)
+            for j in range(num_files):
+                tmp = tempfile.NamedTemporaryFile(delete=False,
+                                                  dir=temp_subdir_path)
+        return temp_folder_name
+
+    def test_basic(self):
+        now = datetime(2023, 2, 5, 18, 00)
+        # datetime.now(timezone.utc)
+        date_time = now.strftime("%m/%d/%Y %H:%M:%S")
+        valid_files = files_modified_since(self.temp_ds, date_time, '/tmp/',
+                                           time_format='datetime')
+        print(valid_files)
+
+
+if __name__ == '__main__':
+    a = TestModifiedTimeDirectory()
+    # a.check_basic()
+
+
+
