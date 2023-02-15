@@ -49,7 +49,7 @@ def timestamp():
     return time_string
 
 
-def majority_attribute_values(list_of_dicts, default=None):
+def majority_attribute_values(list_of_dicts: list, default=None):
     """
     Given a list of dictionaries, it generates the most common
     values for each key
@@ -86,7 +86,7 @@ def majority_attribute_values(list_of_dicts, default=None):
     return majority_attr_dict
 
 
-def extract_reasons(data):
+def extract_reasons(data: list):
     """
     Given a list of tuples, extract all the elements at index 1, and return
     as a list
@@ -208,7 +208,7 @@ def txt2list(txt_filepath: Union[str, Path]) -> list:
     return line_list
 
 
-def list2txt(path, list_):
+def list2txt(fpath: Path, list_: list) -> None:
     """
     Given a list of values, dump all the lines to a text file. Each element of
     the list is on a separate line.
@@ -249,7 +249,7 @@ def execute_local(filename):
     return
 
 
-def get_outliers(data, m=25.0):
+def get_outliers(data: list, m=25.0) -> Union[list, None]:
     """
     Check for outliers. Adapted from
     https://stackoverflow.com/a/16562028/3140172
@@ -425,7 +425,7 @@ def _check_against_reference(modality, decimals):
     return modality.compliant
 
 
-def _cli_report(dataset, report_name):
+def _cli_report(dataset: BaseDataset, report_name):
     """
     CLI report generator.
     Generate a single line report for the dataset
@@ -461,7 +461,11 @@ def _cli_report(dataset, report_name):
     return ret_string
 
 
-def _store(modality, delta, echo_time, subject_name, session_name):
+def _store(modality: Modality,
+           delta: list,
+           echo_time: float,
+           subject_name: str,
+           session_name: str):
     """
     Store the sources of non-compliance like flip angle, ped, tr, te
 
@@ -497,7 +501,7 @@ def _store(modality, delta, echo_time, subject_name, session_name):
                 )
 
 
-def _projects_processed(folder, ignore_case=True):
+def _projects_processed(dir_path, ignore_case=True):
     """
     Add function to retrieve the names of projects that have been processed in
     the past
@@ -516,6 +520,11 @@ def _projects_processed(folder, ignore_case=True):
     else:
         return [x.name.lower() for x in folder.iterdir() if x.is_dir()]
 
+def files_modified_since(dir_path: Union[str, Path],
+                         mtime: str,
+                         time_format: str = 'timestamp'):
+    """
+    Find files modified since a given time
 
 def get_files_by_mtime(dir_path, mtime, time_format='timestamp'):
     str_format = "%m/%d/%Y %H:%M:%S"
