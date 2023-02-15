@@ -1,5 +1,10 @@
-from mrQA.utils import majority_attribute_values
+from mrQA.utils import majority_attribute_values, files_modified_since
+from mrQA.utils import list2txt, txt2list
 import unittest
+import tempfile
+from pathlib import Path
+from MRdataset.utils import random_name
+from datetime import datetime, timezone
 
 
 class TestMajorityAttributeValues(unittest.TestCase):
@@ -169,5 +174,16 @@ class TestMajorityAttributeValues(unittest.TestCase):
         self.assertEqual(maj_attr_vals['color'], 'orange')
 
 
+class TestTxt2List(unittest.TestCase):
+    def test_valid_file(self):
+        file_path = Path('/tmp/tests/test.txt').resolve()
+        expected = ['line1', 'line2', 'line3']
+        list2txt(file_path, expected)
+        actual = txt2list(file_path)
+        self.assertEqual(expected, actual)
 
+    def test_invalid_file(self):
+        file_path = 'tests/test_files/invalid.txt'
+        with self.assertRaises(FileNotFoundError):
+            txt2list(file_path)
 
