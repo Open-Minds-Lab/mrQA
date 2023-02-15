@@ -403,23 +403,38 @@ def subject_list2txt(dataset: BaseDataset,
     return filepaths
 
 
-def _get_runs_by_echo(modality, decimals=3):
+def _get_runs_by_echo(modality: Modality, decimals: int = 3):
+    """
+    Given a modality, return a dictionary with the echo time as key and a list
+    of run parameters as value. The run parameters are rounded to the given
+    number of decimals.
+
+    Parameters
+    ----------
+    modality
+    decimals
+
+    Returns
+    -------
+
+    """
     runs_in_modality = []
     for subject in modality.subjects:
         for session in subject.sessions:
             runs_in_modality.extend(session.runs)
 
-    def _sort_key(run):
-        return run.echo_time
+    def _sort_key(run_):
+        return run_.echo_time
 
-    run_params_by_te = dict()
+    run_params_by_te = {}
     runs_in_modality = sorted(runs_in_modality, key=_sort_key)
     for te, group in groupby(runs_in_modality, key=_sort_key):
         te_ = round_if_number(te, decimals)
-        for run in list(group):
+        for i_run in list(group):
             if te_ not in run_params_by_te:
                 run_params_by_te[te_] = []
-            run_params_by_te[te_].append(apply_round(run.params, decimals))
+            run_params_by_te[te_].append(round_dict_values(i_run.params,
+                                                           decimals))
     return run_params_by_te
 
 
