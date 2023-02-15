@@ -25,7 +25,7 @@ def get_parser():
     required.add_argument('-d', '--data-source', nargs='+', required=True,
                           help='directory containing downloaded dataset with '
                                'dicom files, supports nested hierarchies')
-    optional.add_argument('-o', '--output_dir', type=str,
+    optional.add_argument('-o', '--output-dir', type=str,
                           help='specify the directory where the report'
                                ' would be saved. By default, the --data_source '
                                'directory will be used to save reports')
@@ -49,10 +49,10 @@ def get_parser():
     optional.add_argument('--strategy', type=str, default='majority',
                           help='how to examine parameters [majority|reference].'
                                '--reference_path required if using reference')
-    optional.add_argument('--include_phantom', action='store_true',
+    optional.add_argument('--include-phantom', action='store_true',
                           help='whether to include phantom, localizer, '
                                'aahead_scout')
-    optional.add_argument('--include_nifti_header', action='store_true',
+    optional.add_argument('--include-nifti-header', action='store_true',
                           help='whether to check nifti headers for compliance,'
                                'only used when --style==bids')
     # Experimental features, not implemented yet.
@@ -100,7 +100,7 @@ def parse_args():
     #                   'Got {0}'.format(args.data_source))
 
     if args.output_dir is None:
-        logger.info('Use --output_dir to specify dir for final directory. '
+        logger.info('Use --output-dir to specify dir for final directory. '
                     'Using default')
         args.output_dir = PATH_CONFIG['output_dir'] / args.name.lower()
     else:
