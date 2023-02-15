@@ -241,17 +241,16 @@ def list2txt(fpath: Path, list_: list) -> None:
 
     Parameters
     ----------
-    path : pathlib.Path
+    fpath : Path
         output path of the final text file
     list_ : list
         values to be exported in a text file
     """
+    parent_dir = fpath.parent
+    parent_dir.mkdir(parents=True, exist_ok=True)
 
-    # if Path(path).exists():
-    #     warnings.warn("Overwriting pre-existing index on disk.")
-    with open(path, 'w') as fp:
-        for line in list_:
-            fp.write("%s\n" % line)
+    with open(fpath, 'w', encoding='utf-8') as fp:
+        fp.write('\n'.join(list_))
 
 
 def save2pickle(dataset):
