@@ -1,6 +1,3 @@
-import os
-import pathlib
-import pickle
 import re
 import subprocess
 import time
@@ -13,8 +10,10 @@ from itertools import groupby
 from itertools import takewhile
 from pathlib import Path
 from typing import Union, List
+from subprocess import run, CalledProcessError, TimeoutExpired
 
 import numpy as np
+from MRdataset.base import Modality, BaseDataset
 from MRdataset.log import logger
 from MRdataset.utils import param_difference, make_hashable
 from dateutil import parser
@@ -629,30 +628,57 @@ def _projects_processed(dir_path, ignore_case=True):
 
 def files_modified_since(dir_path: Union[str, Path],
                          mtime: str,
+                         output_dir: Union[str, Path],
                          time_format: str = 'timestamp'):
     """
     Find files modified since a given time
 
-def get_files_by_mtime(dir_path, mtime, time_format='timestamp'):
-    str_format = "%m/%d/%Y %H:%M:%S"
+    Parameters
+    ----------
+    dir_path: str or Path
+        Absolute path to the directory to search
+    mtime: str
+        Reference time to compare against.
+    output_dir: str or Path
+        Absolute path to the directory where the output file will be stored.
+    time_format: str
+        Format of the time. One of ['timestamp', 'datetime'].
+
+    Returns
+    -------
+
+    """
+    str_format = '%m/%d/%Y %H:%M:%S'
     if time_format == 'timestamp':
         mod_time = datetime.fromtimestamp(float(mtime)).strftime(str_format)
     elif time_format == 'datetime':
         try:
             mod_time = parser.parse(mtime, dayfirst=False)
         except ValueError:
-            raise ValueError(f"Invalid time format. Use {str_format}.")
+            raise ValueError(f'Invalid time format. Use {str_format}.')
     else:
         raise NotImplementedError("Expected one of ['timestamp', 'datetime']."
-                                  f"Got {time_format}")
+                                  f'Got {time_format}')
 
-    cmd = f"find {str(dir_path)} -type f -newermt '{mod_time}'"
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE, shell=True)
-    o, e = proc.communicate()
-    if proc.returncode:
-        raise RuntimeError(e.decode('utf8'))
+    out_path = Path(output_dir) / f'modified_files_since.txt'
+    if out_path.is_file():
+        out_path.unlink()
 
-    modified_files = o.decode('utf8').split('\n')
-    valid_files = [f for f in modified_files if Path(f).is_file()]
-    return valid_files
+    cmd = f"find {str(dir_path)} -type f -newermt '{mod_time}' > {out_path}"
+
+    try:
+        proc = run(cmd, check=True, shell=True)
+        modified_files = txt2list(out_path)
+        valid_files = [f for f in modified_files if Path(f).is_file()]
+        return valid_files
+    except FileNotFoundError as exc:
+        logger.error(
+            "Process failed because file could not be found.\n %s", exc)
+    except CalledProcessError as exc:
+        logger.error(
+            'Process failed because did not return a successful'
+            ' return code. Returned %s \n %s', exc.returncode, exc
+        )
+    except TimeoutExpired as exc:
+        logger.error('Process timed out.\n %s', exc)
+
