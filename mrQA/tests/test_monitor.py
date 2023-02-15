@@ -31,7 +31,7 @@ class TestMergeDatasets(unittest.TestCase):
 
         # Read full dataset, acts as ground truth
         complete_dataset = import_dataset(
-            data_source_folders=temp_dir/'test_merge_data/full_data',
+            data_source=temp_dir/'test_merge_data/full_data',
             name='dummy_ds')
         report_path = check_compliance(complete_dataset,
                                        output_dir=output_folder_path)
@@ -64,7 +64,7 @@ class TestMergeDatasets(unittest.TestCase):
                 raise RuntimeError(e.decode('utf8'))
 
     def simulate(self, input_fpath, output_fpath):
-        ds1 = import_dataset(data_source_folders=input_fpath/'set1',
+        ds1 = import_dataset(data_source=input_fpath/'set1',
                              name='dummy_ds')
         check_compliance(ds1, output_dir=output_fpath)
 

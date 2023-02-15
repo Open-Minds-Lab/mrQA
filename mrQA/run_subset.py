@@ -94,7 +94,7 @@ def read_subset(batch_ids_file: str,
 
     subset = txt2list(batch_ids_file)
     identifier = Path(batch_ids_file).stem
-    partial_dataset = import_dataset(data_source_folders=subset,
+    partial_dataset = import_dataset(data_source=subset,
                                      style=style,
                                      name=identifier,
                                      verbose=verbose,

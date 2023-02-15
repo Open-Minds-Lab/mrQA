@@ -10,7 +10,7 @@ from MRdataset.utils import valid_dirs
 from mrQA.utils import is_integer_number, execute_local, list2txt
 
 
-def _check_args(data_source_folders: Union[str, Path, Iterable] = None,
+def _check_args(data_source: Union[str, Path, Iterable] = None,
                 style: str = 'dicom',
                 output_dir: Union[str, Path] = None,
                 debug: bool = False,
@@ -30,30 +30,30 @@ def _check_args(data_source_folders: Union[str, Path, Iterable] = None,
     if subjects_per_job < 1:
         raise RuntimeError('subjects_per_job cannot be less than 1')
 
-    # Check if data_root is a valid directory, or list of valid directories
-    data_source_folders = valid_dirs(data_source_folders)
+    # Check if data_source is a valid directory, or list of valid directories
+    data_source = valid_dirs(data_source)
 
     # RULE : If output_dir not provided, output wil be saved in 'mrqa_files'
-    # created in the parent folder of data_root
+    # created in the parent folder of data_source
     if not output_dir:
-        if isinstance(data_source_folders, Iterable):
-            # If data_root is a bunch of directories, the above RULE cannot
+        if isinstance(data_source, Iterable):
+            # If data_source is a bunch of directories, the above RULE cannot
             # be followed, just pass a directory to save the file.
             raise RuntimeError("Need an output directory to store files")
 
         # Didn't find a good alternative to os.access
         # in pathlib, please raise a issue if you know one, happy to incorporate
-        output_dir = data_source_folders.parent / (
-            data_source_folders.name + '_mrqa_files')
+        output_dir = data_source.parent / (
+            data_source.name + '_mrqa_files')
 
-        # Check if permission to create a folder in data_root.parent
-        if os.access(data_source_folders.parent, os.W_OK):
+        # Check if permission to create a folder in data_source.parent
+        if os.access(data_source.parent, os.W_OK):
             logger.warning('Expected a directory to save job scripts. Using '
-                           'parent folder of --data_root instead.')
+                           'parent folder of --data_source instead.')
         else:
             raise PermissionError(f'You do not have write permission to'
                                   f'create a folder in '
-                                  f'{data_source_folders.parent}'
+                                  f'{data_source.parent}'
                                   f'Please provide output_dir')
 
     # Information about conda env is required for creating slurm scripts
@@ -63,7 +63,7 @@ def _check_args(data_source_folders: Union[str, Path, Iterable] = None,
         conda_env = 'mrqa' if hpc else 'mrcheck'
     if not conda_dist:
         conda_dist = 'miniconda3' if hpc else 'anaconda3'
-    return data_source_folders, output_dir, conda_env, conda_dist
+    return data_source, output_dir, conda_env, conda_dist
 
 
 def _make_file_folders(output_dir):
@@ -230,14 +230,14 @@ def _get_num_workers(subjects_per_job, subject_list):
     return workers
 
 
-def _get_subject_ids(data_source_folders: Union[str, Path],
+def _get_subject_ids(data_source: Union[str, Path],
                      all_ids_path: Union[str, Path]) -> list:
     """
     Get the list of subject ids from the data source folder
 
     Parameters
     ----------
-    data_source_folders : Union[str, Path]
+    data_source : Union[str, Path]
         Path to the root directory of the data
     all_ids_path : Union[str, Path]
         Path to the output directory
@@ -249,7 +249,7 @@ def _get_subject_ids(data_source_folders: Union[str, Path],
     """
     subject_list = []
     # Get the list of subject ids
-    for root, dirs, files in os.walk(data_source_folders):
+    for root, dirs, files in os.walk(data_source):
         if 'sub-' in Path(root).name:
             # Get the subject id
             num_files_in_root =  len(list(Path(root).rglob('*/*')))

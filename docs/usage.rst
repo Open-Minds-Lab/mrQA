@@ -7,11 +7,11 @@ CLI usage
 A protocol compliance report can be generated directly from the command line
 interface. For a DICOM dataset::
 
-    mr_proto_compl --data_root /path/to/dataset --style dicom
+    mr_proto_compl --data_source /path/to/dataset --style dicom
 
 For a BIDS dataset::
 
-    mr_proto_compl --data_root /path/to/dataset --style bids
+    mr_proto_compl --data_source /path/to/dataset --style bids
 
 
 

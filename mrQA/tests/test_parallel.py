@@ -21,7 +21,7 @@ def test_equivalence_seq_vs_parallel(data_source):
         'parallel': output_dir / ('parallel' + MRDS_EXT)
     }
     if not output_path['sequential'].exists():
-        sequential_ds = import_dataset(data_source_folders=data_source,
+        sequential_ds = import_dataset(data_source=data_source,
                                        style='dicom',
                                        name='sequential')
         save_mr_dataset(output_path['sequential'], sequential_ds)
@@ -55,7 +55,7 @@ def test_merging(data_source):
     output_path_seq = output_dir / ('sequential' + MRDS_EXT)
 
     if not output_path_seq.exists():
-        sequential_ds = import_dataset(data_source_folders=data_source,
+        sequential_ds = import_dataset(data_source=data_source,
                                        style='dicom',
                                        name='sequential')
         save_mr_dataset(output_path_seq, sequential_ds)
@@ -83,7 +83,7 @@ def test_merging(data_source):
         subject_folders_list = txt2list(filepath)
         if not output_path[i].exists():
             # Process the batch of subjects
-            ds = import_dataset(data_source_folders=subject_folders_list,
+            ds = import_dataset(data_source=subject_folders_list,
                                 style='dicom',
                                 name=f'seq{i}')
             save_mr_dataset(output_path[i], ds)

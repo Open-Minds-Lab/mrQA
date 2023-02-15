@@ -12,14 +12,14 @@ from mrQA.utils import list2txt, split_list, \
     txt2list
 
 
-def process_parallel(data_root,
+def process_parallel(data_source,
                      output_dir,
                      output_path,
                      name=None):
     # One function to process them all!
     # note that it will generate scripts only
     script_list_filepath, mrds_list_filepath = create_script(
-                                                data_source_folders=data_root,
+                                                data_source=data_source,
                                                 subjects_per_job=5,
                                                 conda_env='mrcheck',
                                                 conda_dist='anaconda3',
@@ -78,7 +78,7 @@ def submit_job(scripts_list_filepath: Union[str, Path],
                                    output_mrds_path=output_mrds_path)
 
 
-def create_script(data_source_folders: Union[str, Path, Iterable] = None,
+def create_script(data_source: Union[str, Path, Iterable] = None,
                   style: str = 'dicom',
                   include_phantom: bool = False,
                   verbose: bool = False,
@@ -95,7 +95,7 @@ def create_script(data_source_folders: Union[str, Path, Iterable] = None,
 
     Parameters
     ----------
-    data_source_folders: str or List[str]
+    data_source: str or List[str]
         /path/to/my/dataset containing files
     style: str
         Specify dataset type. Use one of [dicom]
@@ -117,7 +117,7 @@ def create_script(data_source_folders: Union[str, Path, Iterable] = None,
         Name of conda environment
     """
 
-    data_src, output_dir, env, dist = _check_args(data_source_folders, style,
+    data_src, output_dir, env, dist = _check_args(data_source, style,
                                                   output_dir, debug,
                                                   subjects_per_job, hpc,
                                                   conda_dist, conda_env)
@@ -165,7 +165,7 @@ def create_script(data_source_folders: Union[str, Path, Iterable] = None,
     return files_per_batch['scripts'], files_per_batch['mrds']
 
 
-def split_ids_list(data_source_folders: Union[str, Path],
+def split_ids_list(data_source: Union[str, Path],
                    all_ids_path: Union[str, Path],
                    per_batch_ids,
                    output_dir: Union[str, Path],
@@ -197,7 +197,7 @@ def split_ids_list(data_source_folders: Union[str, Path],
     # each containing the list of subjects per job
     batch_ids_path_list = []
 
-    subject_list = _get_subject_ids(data_source_folders, all_ids_path)
+    subject_list = _get_subject_ids(data_source, all_ids_path)
     # Get the list of subjects for each job
     workers = _get_num_workers(subjects_per_job, subject_list)
     subject_subsets = split_list(subject_list, num_chunks=workers)

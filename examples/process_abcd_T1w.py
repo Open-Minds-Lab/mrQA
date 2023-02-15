@@ -38,7 +38,7 @@ def main():
 
     if args.task == 'create_script':
         # Create scripts but do not submit jobs
-        create_script(data_source_folders=DATA_ROOT,
+        create_script(data_source=DATA_ROOT,
                       subjects_per_job=50,
                       conda_env='mrqa',
                       conda_dist='miniconda3',

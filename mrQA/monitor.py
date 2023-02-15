@@ -134,7 +134,7 @@ def mrqa_monitor(name, data_source, output_dir):
     last_mrds_fpath = Path(output_dir) / f"{fname}{MRDS_EXT}"
     last_mrds = load_mr_dataset(last_mrds_fpath)
     # TODO : Add other arguments of import_dataset here?
-    partial_dataset = import_dataset(data_source_folders=modified_files,
+    partial_dataset = import_dataset(data_source=modified_files,
                                      style='dicom',
                                      name=name)
     last_mrds.merge(partial_dataset)

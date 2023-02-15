@@ -22,12 +22,12 @@ def get_parser():
     optional = parser.add_argument_group('optional arguments')
 
     # Add help
-    required.add_argument('-d', '--data_root', nargs='+', required=True,
+    required.add_argument('-d', '--data-source', nargs='+', required=True,
                           help='directory containing downloaded dataset with '
                                'dicom files, supports nested hierarchies')
     optional.add_argument('-o', '--output_dir', type=str,
                           help='specify the directory where the report'
-                               ' would be saved. By default, the --data_root '
+                               ' would be saved. By default, the --data_source '
                                'directory will be used to save reports')
     optional.add_argument('-s', '--style', type=str, default='dicom',
                           help='type of dataset, one of [dicom|bids|other]')
@@ -72,7 +72,7 @@ def get_parser():
 def main():
     args = parse_args()
 
-    dataset = import_dataset(data_source_folders=args.data_root,
+    dataset = import_dataset(data_source=args.data_source,
                              style=args.style,
                              name=args.name,
                              verbose=args.verbose,
@@ -95,9 +95,9 @@ def parse_args():
     else:
         logger.setLevel('WARNING')
 
-    # if not Path(args.data_root).is_dir():
-    #     raise OSError('Expected valid directory for --data_root argument, '
-    #                   'Got {0}'.format(args.data_root))
+    # if not Path(args.data_source).is_dir():
+    #     raise OSError('Expected valid directory for --data_source argument, '
+    #                   'Got {0}'.format(args.data_source))
 
     if args.output_dir is None:
         logger.info('Use --output_dir to specify dir for final directory. '

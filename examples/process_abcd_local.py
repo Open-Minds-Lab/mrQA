@@ -43,7 +43,7 @@ def main():
     # Choose a task, one of [debug|submit_job|merge|report]
     if args.task == 'create_script':
         # note that it will generate scripts only
-        create_script(data_source_folders=DATA_ROOT,
+        create_script(data_source=DATA_ROOT,
                       subjects_per_job=50,
                       conda_env='mrcheck',
                       conda_dist='anaconda3',
