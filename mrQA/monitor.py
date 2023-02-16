@@ -10,7 +10,7 @@ from MRdataset.log import logger
 from mrQA import check_compliance
 from mrQA.config import PATH_CONFIG, mrds_fpath
 from mrQA.utils import files_modified_since, _datasets_processed, \
-    get_last_valid_record
+    get_last_valid_record, report_fpath
 
 
 def get_parser():
@@ -169,10 +169,11 @@ def monitor(name: str,
                                               last_reported_on=last_reported_on,
                                               output_dir=output_dir)
         if not modified_files:
+            last_report_path = report_fpath(output_dir, last_fname)
             logger.warning('No new files found since last report. '
                            'Skipping compliance check. Please see previous '
-                           'generated report at %s', output_dir/last_fname)
-            return output_dir/last_fname
+                           'generated report at %s', last_report_path)
+            return last_report_path
 
         last_mrds_fpath = mrds_fpath(output_dir, last_fname)
         last_mrds = load_mr_dataset(last_mrds_fpath)
