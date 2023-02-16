@@ -1,15 +1,14 @@
-from datetime import datetime
-from datetime import timezone
 from pathlib import Path
 from typing import Union
 
+from MRdataset import save_mr_dataset
 from MRdataset.base import BaseDataset
-from MRdataset import save_mr_dataset, MRDS_EXT
 
-from mrQA.config import STRATEGIES_ALLOWED
+from mrQA.config import STRATEGIES_ALLOWED, report_fpath, mrds_fpath
 from mrQA.formatter import HtmlFormatter
 from mrQA.utils import timestamp, majority_attribute_values, _get_runs_by_echo, \
-    _check_against_reference, _cli_report, _validate_reference, subject_list2txt
+    _check_against_reference, _cli_report, _validate_reference, \
+    export_record, get_timestamps, export_subject_lists
 
 
 def check_compliance(dataset: BaseDataset,
@@ -25,37 +24,42 @@ def check_compliance(dataset: BaseDataset,
     ----------
     dataset : BaseDataset
         BaseDataset instance for the dataset to be checked for compliance
-
     strategy : str
         Strategy employed to specify or automatically infer the
         reference protocol. Allowed options are 'majority'
-
     output_dir: Union[Path, str]
         Path to save the report
+    decimals : int
+        Number of decimal places to round to (default:3).
 
+    Returns
+    -------
+    report_path : Path
+        Path to the generated report
 
     Raises
     ------
     ValueError
         If the input dataset is empty or otherwise invalid
-
+    NotImplementedError
+        If the input strategy is not supported
     """
 
     if not dataset.modalities:
-        raise ValueError("Dataset is empty.")
+        raise ValueError('Dataset is empty.')
 
     if strategy == 'majority':
         dataset = compare_with_majority(dataset, decimals)
     else:
         raise NotImplementedError(
-            'Only the following strategies are allowed : \n\t'
-            '{}'.format(STRATEGIES_ALLOWED))
+            f'Only the following strategies are allowed : \n\t'
+            f'{STRATEGIES_ALLOWED}')
 
     report_path = generate_report(dataset, output_dir)
     return report_path
 
 
-def compare_with_majority(dataset: "BaseDataset",
+def compare_with_majority(dataset: BaseDataset,
                           decimals: int = 3) -> BaseDataset:
     """
     Method for post-acquisition compliance. Infers the reference protocol/values
@@ -66,6 +70,8 @@ def compare_with_majority(dataset: "BaseDataset",
     dataset : BaseDataset
         BaseDataset instance for the dataset which is to be checked
         for compliance
+    decimals : int
+        Number of decimal places to round to (default:3).
 
     Returns
     -------
@@ -81,8 +87,8 @@ def compare_with_majority(dataset: "BaseDataset",
         run_by_echo = _get_runs_by_echo(modality, decimals)
 
         # For each echo time, find the most common values
-        for echo_time in run_by_echo.keys():
-            reference = majority_attribute_values(run_by_echo[echo_time])
+        for echo_time, run_list in run_by_echo.items():
+            reference = majority_attribute_values(run_list)
             if _validate_reference(reference):
                 modality.set_reference(reference, echo_time)
 
@@ -95,7 +101,9 @@ def compare_with_majority(dataset: "BaseDataset",
     return dataset
 
 
-def generate_report(dataset: BaseDataset, output_dir: Union[Path, str]):
+def generate_report(dataset: BaseDataset,
+                    filename: str,
+                    output_dir: Union[Path, str]) -> Path:
     """
     Generates an HTML report aggregating and summarizing the non-compliance
     discovered in the dataset.
@@ -104,8 +112,17 @@ def generate_report(dataset: BaseDataset, output_dir: Union[Path, str]):
     ----------
     dataset : BaseDataset
         BaseDataset instance for the dataset which is to be checked
+    filename : str
+        Name of the file to be generated, without extension. Ensures that
+        naming is consistent across the report, dataset and record files
     output_dir : Union[Path, str]
         Directory in which the generated report should be stored.
+
+    Returns
+    -------
+    output_path : Path
+        Path to the generated report
+
     """
     output_dir = Path(output_dir).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
