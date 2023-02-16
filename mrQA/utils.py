@@ -493,8 +493,32 @@ def round_if_numeric(value: Union[int, float],
     return value
 
 
-def _check_single_run(modality, decimals, run_te, run_params):
-    te = round_if_number(run_te, decimals)
+def _check_single_run(modality: Modality,
+                      decimals: int,
+                      run_te: float,
+                      run_params: dict):
+    """
+    Check if a single run is compliant with the reference protocol.
+
+    Parameters
+    ----------
+    modality : Modality
+        modality node from BaseDataset
+    decimals: int
+        number of decimals to round to
+    run_te: float
+        echo time of the run
+    run_params: dict
+        parameters of the run
+
+    Returns
+    -------
+    tuple
+        tuple containing the echo time of reference protocol,
+        and the delta between the parameters of the run and the reference
+        protocol
+    """
+    te = round_if_numeric(run_te, decimals)
     params = round_dict_values(run_params, decimals)
     te_ref = None
     delta = None
