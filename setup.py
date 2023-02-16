@@ -14,7 +14,7 @@ with open('HISTORY.rst') as history_file:
 
 requirements = [
     "mrdataset",
-    "pydicom>=2.4.2",
+    "pydicom",
     "nibabel",
     "dictdiffer",
     "jinja2>=3.0.3",
