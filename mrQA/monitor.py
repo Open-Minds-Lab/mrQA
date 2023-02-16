@@ -111,7 +111,44 @@ def parse_args():
 
 def main():
     args = parse_args()
-    mrqa_monitor(args.name, args.data_source, args.output_dir)
+    last_record = get_last_valid_record(args.output_dir)
+    if last_record:
+        last_reported_on, last_fname, _ = last_record
+        mrqa_monitor(name=args.name,
+                     data_source=args.data_source,
+                     output_dir=args.output_dir,
+                     last_reported_on=last_reported_on,
+                     last_fname=last_fname,
+                     verbose=args.verbose,
+                     include_phantom=args.include_phantom,
+                     decimals=args.decimals)
+    else:
+        logger.warning('Dataset %s not found in records. Running '
+                       'compliance check on entire dataset', args.name)
+        dataset = import_dataset(data_source=args.data_source,
+                                 style=args.style,
+                                 name=args.name,
+                                 verbose=args.verbose,
+                                 include_phantom=args.include_phantom)
+
+        check_compliance(dataset=dataset,
+                         strategy=args.strategy,
+                         output_dir=args.output_dir,
+                         decimals=args.decimals)
+
+
+def mrqa_monitor(name: str,
+                 data_source: Union[str, List],
+                 output_dir: str,
+                 last_reported_on: str,
+                 last_fname: str,
+                 verbose: bool = False,
+                 include_phantom: bool = False,
+                 decimals: int = 3):
+    """
+    Monitor a dataset folder for changes. Read new files and append to
+    existing dataset. Run compliance check on the updated dataset.
+    Generate a report and save it to the output directory.
 
 
 def mrqa_monitor(name, data_source, output_dir):
