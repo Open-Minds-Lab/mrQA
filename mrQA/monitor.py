@@ -61,6 +61,23 @@ def get_parser():
 
 
 def parse_args():
+    """
+    Parse command line arguments
+
+    Returns
+    -------
+    args : argparse.Namespace
+        parsed arguments
+
+    Raises
+    ------
+    FileNotFoundError
+        if data_source is not a valid directory
+    ValueError
+        if name is not a valid dataset name which has been processed before
+    OSError
+        if output_dir cannot be created
+    """
     parser = get_parser()
     args = parser.parse_args()
 
@@ -75,13 +92,13 @@ def parse_args():
 
     valid_names = _projects_processed(PATH_CONFIG["output_dir"], ignore_case=True)
     if args.name not in valid_names:
-        raise ValueError("Need valid project name to monitor! "
-                         f"Expected one of {valid_names}. Got {args.name}")
+        raise ValueError('Need valid project name to monitor! '
+                         f'Expected one of {valid_names}. Got {args.name}')
 
     if args.output_dir is None:
         logger.info('Use --output_dir to specify dir for final directory. '
                     'Using default')
-        args.output_dir = PATH_CONFIG["output_dir"] / args.name
+        args.output_dir = PATH_CONFIG['output_dir'] / args.name
     else:
         if not Path(args.output_dir).is_dir():
             try:
