@@ -460,6 +460,22 @@ def _get_runs_by_echo(modality: Modality, decimals: int = 3):
 
 
 def _validate_reference(dict_, default=None):
+    """
+    Check if a dictionary is valid. A dictionary is valid if it is not empty
+    and if at least one of its values is different from the default value.
+
+    Parameters
+    ----------
+    dict_: dict
+        dictionary to check
+    default: any
+        default value to compare the values of the dictionary to
+
+    Returns
+    -------
+    bool
+        True if the dictionary is valid, False otherwise
+    """
     if not dict_:
         return False
     if all(value == default for value in dict_.values()):
