@@ -18,6 +18,8 @@ from MRdataset.log import logger
 from MRdataset.utils import param_difference, make_hashable
 from dateutil import parser
 
+from mrQA.config import past_records_fpath, report_fpath, mrds_fpath
+
 
 def get_items_upto_count(dict_: Counter, rank: int = 1):
     """
@@ -682,3 +684,56 @@ def files_modified_since(dir_path: Union[str, Path],
     except TimeoutExpired as exc:
         logger.error('Process timed out.\n %s', exc)
 
+
+def get_last_valid_record(folder_path: Path) -> Optional[str]:
+    """
+    Get the last valid record of generated report and mrds file
+
+    Parameters
+    ----------
+    folder_path: Path
+        Absolute path to the directory where the files are expected to be stored
+
+    Returns
+    -------
+    last_fname: str
+        Name of the last valid record
+    """
+    record_filepath = past_records_fpath(folder_path)
+    if not record_filepath.is_file():
+        return None
+    i = -1
+    with open(record_filepath, 'r', encoding='utf-8') as fp:
+        while True:
+            num_records = len(fp.readlines())
+            if i < -num_records:
+                return None
+            last_line = fp.readlines()[i]
+            _, last_fname, _ = last_line.split(',')
+            if check_valid_files(last_fname, folder_path):
+                return last_fname
+            i -= 1
+
+
+def check_valid_files(fname: str, folder_path: Path) -> bool:
+    """
+    Check if the expected files are present in the folder
+
+    Parameters
+    ----------
+    fname: str
+        Name of the file
+    folder_path :  Path
+        Absolute path to the folder where the files are expected to be present
+
+    Returns
+    -------
+    bool
+        True if the files are present, False otherwise
+    """
+    report_path = report_fpath(folder_path, fname)
+    mrds_path = mrds_fpath(folder_path, fname)
+    # actually we don't need to check if the report is present
+    # because we just need the mrds file, to update.
+    # TODO: remove the check for report
+    return report_path.is_file() and mrds_path.is_file()

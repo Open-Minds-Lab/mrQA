@@ -7,8 +7,9 @@ from MRdataset import MRDS_EXT, import_dataset, load_mr_dataset
 from MRdataset.log import logger
 
 from mrQA import check_compliance
-from mrQA.config import PATH_CONFIG
-from mrQA.utils import get_files_by_mtime, _projects_processed
+from mrQA.config import PATH_CONFIG, mrds_fpath
+from mrQA.utils import files_modified_since, _datasets_processed, \
+    get_last_valid_record
 
 
 def get_parser():
@@ -106,30 +107,6 @@ def parse_args():
             except OSError as exc:
                 raise exc
     return args
-
-
-def get_last_filenames(name, output_dir):
-    folder_path = output_dir
-    log_filepath = folder_path / 'log.txt'
-    with open(log_filepath, 'r') as fp:
-        # we only need the last line, and reading all the lines is inefficient
-        # in future, implement an approach to directly access the EOF.
-        # See https://stackoverflow.com/a/54278929/3140172
-        last_line = fp.readlines()[-1]
-        # for line in fp.readlines():
-        values = last_line.split(',')
-        if check_valid_files(values, folder_path):
-            return values
-
-
-def check_valid_files(values, folder_path):
-    mtime, fname, _ = values
-    report_path = folder_path / f'{fname}.html'
-    mrds_path = folder_path / f'{fname}{MRDS_EXT}'
-    if report_path.is_file() and mrds_path.is_file():
-        return True
-    raise FileNotFoundError(f'Could not find expected files'
-                            f' {report_path} and {mrds_path}.')
 
 
 def main():
