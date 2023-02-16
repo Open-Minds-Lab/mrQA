@@ -34,6 +34,10 @@ def mrds_fpath(folder_path, fname):
     return folder_path / f'{fname}{MRDS_EXT}'
 
 
+def subject_list_dir(folder_path, fname):
+    return folder_path / f'{fname}_files'
+
+
 class ComplianceException(Exception):
     """
     Custom error that is raised when some critical properties are not

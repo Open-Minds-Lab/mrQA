@@ -17,7 +17,8 @@ from MRdataset.log import logger
 from MRdataset.utils import param_difference, make_hashable
 from dateutil import parser
 
-from mrQA.config import past_records_fpath, report_fpath, mrds_fpath
+from mrQA.config import past_records_fpath, report_fpath, mrds_fpath, \
+    subject_list_dir
 
 
 def get_items_upto_count(dict_: Counter, rank: int = 1):
