@@ -91,7 +91,8 @@ def parse_args():
         raise FileNotFoundError('Invalid data_source specified '
                                 'for reading files.')
 
-    valid_names = _projects_processed(PATH_CONFIG["output_dir"], ignore_case=True)
+    valid_names = _datasets_processed(PATH_CONFIG['output_dir'],
+                                      ignore_case=True)
     if args.name not in valid_names:
         raise ValueError('Need valid project name to monitor! '
                          f'Expected one of {valid_names}. Got {args.name}')

@@ -604,7 +604,7 @@ def _store(modality: Modality,
                     f'{subject_name}_{session_name}')
 
 
-def _projects_processed(dir_path, ignore_case=True):
+def _datasets_processed(dir_path, ignore_case=True):
     """
     Add function to retrieve the names of projects that have been processed in
     the past
