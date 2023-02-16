@@ -113,40 +113,24 @@ def parse_args():
 
 def main():
     args = parse_args()
-    last_record = get_last_valid_record(args.output_dir)
-    if last_record:
-        last_reported_on, last_fname, _ = last_record
-        mrqa_monitor(name=args.name,
-                     data_source=args.data_source,
-                     output_dir=args.output_dir,
-                     last_reported_on=last_reported_on,
-                     last_fname=last_fname,
-                     verbose=args.verbose,
-                     include_phantom=args.include_phantom,
-                     decimals=args.decimals)
-    else:
-        logger.warning('Dataset %s not found in records. Running '
-                       'compliance check on entire dataset', args.name)
-        dataset = import_dataset(data_source=args.data_source,
-                                 style=args.style,
-                                 name=args.name,
-                                 verbose=args.verbose,
-                                 include_phantom=args.include_phantom)
-
-        check_compliance(dataset=dataset,
-                         strategy=args.strategy,
-                         output_dir=args.output_dir,
-                         decimals=args.decimals)
+    monitor(name=args.name,
+            data_source=args.data_source,
+            output_dir=args.output_dir,
+            verbose=args.verbose,
+            include_phantom=args.include_phantom,
+            decimals=args.decimals,
+            style=args.style,
+            strategy=args.strategy)
 
 
-def mrqa_monitor(name: str,
-                 data_source: Union[str, List],
-                 output_dir: str,
-                 last_reported_on: str,
-                 last_fname: str,
-                 verbose: bool = False,
-                 include_phantom: bool = False,
-                 decimals: int = 3):
+def monitor(name: str,
+            data_source: Union[str, List, Path],
+            output_dir: Union[str, Path],
+            verbose: bool = False,
+            include_phantom: bool = False,
+            decimals: int = 3,
+            style: str = 'dicom',
+            strategy: str = 'majority') -> Path:
     """
     Monitor a dataset folder for changes. Read new files and append to
     existing dataset. Run compliance check on the updated dataset.
@@ -160,40 +144,56 @@ def mrqa_monitor(name: str,
         Path to the folder containing the dataset or list of files/folders.
     output_dir: str
         Path to the folder where the report, and dataset would be saved.
-    last_reported_on: str
-        Time of last report. Used to find files modified since then.
-    last_fname: str
-        Name of the last report. Used to find the dataset.
     verbose: bool
         Whether to print verbose output on console.
     include_phantom: bool
         Whether to include phantom, localizer, aahead_scout
     decimals: int
         Number of decimal places to round to (default:3).
+    style: str
+        Type of dataset, one of [dicom]
+    strategy: str
+        How to examine parameters [majority|reference]
 
     Returns
     -------
-    report_path: str
-        Path to the new generated report.
+    report_path: Path
+        Posix path to the new generated report.
     """
+    output_dir = Path(output_dir)
+    last_record = get_last_valid_record(output_dir)
+    if last_record:
+        last_reported_on, last_fname = last_record
+        # TODO: delete old logs, only keep latest 3-4 reports in the folder
+        modified_files = files_modified_since(input_dir=data_source,
+                                              last_reported_on=last_reported_on,
+                                              output_dir=output_dir)
 
-    # TODO: delete old logs, only keep latest 3-4 reports in the folder
-    modified_files = files_modified_since(data_source,
-                                          last_reported_on,
-                                          output_dir)
-
-    last_mrds_fpath = mrds_fpath(output_dir, last_fname)
-    last_mrds = load_mr_dataset(last_mrds_fpath)
-    new_dataset = import_dataset(data_source=modified_files,
-                                 style='dicom',
+        last_mrds_fpath = mrds_fpath(output_dir, last_fname)
+        last_mrds = load_mr_dataset(last_mrds_fpath)
+        new_dataset = import_dataset(data_source=modified_files,
+                                     style='dicom',
+                                     name=name,
+                                     verbose=verbose,
+                                     include_phantom=include_phantom)
+        last_mrds.merge(new_dataset)
+        updated_mrds = last_mrds
+        report_path = check_compliance(dataset=updated_mrds,
+                                       output_dir=output_dir,
+                                       decimals=decimals)
+    else:
+        logger.warning('Dataset %s not found in records. Running '
+                       'compliance check on entire dataset', name)
+        dataset = import_dataset(data_source=data_source,
+                                 style=style,
                                  name=name,
                                  verbose=verbose,
                                  include_phantom=include_phantom)
-    last_mrds.merge(new_dataset)
-    updated_mrds = last_mrds
-    report_path = check_compliance(dataset=updated_mrds,
-                                   output_dir=output_dir,
-                                   decimals=decimals)
+
+        report_path = check_compliance(dataset=dataset,
+                                       strategy=strategy,
+                                       output_dir=output_dir,
+                                       decimals=decimals)
     return report_path
 
 
