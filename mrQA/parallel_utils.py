@@ -39,7 +39,7 @@ def _check_args(data_source: Union[str, Path, Iterable] = None,
         if isinstance(data_source, Iterable):
             # If data_source is a bunch of directories, the above RULE cannot
             # be followed, just pass a directory to save the file.
-            raise RuntimeError("Need an output directory to store files")
+            raise RuntimeError('Need an output directory to store files')
 
         # Didn't find a good alternative to os.access
         # in pathlib, please raise a issue if you know one, happy to incorporate
@@ -116,7 +116,8 @@ def _run_single_batch(script_path: Union[str, Path],
         if hpc:
             # If running on a hpc, use the sbatch command
             # to submit the script
-            out = subprocess.Popen(['sbatch', script_path])
+            # TODO: Add try/except block here
+            subprocess.run(['sbatch', script_path], check=True, shell=True)
             # print(out.stdout)
             # some way to check was submitted/accepted
 
@@ -127,8 +128,8 @@ def _run_single_batch(script_path: Union[str, Path],
             # check successful completion, or log error
 
     else:
-        logger.warning(f"{output_mrds_path} already exists, skipping. "
-                       f" Use 'sbatch {script_path} to overwrite")
+        logger.warning('%s already exists, skipping.  Use sbatch %s to'
+                       ' overwrite', output_mrds_path, script_path)
 
 
 def _create_slurm_script(output_script_path: Union[str, Path],
@@ -160,10 +161,6 @@ def _create_slurm_script(output_script_path: Union[str, Path],
         If True, includes phantom, localizer and calibration studies
     output_mrds_path : str
         Path to the partial mrds pickle file
-
-    Returns
-    -------
-    None
     """
 
     # Memory and CPU time :  typical usage observed locally
@@ -189,8 +186,8 @@ def _create_slurm_script(output_script_path: Union[str, Path],
     python_cmd += ' --is_partial'
 
     # Create the slurm script file
-    with open(output_script_path, 'w') as fp:
-        fp.writelines("\n".join([
+    with open(output_script_path, 'w', encoding='utf-8') as fp:
+        fp.writelines('\n'.join([
             '#!/bin/bash',
             '#SBATCH -A med220005p',
             '#SBATCH -N 1',
@@ -217,15 +214,15 @@ def _get_num_workers(subjects_per_job, subject_list):
     if subjects_per_job > len(subject_list):
         # If subjects_per_job is greater than the number of subjects,
         # process all subjects in a single job. Stop execution.
-        raise RuntimeError("Trying to create more jobs than total number of "
-                           "subjects in the directory. Why?")
+        raise RuntimeError('Trying to create more jobs than total number of '
+                           'subjects in the directory. Why?')
 
     # Get the number of jobs
     workers = len(subject_list) // subjects_per_job
     if workers == 1:
         # If there is only one job, process all subjects in a single job
-        raise RuntimeError("Decrease number of subjects per job. Expected"
-                           "workers > 1 for parallel processing. Got 1")
+        raise RuntimeError('Decrease number of subjects per job. Expected'
+                           'workers > 1 for parallel processing. Got 1')
 
     return workers
 
@@ -249,10 +246,10 @@ def _get_subject_ids(data_source: Union[str, Path],
     """
     subject_list = []
     # Get the list of subject ids
-    for root, dirs, files in os.walk(data_source):
+    for root, _, _ in os.walk(data_source):
         if 'sub-' in Path(root).name:
             # Get the subject id
-            num_files_in_root =  len(list(Path(root).rglob('*/*')))
+            num_files_in_root = len(list(Path(root).rglob('*/*')))
             if num_files_in_root > 0:
                 subject_list.append(root)
     # Store the list of unique subject ids to a text file given by
