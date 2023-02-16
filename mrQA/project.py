@@ -55,7 +55,13 @@ def check_compliance(dataset: BaseDataset,
             f'Only the following strategies are allowed : \n\t'
             f'{STRATEGIES_ALLOWED}')
 
-    report_path = generate_report(dataset, output_dir)
+    filename = f'{dataset.name}_{timestamp()}'
+    mrds_path = mrds_fpath(output_dir, filename)
+    save_mr_dataset(mrds_path, dataset)
+
+    report_path = generate_report(dataset, filename, output_dir)
+    # Print a small message on the console, about non-compliance of dataset
+    print(_cli_report(dataset, str(report_path)))
     return report_path
 
 
@@ -127,19 +133,14 @@ def generate_report(dataset: BaseDataset,
     output_dir = Path(output_dir).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    if not Path(output_dir).is_dir():
-        raise OSError('Expected valid output_directory, '
-                      'Got {0}'.format(output_dir))
-    filename = '{}_{}'.format(dataset.name, timestamp())
-    save_mr_dataset(output_dir / f'{filename}{MRDS_EXT}', dataset)
+    time_dict = get_timestamps()
+    sub_lists_by_modality = export_subject_lists(output_dir, dataset, filename)
+    export_record(output_dir, filename, time_dict)
+
     # Generate the HTML report and save it to the output_path
-    output_path = output_dir / f'{filename}.html'
-    subject_list_dir = output_dir / f'{filename}_files'
-    subjectlist_files = subject_list2txt(dataset, subject_list_dir)
-    time_dict = get_time()
     args = {
         'ds': dataset,
-        'subject_list': subjectlist_files,
+        'sub_lists_by_modality': sub_lists_by_modality,
         'time': time_dict
     }
     report_path = report_fpath(output_dir, filename)
