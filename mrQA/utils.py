@@ -808,7 +808,7 @@ def files_modified_since(last_reported_on: str,
         logger.error('Process timed out.\n %s', exc)
 
 
-def get_last_valid_record(folder_path: Path) -> Optional[str]:
+def get_last_valid_record(folder_path: Path) -> Optional[tuple]:
     """
     Get the last valid record of generated report and mrds file
 
@@ -819,8 +819,8 @@ def get_last_valid_record(folder_path: Path) -> Optional[str]:
 
     Returns
     -------
-    last_fname: str
-        Name of the last valid record
+    last_reported_on, last_fname: tuple
+        last valid record
     """
     record_filepath = past_records_fpath(folder_path)
     if not record_filepath.is_file():
@@ -828,13 +828,14 @@ def get_last_valid_record(folder_path: Path) -> Optional[str]:
     i = -1
     with open(record_filepath, 'r', encoding='utf-8') as fp:
         while True:
-            num_records = len(fp.readlines())
+            lines = fp.readlines()
+            num_records = len(lines)
             if i < -num_records:
                 return None
-            last_line = fp.readlines()[i]
-            _, last_fname, _ = last_line.split(',')
+            last_line = lines[i]
+            last_reported_on, last_fname, _ = last_line.split(',')
             if check_valid_files(last_fname, folder_path):
-                return last_fname
+                return last_reported_on, last_fname
             i -= 1
 
 
