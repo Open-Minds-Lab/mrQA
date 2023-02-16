@@ -2,8 +2,9 @@
 import argparse
 import sys
 from pathlib import Path
+from typing import Union, List
 
-from MRdataset import MRDS_EXT, import_dataset, load_mr_dataset
+from MRdataset import import_dataset, load_mr_dataset
 from MRdataset.log import logger
 
 from mrQA import check_compliance
@@ -196,5 +197,5 @@ def mrqa_monitor(name: str,
     return report_path
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     sys.exit(main())  # pragma: no cover

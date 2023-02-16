@@ -1,5 +1,4 @@
 import re
-import subprocess
 import time
 import typing
 import unicodedata
@@ -9,7 +8,7 @@ from datetime import datetime
 from itertools import groupby
 from itertools import takewhile
 from pathlib import Path
-from typing import Union, List
+from typing import Union, List, Optional, Any
 from subprocess import run, CalledProcessError, TimeoutExpired
 
 import numpy as np
