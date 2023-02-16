@@ -2,13 +2,16 @@ import unittest
 import zipfile
 from pathlib import Path
 from MRdataset import import_dataset, load_mr_dataset, MRDS_EXT
+from MRdataset.utils import is_same_dataset
 from mrQA import check_compliance
 from mrQA.monitor import mrqa_monitor
+from mrQA.monitor import get_last_valid_record
+from mrQA.config import mrds_fpath
 import shutil
 import subprocess
 
 
-class TestMergeDatasets(unittest.TestCase):
+class TestMonitorDummyDataset(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Extract Zip folders
@@ -71,12 +74,19 @@ class TestMergeDatasets(unittest.TestCase):
         self.copy_new_scans(src=input_fpath / 'set2',
                             dest=input_fpath / 'set1')
 
+        last_record = get_last_valid_record(output_fpath)
+        # if last_record:
+        last_reported_on, last_fname = last_record
+
         report_path = mrqa_monitor(name='dummy_ds',
                                    data_source=input_fpath/'set1',
-                                   output_dir=output_fpath)
-        fname = report_path.stem
-        ds2 = load_mr_dataset(output_fpath/f"{fname}{MRDS_EXT}")
-        assert self.is_same_dataset(ds2, self.complete_dataset)
+                                   output_dir=output_fpath,
+                                   last_reported_on=last_reported_on,
+                                   last_fname=last_fname)
+
+        mrds_path = mrds_fpath(output_fpath, report_path.stem)
+        ds2 = load_mr_dataset(mrds_path)
+        assert is_same_dataset(ds2, self.complete_dataset)
 
 
 
