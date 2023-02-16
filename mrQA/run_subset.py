@@ -6,7 +6,6 @@ from MRdataset import import_dataset, save_mr_dataset
 from MRdataset.base import BaseDataset
 from MRdataset.log import logger
 
-from mrQA.common import set_logging
 from mrQA.utils import txt2list
 
 
@@ -66,7 +65,7 @@ def read_subset(batch_ids_file: str,
                 style: str,
                 verbose: bool,
                 include_phantom: bool,
-                **_kwargs) -> BaseDataset:
+                **kwargs) -> BaseDataset:
     """
     Given a list of folder paths, reads all dicom files in those folders
     and returns a MRdataset object. In context, when this function was created,
@@ -82,15 +81,21 @@ def read_subset(batch_ids_file: str,
         print more while doing the job
     include_phantom : bool
         whether to include phantom files in processing
+    **kwargs: dict
+        additional arguments to pass to import_dataset
 
     Returns
     -------
-    MRdataset.base.Project
+    BaseDataset
 
+    Raises
+    ------
+    NotImplementedError
+        if style is not dicom
     """
     # Supports only dicom for now
     if style != 'dicom':
-        raise NotImplementedError(f"Expected style as dicom, Got {style}")
+        raise NotImplementedError(f'Expected style as dicom, Got {style}')
 
     subset = txt2list(batch_ids_file)
     identifier = Path(batch_ids_file).stem
@@ -99,10 +104,10 @@ def read_subset(batch_ids_file: str,
                                      name=identifier,
                                      verbose=verbose,
                                      include_phantom=include_phantom,
-                                     **_kwargs)
+                                     **kwargs)
     # partial_dataset.walk(), import_dataset already does this
     return partial_dataset
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     sys.exit(main())  # pragma: no cover
