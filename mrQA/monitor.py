@@ -26,7 +26,7 @@ def get_parser():
     # Add help
     optional.add_argument('-n', '--name', type=str.lower,
                           help='provide a identifier/name for the dataset')
-    required.add_argument('-d', '--data-source', nargs='+', required=True,
+    required.add_argument('-d', '--data-source', type=str, required=True,
                           help='directory containing downloaded dataset with '
                                'dicom files, supports nested hierarchies')
     optional.add_argument('-o', '--output-dir', type=str,
