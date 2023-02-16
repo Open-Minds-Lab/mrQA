@@ -860,3 +860,34 @@ def check_valid_files(fname: str, folder_path: Path) -> bool:
     # because we just need the mrds file, to update.
     # TODO: remove the check for report
     return report_path.is_file() and mrds_path.is_file()
+
+
+def export_record(output_dir, filename, time_dict):
+    record_filepath = past_records_fpath(output_dir)
+    if not record_filepath.parent.is_dir():
+        record_filepath.parent.mkdir(parents=True)
+
+    with open(record_filepath, 'a') as fp:
+        fp.write(f"{time_dict['utc']},{filename},"
+                 f"{time_dict['date_time']}\n")
+    return
+
+
+def get_timestamps():
+    now = datetime.now(timezone.utc)
+    now = now.replace(tzinfo=timezone.utc)
+    ts = datetime.timestamp(now)
+    date_time = now.strftime('%m/%d/%Y %H:%M:%S%z')
+    return {
+        'utc': ts,
+        'date_time': date_time
+    }
+
+
+def export_subject_lists(output_dir: Union[Path, str],
+                         dataset: BaseDataset,
+                         filename: str) -> dict:
+
+    subject_dir = subject_list_dir(output_dir, filename)
+    sub_lists_by_modality = subject_list2txt(dataset, subject_dir)
+    return sub_lists_by_modality

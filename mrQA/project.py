@@ -125,29 +125,6 @@ def generate_report(dataset: BaseDataset, output_dir: Union[Path, str]):
         'subject_list': subjectlist_files,
         'time': time_dict
     }
-    HtmlFormatter(filepath=output_path, params=args)
-    # Print a small message on the console, about non-compliance of dataset
-    print(_cli_report(dataset, str(output_path)))
-    export_log(output_dir, filename, time_dict)
-    return output_path
-
-
-def export_log(output_dir, filename, time):
-    with open(output_dir / 'log.txt', 'a') as fp:
-        fp.write(f"{time['utc']},{filename},"
-                 f"{time['date_time']}\n")
-    return
-
-
-def get_time():
-    now = datetime.now(timezone.utc)
-    now = now.replace(tzinfo=timezone.utc)
-    ts = datetime.timestamp(now)
-    date_time = now.strftime("%m/%d/%Y %H:%M:%S%z")
-    return {
-        "utc": ts,
-        "date_time": date_time
-    }
-
-
-
+    report_path = report_fpath(output_dir, filename)
+    HtmlFormatter(filepath=report_path, params=args)
+    return report_path
