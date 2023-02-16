@@ -168,6 +168,11 @@ def monitor(name: str,
         modified_files = files_modified_since(input_dir=data_source,
                                               last_reported_on=last_reported_on,
                                               output_dir=output_dir)
+        if not modified_files:
+            logger.info('No new files found since last report. '
+                        'Skipping compliance check. Please see previous '
+                        'generated report at %s', output_dir/last_fname)
+            return output_dir/last_fname
 
         last_mrds_fpath = mrds_fpath(output_dir, last_fname)
         last_mrds = load_mr_dataset(last_mrds_fpath)
