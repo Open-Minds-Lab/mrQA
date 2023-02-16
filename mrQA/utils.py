@@ -567,10 +567,32 @@ def _check_single_run(modality: Modality,
 
 
 def _check_against_reference(modality, decimals):
+    """
+    Given a modality, check if the parameters of each run are compliant with
+    the reference protocol. If all the runs of a session are non-compliant,
+    the session is added to the list of non-compliant sessions. If all the
+    sessions of a subject are non-compliant, the subject is added to the list
+    of non-compliant subjects. If all the subjects of a modality are
+    non-compliant, the function returns False.
+
+    The delta between the parameters of a run and the reference protocol is
+    stored in modality.non_compliant_data
+
+    Parameters
+    ----------
+    modality : Modality
+        modality node of a dataset
+    decimals : int
+        number of decimals to round the parameters
+
+    Returns
+    -------
+    bool
+        True if modality is compliant, False otherwise
+    """
     # Set default flags as True, if there is some non-compliance
     # flags will be set to false. Default value in modality class is True,
     # but we cannot rely on that default value.
-    # modality.clear_non_compliant_data()
     modality.compliant = True
     for subject in modality.subjects:
         subject.compliant = True
@@ -635,8 +657,8 @@ def _cli_report(dataset: BaseDataset, report_name):
                      f' modalities "{modalities}" are non-compliant. ' \
                      f'See {report_name} for report'
     else:
-        ret_string = f'In {dataset.name} dataset, all modalities are compliant. ' \
-                     f'See {report_name} for report.'
+        ret_string = f'In {dataset.name} dataset, all modalities ' \
+                     f'are compliant. See {report_name} for report.'
 
     return ret_string
 
