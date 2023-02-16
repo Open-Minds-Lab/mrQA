@@ -351,7 +351,7 @@ def round_dict_values(dict_: dict, decimals: int) -> dict:
     """
     new_dict = dict_.copy()
     for key, value in new_dict.items():
-        new_dict[key] = round_if_number(value, decimals)
+        new_dict[key] = round_if_numeric(value, decimals)
     return new_dict
 
 
@@ -450,7 +450,7 @@ def _get_runs_by_echo(modality: Modality, decimals: int = 3):
     run_params_by_te = {}
     runs_in_modality = sorted(runs_in_modality, key=_sort_key)
     for te, group in groupby(runs_in_modality, key=_sort_key):
-        te_ = round_if_number(te, decimals)
+        te_ = round_if_numeric(te, decimals)
         for i_run in list(group):
             if te_ not in run_params_by_te:
                 run_params_by_te[te_] = []
@@ -467,7 +467,23 @@ def _validate_reference(dict_, default=None):
     return True
 
 
-def round_if_number(value, decimals=3):
+def round_if_numeric(value: Union[int, float],
+                     decimals: int = 3) -> Union[int, float, np.ndarray]:
+    """
+    Round a number to a given number of decimals.
+
+    Parameters
+    ----------
+    value: int or float
+        number to round
+    decimals :  int
+        number of decimals to round to
+
+    Returns
+    -------
+    int or float
+        rounded number
+    """
     # For historical reasons, bool is a type of int, but we cannot
     # apply np.round on bool
     if isinstance(value, bool):
