@@ -24,15 +24,15 @@ def get_parser():
     # Add help
     optional.add_argument('-n', '--name', type=str.lower,
                           help='provide a identifier/name for the dataset')
-    required.add_argument('-d', '--data_source', type=str, required=True,
+    required.add_argument('-d', '--data-source', nargs='+', required=True,
                           help='directory containing downloaded dataset with '
                                'dicom files, supports nested hierarchies')
-    optional.add_argument('-o', '--output_dir', type=str,
+    optional.add_argument('-o', '--output-dir', type=str,
                           help='specify the directory where the report'
                                ' would be saved. By default, the --data_source '
                                'directory will be used to save reports')
     optional.add_argument('-s', '--style', type=str, default='dicom',
-                          help='type of dataset, one of [dicom|bids|other]')
+                          help='type of dataset, one of [dicom]')
     optional.add_argument('-h', '--help', action='help',
                           default=argparse.SUPPRESS,
                           help='show this help message and exit')
@@ -43,17 +43,14 @@ def get_parser():
                                'of the decimal point.')
     optional.add_argument('-v', '--verbose', action='store_true',
                           help='allow verbose output on console')
-    optional.add_argument('-ref', '--reference_path', type=str,
+    optional.add_argument('-ref', '--reference-path', type=str,
                           help='.yaml file containing protocol specification')
     optional.add_argument('--strategy', type=str, default='majority',
                           help='how to examine parameters [majority|reference].'
-                               '--reference_path required if using reference')
-    optional.add_argument('--include_phantom', action='store_true',
+                               '--reference-path required if using reference')
+    optional.add_argument('--include-phantom', action='store_true',
                           help='whether to include phantom, localizer, '
                                'aahead_scout')
-    optional.add_argument('--include_nifti_header', action='store_true',
-                          help='whether to check nifti headers for compliance,'
-                               'only used when --style==bids')
 
     if len(sys.argv) < 2:
         logger.critical('Too few arguments!')
