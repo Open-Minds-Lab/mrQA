@@ -150,24 +150,48 @@ def mrqa_monitor(name: str,
     existing dataset. Run compliance check on the updated dataset.
     Generate a report and save it to the output directory.
 
+    Parameters
+    ----------
+    name :  str
+        Identifier for the dataset, like ABCD. The name used to save results
+    data_source: str or list
+        Path to the folder containing the dataset or list of files/folders.
+    output_dir: str
+        Path to the folder where the report, and dataset would be saved.
+    last_reported_on: str
+        Time of last report. Used to find files modified since then.
+    last_fname: str
+        Name of the last report. Used to find the dataset.
+    verbose: bool
+        Whether to print verbose output on console.
+    include_phantom: bool
+        Whether to include phantom, localizer, aahead_scout
+    decimals: int
+        Number of decimal places to round to (default:3).
 
-def mrqa_monitor(name, data_source, output_dir):
-    values = get_last_filenames(name, output_dir)
-    if not values:
-        raise ValueError(f'Dataset {name} not found in log. Consider using mrqa'
-                         f'before mrqa_monitor')
-    mtime, fname, _ = values
-    modified_files = get_files_by_mtime(data_source, mtime)
+    Returns
+    -------
+    report_path: str
+        Path to the new generated report.
+    """
 
-    last_mrds_fpath = Path(output_dir) / f"{fname}{MRDS_EXT}"
+    # TODO: delete old logs, only keep latest 3-4 reports in the folder
+    modified_files = files_modified_since(data_source,
+                                          last_reported_on,
+                                          output_dir)
+
+    last_mrds_fpath = mrds_fpath(output_dir, last_fname)
     last_mrds = load_mr_dataset(last_mrds_fpath)
-    # TODO : Add other arguments of import_dataset here?
-    partial_dataset = import_dataset(data_source=modified_files,
-                                     style='dicom',
-                                     name=name)
-    last_mrds.merge(partial_dataset)
-    report_path = check_compliance(dataset=last_mrds,
-                     output_dir=output_dir)
+    new_dataset = import_dataset(data_source=modified_files,
+                                 style='dicom',
+                                 name=name,
+                                 verbose=verbose,
+                                 include_phantom=include_phantom)
+    last_mrds.merge(new_dataset)
+    updated_mrds = last_mrds
+    report_path = check_compliance(dataset=updated_mrds,
+                                   output_dir=output_dir,
+                                   decimals=decimals)
     return report_path
 
 
