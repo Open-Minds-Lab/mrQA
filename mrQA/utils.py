@@ -4,7 +4,7 @@ import typing
 import unicodedata
 import warnings
 from collections import Counter
-from datetime import datetime
+from datetime import datetime, timezone
 from itertools import groupby
 from itertools import takewhile
 from pathlib import Path
@@ -737,7 +737,7 @@ def _datasets_processed(dir_path, ignore_case=True):
 
 
 def files_modified_since(last_reported_on: str,
-                         input_dir: str,
+                         input_dir: Union[str, Path],
                          output_dir: Union[str, Path],
                          time_format: str = 'timestamp') -> List:
     """
