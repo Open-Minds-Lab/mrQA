@@ -31,12 +31,13 @@ def get_items_upto_count(dict_: Counter, rank: int = 1):
     ----------
     dict_: Counter
         A Counter object, which is a dictionary with values as counts
-    rank : int, default 1
+    rank : int
         The rank upto which the key-value pairs are to be returned
 
     Returns
     -------
-
+    list: List
+        A list of key-value pairs upto the rank specified
     """
     values_desc_order = dict_.most_common()
     value_at_rank = values_desc_order[rank - 1][1]
@@ -58,7 +59,7 @@ def majority_attribute_values(list_of_dicts: list, default=None):
     ----------
     list_of_dicts : list
         a list of dictionaries
-    default : python object, default None
+    default : Any
         a default value if the key is missing in any dictionary
 
     Returns
@@ -94,7 +95,8 @@ def extract_reasons(data: list):
 
     Parameters
     ----------
-    data : List of tuples
+    data : List
+        A list of tuples
 
     Returns
     -------
@@ -104,7 +106,7 @@ def extract_reasons(data: list):
     return list(zip(*data))[1]
 
 
-def pick_majority(counter_: Counter, parameter: str, default=None):
+def pick_majority(counter_: Counter, parameter: str, default: Any = None):
     """
     Given a counter object, it returns the most common value.
 
@@ -116,13 +118,18 @@ def pick_majority(counter_: Counter, parameter: str, default=None):
         keys will be ROW, COL ... etc
     parameter: str
         The parameter for which the majority is being computed
-    default : python object, default None
+    default : Any
         a default value if the key is missing in any dictionary
 
     Returns
     -------
     parameter name : str
         The most common value for the parameter
+
+    Raises
+    ------
+    ValueError
+        If the counter is empty
     """
     if len(counter_) == 0:
         raise ValueError('Expected atleast one entry in counter. Got 0')
@@ -154,6 +161,11 @@ def _check_args_validity(list_of_dicts: List[dict]) -> bool:
     -------
     bool
         True if arguments are valid, False otherwise
+
+    Raises
+    ------
+    ValueError
+        If the list is empty or if any of the dictionaries is empty
     """
     if list_of_dicts is None:
         raise ValueError('Expected a list of dicts, Got NoneType')
@@ -223,6 +235,10 @@ def txt2list(txt_filepath: Union[str, Path]) -> list:
     -------
     list of lines in the text file
 
+    Raises
+    ------
+    FileNotFoundError
+        If the file does not exist
     """
     if not isinstance(txt_filepath, Path):
         txt_filepath = Path(txt_filepath).resolve()
@@ -262,9 +278,14 @@ def execute_local(script_path: str) -> None:
     script_path : str
         path to the bash script
 
-    Returns
-    -------
-    None
+    Raises
+    ------
+    FileNotFoundError
+        if the script_path does not exist
+    CalledProcessError
+        if the script does not return a successful return code
+    TimeoutExpired
+        if the script takes more time to execute than the timeout
     """
     if not Path(script_path).is_file():
         raise FileNotFoundError(f'Could not find {script_path}')
@@ -577,6 +598,10 @@ def _store(modality: Modality,
     modality : MRdataset.base.Modality
         The modality node, in which these sources of non-compliance were found
         so that these values can be stored
+    delta : list
+        A list of differences between the reference and the non-compliant
+    echo_time: float
+        Echo time of run
     subject_name : str
         Non-compliant subject's name
     session_name : str
@@ -627,18 +652,18 @@ def _datasets_processed(dir_path, ignore_case=True):
         return [x.name.lower() for x in dir_path.iterdir() if x.is_dir()]
 
 
-def files_modified_since(dir_path: Union[str, Path],
-                         mtime: str,
+def files_modified_since(last_reported_on: str,
+                         input_dir: str,
                          output_dir: Union[str, Path],
-                         time_format: str = 'timestamp'):
+                         time_format: str = 'timestamp') -> List:
     """
     Find files modified since a given time
 
     Parameters
     ----------
-    dir_path: str or Path
+    input_dir: str
         Absolute path to the directory to search
-    mtime: str
+    last_reported_on: str
         Reference time to compare against.
     output_dir: str or Path
         Absolute path to the directory where the output file will be stored.
@@ -647,7 +672,21 @@ def files_modified_since(dir_path: Union[str, Path],
 
     Returns
     -------
+    valid_files: List
+        A list of files modified since the given time.
 
+    Raises
+    ------
+    ValueError
+        If the time format is invalid.
+    NotImplementedError
+        If the time format is not one of ['timestamp', 'datetime'].
+    FileNotFoundError
+        If the executable `find` is not found.
+    CalledProcessError
+        If the command `find` fails.
+    TimeoutExpired
+        If the command `find` times out.
     """
     str_format = '%m/%d/%Y %H:%M:%S'
     if time_format == 'timestamp':
