@@ -773,30 +773,31 @@ def files_modified_since(last_reported_on: str,
     """
     str_format = '%m/%d/%Y %H:%M:%S'
     if time_format == 'timestamp':
-        mod_time = datetime.fromtimestamp(float(mtime)).strftime(str_format)
+        mod_time = datetime.fromtimestamp(float(last_reported_on)).strftime(
+            str_format)
     elif time_format == 'datetime':
         try:
-            mod_time = parser.parse(mtime, dayfirst=False)
-        except ValueError:
-            raise ValueError(f'Invalid time format. Use {str_format}.')
+            mod_time = parser.parse(last_reported_on, dayfirst=False)
+        except ValueError as exc:
+            raise ValueError(f'Invalid time format. Use {str_format}.') from exc
     else:
         raise NotImplementedError("Expected one of ['timestamp', 'datetime']."
                                   f'Got {time_format}')
 
-    out_path = Path(output_dir) / f'modified_files_since.txt'
+    out_path = Path(output_dir) / 'modified_files_since.txt'
     if out_path.is_file():
         out_path.unlink()
 
-    cmd = f"find {str(dir_path)} -type f -newermt '{mod_time}' > {out_path}"
+    cmd = f"find {input_dir} -type f -newermt '{mod_time}' > {out_path}"
 
     try:
-        proc = run(cmd, check=True, shell=True)
+        run(cmd, check=True, shell=True)
         modified_files = txt2list(out_path)
         valid_files = [f for f in modified_files if Path(f).is_file()]
         return valid_files
     except FileNotFoundError as exc:
         logger.error(
-            "Process failed because file could not be found.\n %s", exc)
+            'Process failed because file could not be found.\n %s', exc)
     except CalledProcessError as exc:
         logger.error(
             'Process failed because did not return a successful'
