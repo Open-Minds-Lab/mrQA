@@ -89,6 +89,7 @@ def compare_with_majority(dataset: BaseDataset,
 
     for modality in dataset.modalities:
         modality.clear_non_compliant_data()
+        modality.clear_compliance()
         # Infer reference protocol for each echo_time
         run_by_echo = _get_runs_by_echo(modality, decimals)
 
