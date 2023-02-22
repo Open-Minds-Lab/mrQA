@@ -12,83 +12,44 @@ from MRdataset.utils import is_same_dataset
 from mrQA import check_compliance
 from mrQA.config import mrds_fpath
 from mrQA.monitor import monitor
-from mrQA.utils import get_timestamps, files_modified_since
+from mrQA.tests.config import DATASET_PATHS
+from mrQA.tests.utils import test_modified_files, test_output_files_created, \
+    test_same_dataset, get_temp_input_folder, get_temp_output_folder, \
+    create_random_file_sets, copy2dest
+from mrQA.utils import get_timestamps
 
 
-# class TestMonitor(unittest.TestCase):
-def test_monitor(data_source=None) -> None:
-    data_src = Path(data_source)
-    name = data_src.stem
-    dest_dir = Path('/tmp/')
-    dest_folder_path = dest_dir / Path(data_source).stem
-    if dest_folder_path.is_dir():
-        shutil.rmtree(dest_folder_path)
-
-    # Set up output directories
-    output_dir = dest_dir / 'output_dir'
-    if output_dir.is_dir():
-        shutil.rmtree(output_dir)
-    output_dir.mkdir(exist_ok=False, parents=True)
-    output_folder_path = output_dir / Path(data_source).stem
-    # output_folder_path = output_folder_path
-
-    # Create n sets
-    n = 10
-    total_num_files = 10000
-    files_in_src = [f for f in data_src.rglob('*') if f.is_file()]
-    testing_set = files_in_src
-
-    file_sets = np.array_split(testing_set, n)
+@pytest.mark.parametrize('data_source, n, max_files', DATASET_PATHS)
+def test_monitor(data_source, n, max_files) -> None:
+    data_source = Path(data_source)
+    temp_dir = Path('/tmp/')
+    temp_input_src = get_temp_input_folder(data_source, temp_dir)
+    temp_output_dest = get_temp_output_folder(data_source.stem, temp_dir)
+    file_sets = create_random_file_sets(data_source,
+                                        n,
+                                        max_files)
     time_dict = None
     for i in range(n):
-        copy2dest(file_sets[i], data_source, dest_folder_path)
-        time.sleep(10)
-
+        copy2dest(file_sets[i], data_source, temp_input_src)
+        time.sleep(5)
         if time_dict:
-            last_reported_on = time_dict['utc']
-            modified_files = files_modified_since(
-                input_dir=dest_folder_path,
-                last_reported_on=last_reported_on,
-                output_dir=output_folder_path)
-            expected = get_relative_paths(file_sets[i], data_src)
-            got = get_relative_paths(modified_files, dest_folder_path)
-            assert len(expected) == len(got)
-            assert sorted(expected) == sorted(got)
+            # on the first iteration, time_dict is None.
+            # On subsequent iterations, we want to check
+            # that the files modified since the last report
+            # are the same as the files we copied.
+            test_modified_files(time_dict['utc'], temp_input_src,
+                                temp_output_dest, data_source, file_sets[i])
 
         time_dict = get_timestamps()
-
-        report = monitor(name=name,
-                         data_source=dest_folder_path,
-                         output_dir=output_folder_path)
+        report = monitor(name=data_source.stem,
+                         data_source=temp_input_src,
+                         output_dir=temp_output_dest)
         mrds_path = mrds_fpath(report.parent, report.stem)
-        monitor_dataset = load_mr_dataset(mrds_path)
 
-        # Read full dataset, acts as ground truth
-        ds = import_dataset(
-            data_source=dest_folder_path,
-            name=name)
-        report = check_compliance(ds, output_dir=output_folder_path)
-        mrds_path = mrds_fpath(report.parent, report.stem)
-        complete_dataset = load_mr_dataset(mrds_path)
-
-        assert is_same_dataset(complete_dataset, monitor_dataset)
-
-
-def get_relative_paths(file_list, data_root):
-    rel_paths = []
-    for file in file_list:
-        rel_path = Path(file).relative_to(data_root)
-        rel_paths.append(str(rel_path))
-    return rel_paths
-
-
-def copy2dest(file_list, data_root, dest):
-    for file in file_list:
-        rel_path = file.relative_to(data_root)
-        new_abs_path = dest / rel_path
-        parent = new_abs_path.parent
-        parent.mkdir(exist_ok=True, parents=True)
-        shutil.copy(file, parent)
+        test_output_files_created(folder=report.parent,
+                                  fname=report.stem)
+        test_same_dataset(mrds_path, temp_input_src, temp_output_dest,
+                          data_source.stem)
 
 
 class TestMonitorDummyDataset(unittest.TestCase):
