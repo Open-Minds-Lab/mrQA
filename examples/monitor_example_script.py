@@ -33,7 +33,7 @@ def main():
                           key=os.path.getmtime,
                           reverse=True):
         if sub_dir.is_dir():
-            monitor(name=Path(dir_name).stem,
+            monitor(name=Path(sub_dir).stem,
                     data_source=sub_dir,
                     output_dir=args.output_dir)
 
