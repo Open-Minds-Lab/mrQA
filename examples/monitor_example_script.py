@@ -35,7 +35,7 @@ def main():
         raise NotADirectoryError(f'{dir_name} is not a directory')
     sub_dirs = sorted(dir_name.iterdir(),
                       key=os.path.getmtime,
-                      reverse=True)[:args.n]
+                      reverse=True)[:args.num_projects]
     for folder in sub_dirs:
         if folder.is_dir():
             name = Path(folder).stem
