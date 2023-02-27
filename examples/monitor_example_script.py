@@ -1,4 +1,5 @@
 import argparse
+import os.path
 import sys
 from pathlib import Path
 
@@ -26,11 +27,15 @@ def main():
                                'directory will be used to save reports')
     args = parser.parse_args()
     dir_name = Path(args.data_source)
-    if not Path(dir_name).is_dir():
+    if not dir_name.is_dir():
         raise NotADirectoryError(f'{dir_name} is not a directory')
-    for sub_dir in Path(dir_name).iterdir():
+    for sub_dir in sorted(dir_name.iterdir(), key=os.path.getmtime):
         if sub_dir.is_dir():
             monitor(name=Path(dir_name).stem,
                     data_source=sub_dir,
                     output_dir=args.output_dir)
+
+
+if __name__ == "__main__":
+    main()
 
