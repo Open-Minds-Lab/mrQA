@@ -850,34 +850,33 @@ def get_last_valid_record(folder_path: Path) -> Optional[tuple]:
             if i < -num_records:
                 return None
             last_line = lines[i]
-            last_reported_on, last_fname, _ = last_line.split(',')
-            if check_valid_files(last_fname, folder_path):
-                return last_reported_on, last_fname
+            last_reported_on, last_report_path, last_mrds_path, _ = last_line.split(',')
+            if Path(last_mrds_path).is_file():
+                return last_reported_on, last_report_path, last_mrds_path
             i -= 1
 
 
-def check_valid_files(fname: str, folder_path: Path) -> bool:
-    """
-    Check if the expected files are present in the folder
-
-    Parameters
-    ----------
-    fname: str
-        Name of the file
-    folder_path :  Path
-        Absolute path to the folder where the files are expected to be present
-
-    Returns
-    -------
-    bool
-        True if the files are present, False otherwise
-    """
-    report_path = report_fpath(folder_path, fname)
-    mrds_path = mrds_fpath(folder_path, fname)
-    # actually we don't need to check if the report is present
-    # because we just need the mrds file, to update.
-    # TODO: remove the check for report
-    return report_path.is_file() and mrds_path.is_file()
+# def check_valid_files(fname: str, folder_path: Path) -> bool:
+#     """
+#     Check if the expected files are present in the folder
+#
+#     Parameters
+#     ----------
+#     fname: str
+#         Name of the file
+#     folder_path :  Path
+#         Absolute path to the folder where the files are expected to be present
+#
+#     Returns
+#     -------
+#     bool
+#         True if the files are present, False otherwise
+#     """
+#     # report_path = report_fpath(folder_path, fname)
+#     mrds_path = mrds_fpath(folder_path, fname)
+#     # actually we don't need to check if the report is present
+#     # because we just need the mrds file, to update.
+#     return mrds_path.is_file()
 
 
 def export_record(output_dir, filename, time_dict):
