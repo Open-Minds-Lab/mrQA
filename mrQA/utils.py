@@ -841,6 +841,7 @@ def get_last_valid_record(folder_path: Path) -> Optional[tuple]:
     """
     record_filepath = past_records_fpath(folder_path)
     if not record_filepath.is_file():
+        logger.warning('No past records found.')
         return None
     i = -1
     with open(record_filepath, 'r', encoding='utf-8') as fp:
@@ -903,8 +904,8 @@ def get_timestamps():
 
 def export_subject_lists(output_dir: Union[Path, str],
                          dataset: BaseDataset,
-                         filename: str) -> dict:
+                         folder_name: str) -> dict:
 
-    subject_dir = subject_list_dir(output_dir, filename)
+    subject_dir = subject_list_dir(output_dir, folder_name)
     sub_lists_by_modality = subject_list2txt(dataset, subject_dir)
     return sub_lists_by_modality
