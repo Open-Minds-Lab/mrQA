@@ -25,7 +25,7 @@ def main():
                           help='specify the directory where the report'
                                ' would be saved. By default, the --data_source '
                                'directory will be used to save reports')
-    optional.add_argument('-N', '--num-projects', type=int,
+    optional.add_argument('-n', '--num-projects', type=int,
                           default=10,
                           help='Number of sub-folders to process.')
 
@@ -35,7 +35,7 @@ def main():
         raise NotADirectoryError(f'{dir_name} is not a directory')
     sub_dirs = sorted(dir_name.iterdir(),
                       key=os.path.getmtime,
-                      reverse=True)[:args.N]
+                      reverse=True)[:args.n]
     for folder in sub_dirs:
         if folder.is_dir():
             name = Path(folder).stem
