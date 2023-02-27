@@ -21,9 +21,11 @@ PATH_CONFIG = {
     'output_dir': Path.home() / 'mrqa_reports',
 }
 
+DATE_SEPARATOR = '_DATE_'
+
 
 def past_records_fpath(folder):
-    return folder/'past_record.txt'
+    return Path(folder/'past_record.txt')
 
 
 def report_fpath(folder_path, fname):

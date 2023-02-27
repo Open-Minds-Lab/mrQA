@@ -10,7 +10,8 @@ from MRdataset import load_mr_dataset, import_dataset
 from MRdataset.utils import is_same_dataset
 
 from mrQA import check_compliance
-from mrQA.config import report_fpath, mrds_fpath, past_records_fpath
+from mrQA.config import report_fpath, mrds_fpath, past_records_fpath, \
+    DATE_SEPARATOR
 from mrQA.utils import files_modified_since, get_last_valid_record
 
 
@@ -30,7 +31,8 @@ def test_modified_files(last_reported_on,
 
 
 def test_output_files_created(fname, folder):
-    time_fname = fname[-19:]
+    # add special delimiter to strip time from fname
+    time_fname = fname.split(DATE_SEPARATOR)[-1]
     utc = datetime.strptime(time_fname, '%m_%d_%Y_%H_%M_%S').timestamp()
     report_path = report_fpath(folder, fname)
     mrds_path = mrds_fpath(folder, fname)
@@ -39,8 +41,9 @@ def test_output_files_created(fname, folder):
     assert report_path.is_file()
     assert mrds_path.is_file()
     assert records_path.is_file()
-    assert last_record[1] == fname
     assert math.isclose(float(last_record[0]), utc)
+    assert last_record[1] == str(report_path)
+    assert last_record[2] == str(mrds_path)
 
 
 def test_same_dataset(mrds_path,

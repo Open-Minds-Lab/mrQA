@@ -8,7 +8,7 @@ from mrQA.config import STRATEGIES_ALLOWED, report_fpath, mrds_fpath
 from mrQA.formatter import HtmlFormatter
 from mrQA.utils import timestamp, majority_attribute_values, _get_runs_by_echo, \
     _check_against_reference, _cli_report, _validate_reference, \
-    export_record, get_timestamps, export_subject_lists
+    export_record, get_timestamps, export_subject_lists, record_out_paths
 
 
 def check_compliance(dataset: BaseDataset,
@@ -66,7 +66,6 @@ def check_compliance(dataset: BaseDataset,
                     output_dir)
     save_mr_dataset(mrds_path, dataset)
 
-    report_path = generate_report(dataset, filename, output_dir)
     # Print a small message on the console, about non-compliance of dataset
     print(_cli_report(dataset, str(report_path)))
     return report_path
