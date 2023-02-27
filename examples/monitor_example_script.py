@@ -29,7 +29,9 @@ def main():
     dir_name = Path(args.data_source)
     if not dir_name.is_dir():
         raise NotADirectoryError(f'{dir_name} is not a directory')
-    for sub_dir in sorted(dir_name.iterdir(), key=os.path.getmtime):
+    for sub_dir in sorted(dir_name.iterdir(),
+                          key=os.path.getmtime,
+                          reverse=True):
         if sub_dir.is_dir():
             monitor(name=Path(dir_name).stem,
                     data_source=sub_dir,
