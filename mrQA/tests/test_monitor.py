@@ -41,13 +41,14 @@ def test_monitor(data_source, n, max_files) -> None:
                                 temp_output_dest, data_source, file_sets[i])
 
         time_dict = get_timestamps()
-        report = monitor(name=data_source.stem,
-                         data_source=temp_input_src,
-                         output_dir=temp_output_dest)
-        mrds_path = mrds_fpath(report.parent, report.stem)
 
-        test_output_files_created(folder=report.parent,
-                                  fname=report.stem)
+        report_filepath = monitor(name=data_source.stem,
+                                  data_source=temp_input_src,
+                                  output_dir=temp_output_dest)
+        mrds_path = mrds_fpath(report_filepath.parent, report_filepath.stem)
+
+        test_output_files_created(folder=report_filepath.parent,
+                                  fname=report_filepath.stem)
         test_same_dataset(mrds_path, temp_input_src, temp_output_dest,
                           data_source.stem)
 
