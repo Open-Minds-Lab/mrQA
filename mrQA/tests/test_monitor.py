@@ -5,7 +5,7 @@ import unittest
 import zipfile
 from pathlib import Path
 
-import numpy as np
+import pytest
 from MRdataset import import_dataset, load_mr_dataset, MRDS_EXT
 from MRdataset.utils import is_same_dataset
 
@@ -123,8 +123,3 @@ class TestMonitorDummyDataset(unittest.TestCase):
         mrds_path = mrds_fpath(output_fpath, report_path.stem)
         ds2 = load_mr_dataset(mrds_path)
         assert is_same_dataset(ds2, self.complete_dataset)
-
-
-if __name__ == '__main__':
-    # test_monitor(data_source='/home/sinhah/scan_data/CHA_MJFF')
-    test_monitor(data_source='/media/sinhah/extremessd/ABCD-375/dicom-baseline-subset/')

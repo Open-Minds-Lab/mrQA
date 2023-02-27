@@ -92,6 +92,8 @@ def compare_with_majority(dataset: BaseDataset,
         modality.reset_compliance()
 
         # Infer reference protocol for each echo_time
+        # TODO: segregation via echo_time should be deprecated as multiple TE is
+        #   part of the same run
         run_by_echo = _get_runs_by_echo(modality, decimals)
 
         # For each echo time, find the most common values

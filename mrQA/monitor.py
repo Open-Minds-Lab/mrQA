@@ -9,8 +9,7 @@ from MRdataset.log import logger
 
 from mrQA import check_compliance
 from mrQA.config import PATH_CONFIG, mrds_fpath
-from mrQA.utils import files_modified_since, _datasets_processed, \
-    get_last_valid_record, report_fpath
+from mrQA.utils import files_modified_since, get_last_valid_record, report_fpath
 
 
 def get_parser():
