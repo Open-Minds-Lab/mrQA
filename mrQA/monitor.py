@@ -162,30 +162,22 @@ def monitor(name: str,
     output_dir = Path(output_dir)
     last_record = get_last_valid_record(output_dir)
     if last_record:
-        last_reported_on, last_fname = last_record
+        last_reported_on, last_report_path, last_mrds_path = last_record
         # TODO: delete old logs, only keep latest 3-4 reports in the folder
+        dataset = load_mr_dataset(last_mrds_path)
         modified_files = files_modified_since(input_dir=data_source,
                                               last_reported_on=last_reported_on,
                                               output_dir=output_dir)
-        if not modified_files:
-            last_report_path = report_fpath(output_dir, last_fname)
+        if modified_files:
+            new_dataset = import_dataset(data_source=modified_files,
+                                         style='dicom',
+                                         name=name,
+                                         verbose=verbose,
+                                         include_phantom=include_phantom)
+            dataset.merge(new_dataset)
+        else:
             logger.warning('No new files found since last report. '
-                           'Skipping compliance check. Please see previous '
-                           'generated report at %s', last_report_path)
-            return last_report_path
-
-        last_mrds_fpath = mrds_fpath(output_dir, last_fname)
-        last_mrds = load_mr_dataset(last_mrds_fpath)
-        new_dataset = import_dataset(data_source=modified_files,
-                                     style='dicom',
-                                     name=name,
-                                     verbose=verbose,
-                                     include_phantom=include_phantom)
-        last_mrds.merge(new_dataset)
-        updated_mrds = last_mrds
-        report_path = check_compliance(dataset=updated_mrds,
-                                       output_dir=output_dir,
-                                       decimals=decimals)
+                           'Regenerating report')
     else:
         logger.warning('Dataset %s not found in records. Running '
                        'compliance check on entire dataset', name)
@@ -195,10 +187,10 @@ def monitor(name: str,
                                  verbose=verbose,
                                  include_phantom=include_phantom)
 
-        report_path = check_compliance(dataset=dataset,
-                                       strategy=strategy,
-                                       output_dir=output_dir,
-                                       decimals=decimals)
+    report_path = check_compliance(dataset=dataset,
+                                   strategy=strategy,
+                                   output_dir=output_dir,
+                                   decimals=decimals)
     return report_path
 
 
