@@ -38,9 +38,11 @@ def main():
                       reverse=True)[:args.N]
     for folder in sub_dirs:
         if folder.is_dir():
-            monitor(name=Path(folder).stem,
+            name = Path(folder).stem
+            output_folder = Path(args.output_dir)/name
+            monitor(name=name,
                     data_source=folder,
-                    output_dir=args.output_dir)
+                    output_dir=output_folder)
 
 
 if __name__ == "__main__":
