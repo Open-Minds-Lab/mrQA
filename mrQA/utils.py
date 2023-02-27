@@ -18,7 +18,7 @@ from MRdataset.utils import param_difference, make_hashable
 from dateutil import parser
 
 from mrQA.config import past_records_fpath, report_fpath, mrds_fpath, \
-    subject_list_dir
+    subject_list_dir, DATE_SEPARATOR
 
 
 def get_items_upto_count(dict_: Counter, rank: int = 1):
@@ -49,6 +49,23 @@ def timestamp():
     """Generate a timestamp as a string"""
     time_string = time.strftime('%m_%d_%Y_%H_%M_%S')
     return time_string
+
+
+def record_out_paths(output_dir, dataset_name):
+    ts = timestamp()
+    utc = datetime.strptime(ts, '%m_%d_%Y_%H_%M_%S').timestamp()
+    filename = f'{dataset_name}{DATE_SEPARATOR}{ts}'
+    report_path = report_fpath(output_dir, filename)
+    mrds_path = mrds_fpath(output_dir, filename)
+    sub_lists_dir_path = subject_list_dir(output_dir, filename)
+
+    records_filepath = past_records_fpath(output_dir)
+    if not records_filepath.parent.is_dir():
+        records_filepath.parent.mkdir(parents=True)
+    with open(records_filepath, 'a') as fp:
+        fp.write(f"{utc},{report_path},"
+                 f"{mrds_path},{ts}\n")
+    return report_path, mrds_path, sub_lists_dir_path
 
 
 def majority_attribute_values(list_of_dicts: list, default=None):

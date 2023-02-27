@@ -55,8 +55,15 @@ def check_compliance(dataset: BaseDataset,
             f'Only the following strategies are allowed : \n\t'
             f'{STRATEGIES_ALLOWED}')
 
-    filename = f'{dataset.name}_{timestamp()}'
-    mrds_path = mrds_fpath(output_dir, filename)
+    report_path, mrds_path, sub_lists_dir_path = record_out_paths(output_dir,
+                                                                  dataset.name)
+    # Export the record of the dataset
+    # export_record(output_dir)
+
+    generate_report(dataset,
+                    report_path,
+                    sub_lists_dir_path,
+                    output_dir)
     save_mr_dataset(mrds_path, dataset)
 
     report_path = generate_report(dataset, filename, output_dir)
@@ -112,7 +119,8 @@ def compare_with_majority(dataset: BaseDataset,
 
 
 def generate_report(dataset: BaseDataset,
-                    filename: str,
+                    report_path: str,
+                    sub_lists_dir_path: str,
                     output_dir: Union[Path, str]) -> Path:
     """
     Generates an HTML report aggregating and summarizing the non-compliance
@@ -122,9 +130,11 @@ def generate_report(dataset: BaseDataset,
     ----------
     dataset : BaseDataset
         BaseDataset instance for the dataset which is to be checked
-    filename : str
+    report_path : str
         Name of the file to be generated, without extension. Ensures that
         naming is consistent across the report, dataset and record files
+    sub_lists_dir_path : str
+        Path to the directory in which the subject lists should be stored
     output_dir : Union[Path, str]
         Directory in which the generated report should be stored.
 
@@ -137,16 +147,16 @@ def generate_report(dataset: BaseDataset,
     output_dir = Path(output_dir).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    time_dict = get_timestamps()
-    sub_lists_by_modality = export_subject_lists(output_dir, dataset, filename)
-    export_record(output_dir, filename, time_dict)
-
+    # time_dict = get_timestamps()
+    sub_lists_by_modality = export_subject_lists(output_dir,
+                                                 dataset,
+                                                 sub_lists_dir_path)
+    # export_record(output_dir, filename, time_dict)
     # Generate the HTML report and save it to the output_path
     args = {
         'ds': dataset,
         'sub_lists_by_modality': sub_lists_by_modality,
         'time': time_dict
     }
-    report_path = report_fpath(output_dir, filename)
     HtmlFormatter(filepath=report_path, params=args)
     return report_path
