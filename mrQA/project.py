@@ -155,7 +155,7 @@ def generate_report(dataset: BaseDataset,
     args = {
         'ds': dataset,
         'sub_lists_by_modality': sub_lists_by_modality,
-        'time': time_dict
+        # 'time': time_dict
     }
     HtmlFormatter(filepath=report_path, params=args)
     return report_path
