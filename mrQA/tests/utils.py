@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 
 from MRdataset import load_mr_dataset, import_dataset
-from MRdataset.utils import is_same_dataset
+from MRdataset.utils import is_same_dataset, files_in_path
 
 from mrQA import check_compliance
 from mrQA.config import report_fpath, mrds_fpath, past_records_fpath, \
@@ -79,19 +79,27 @@ def get_temp_output_folder(name, temp_dir):
     return output_folder_path
 
 
-def create_random_file_sets(temp_input_src, n, max_files):
-    files_in_src = [f for f in temp_input_src.rglob('*') if f.is_file()]
-    testing_set = files_in_src[:max_files]
+def create_random_file_sets(temp_input_src, n, max_folders):
+    # TODO: dataset is not random
+    unique_folders = set()
+    for f in temp_input_src.rglob('*'):
+        if f.is_file():
+            folder_path = f.parent
+            unique_folders.add(folder_path)
+    unique_folders = list(unique_folders)
+    # files_in_src = [Path(f).parent
+    # for f in temp_input_src.rglob('*') if f.is_file()]
+    np.random.shuffle(unique_folders)
+    testing_set = unique_folders[:max_folders]
 
-    np.random.shuffle(testing_set)
     try:
-        file_sets = np.array_split(testing_set, n)
+        folder_sets = np.array_split(testing_set, n)
     except ValueError as e:
         with pytest.raises(ValueError):
             raise ValueError(f"Could not split list of dicom files."
                              f" Got n = {n}") from e
         return None
-    return file_sets
+    return folder_sets
 
 
 def get_relative_paths(file_list, data_root):
@@ -102,10 +110,12 @@ def get_relative_paths(file_list, data_root):
     return rel_paths
 
 
-def copy2dest(file_list, data_root, dest):
+def copy2dest(folder_list, src, dest):
+    file_list = files_in_path(folder_list)
     for file in file_list:
-        rel_path = file.relative_to(data_root)
+        rel_path = file.relative_to(src)
         new_abs_path = dest / rel_path
         parent = new_abs_path.parent
         parent.mkdir(exist_ok=True, parents=True)
         shutil.copy(file, parent)
+    return file_list

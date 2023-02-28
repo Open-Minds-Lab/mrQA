@@ -25,12 +25,12 @@ def test_monitor(data_source, n, max_files) -> None:
     temp_dir = Path('/tmp/')
     temp_input_src = get_temp_input_folder(data_source, temp_dir)
     temp_output_dest = get_temp_output_folder(data_source.stem, temp_dir)
-    file_sets = create_random_file_sets(data_source,
-                                        n,
-                                        max_files)
+    folder_sets = create_random_file_sets(data_source,
+                                          n,
+                                          max_files)
     time_dict = None
     for i in range(n):
-        copy2dest(file_sets[i], data_source, temp_input_src)
+        file_set = copy2dest(folder_sets[i], data_source, temp_input_src)
         time.sleep(5)
         if time_dict:
             # on the first iteration, time_dict is None.
@@ -38,7 +38,7 @@ def test_monitor(data_source, n, max_files) -> None:
             # that the files modified since the last report
             # are the same as the files we copied.
             test_modified_files(time_dict['utc'], temp_input_src,
-                                temp_output_dest, data_source, file_sets[i])
+                                temp_output_dest, data_source, file_set)
 
         time_dict = get_timestamps()
 
