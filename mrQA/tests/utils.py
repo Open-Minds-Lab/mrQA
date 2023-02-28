@@ -50,14 +50,17 @@ def test_same_dataset(mrds_path,
                       temp_input_src,
                       temp_output_dest,
                       name):
+    # Read the dataset created by monitor
     monitor_dataset = load_mr_dataset(mrds_path)
 
     # Read full dataset, acts as ground truth
     ds = import_dataset(data_source=temp_input_src,
                         name=name)
-    report = check_compliance(ds, output_dir=temp_output_dest)
-    mrds_path = mrds_fpath(report.parent, report.stem)
-    complete_dataset = load_mr_dataset(mrds_path)
+    report_path = check_compliance(ds, output_dir=Path('/tmp/'))
+    mrds_path2 = mrds_fpath(report_path.parent, report_path.stem)
+    complete_dataset = load_mr_dataset(mrds_path2)
+
+    # Both datasets should be the same
     assert is_same_dataset(complete_dataset, monitor_dataset)
 
 
