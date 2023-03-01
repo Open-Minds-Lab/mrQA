@@ -4,10 +4,12 @@ import time
 import unittest
 import zipfile
 from pathlib import Path
+from random import randint
 
 import pytest
 from MRdataset import import_dataset, load_mr_dataset, MRDS_EXT
 from MRdataset.utils import is_same_dataset
+from numpy.random import default_rng
 
 from mrQA import check_compliance
 from mrQA.config import mrds_fpath
@@ -19,15 +21,25 @@ from mrQA.tests.utils import test_modified_files, test_output_files_created, \
 from mrQA.utils import get_timestamps
 
 
-@pytest.mark.parametrize('data_source, n, max_files', DATASET_PATHS)
-def test_monitor(data_source, n, max_files) -> None:
+@pytest.fixture
+def seed():
+    num = randint(1, 10000)
+    return num
+
+
+@pytest.mark.parametrize('data_source, n, max_files, seed', DATASET_PATHS,
+                         indirect=['seed'])
+def test_monitor(data_source, n, max_files, seed) -> None:
+    rng = default_rng(seed)
+    print(seed)
     data_source = Path(data_source)
     temp_dir = Path('/tmp/')
     temp_input_src = get_temp_input_folder(data_source, temp_dir)
     temp_output_dest = get_temp_output_folder(data_source.stem, temp_dir)
     folder_sets = create_random_file_sets(data_source,
                                           n,
-                                          max_files)
+                                          max_files,
+                                          rng)
     time_dict = None
     for i in range(n):
         file_set = copy2dest(folder_sets[i], data_source, temp_input_src)

@@ -59,7 +59,7 @@ def test_same_dataset(mrds_path,
     report_path = check_compliance(ds, output_dir=Path('/tmp/'))
     mrds_path2 = mrds_fpath(report_path.parent, report_path.stem)
     complete_dataset = load_mr_dataset(mrds_path2)
-
+    print()
     # Both datasets should be the same
     assert is_same_dataset(complete_dataset, monitor_dataset)
 
@@ -82,19 +82,18 @@ def get_temp_output_folder(name, temp_dir):
     return output_folder_path
 
 
-def create_random_file_sets(temp_input_src, n, max_folders):
+def create_random_file_sets(temp_input_src, n, max_folders, rng):
     # TODO: dataset is not random
     unique_folders = set()
     for f in temp_input_src.rglob('*'):
-        if f.is_file():
+        if f.is_file() and f.suffix not in ['.html', '.txt']:
             folder_path = f.parent
             unique_folders.add(folder_path)
-    unique_folders = list(unique_folders)
-    # files_in_src = [Path(f).parent
-    # for f in temp_input_src.rglob('*') if f.is_file()]
-    np.random.shuffle(unique_folders)
-    testing_set = unique_folders[:max_folders]
+    unique_folders = sorted(list(unique_folders))
 
+    rng.shuffle(unique_folders)
+    testing_set = unique_folders[:max_folders]
+    print(testing_set[:5])
     try:
         folder_sets = np.array_split(testing_set, n)
     except ValueError as e:
