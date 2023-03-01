@@ -48,7 +48,7 @@ def test_output_files_created(fname, folder):
 
 def test_same_dataset(mrds_path,
                       temp_input_src,
-                      temp_output_dest,
+                      tempdir,
                       name):
     # Read the dataset created by monitor
     monitor_dataset = load_mr_dataset(mrds_path)
@@ -56,7 +56,7 @@ def test_same_dataset(mrds_path,
     # Read full dataset, acts as ground truth
     ds = import_dataset(data_source=temp_input_src,
                         name=name)
-    report_path = check_compliance(ds, output_dir=Path('/tmp/'))
+    report_path = check_compliance(ds, output_dir=tempdir/'complete_eval')
     mrds_path2 = mrds_fpath(report_path.parent, report_path.stem)
     complete_dataset = load_mr_dataset(mrds_path2)
     print()

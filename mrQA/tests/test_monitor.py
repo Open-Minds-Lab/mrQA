@@ -19,6 +19,7 @@ from mrQA.tests.utils import test_modified_files, test_output_files_created, \
     test_same_dataset, get_temp_input_folder, get_temp_output_folder, \
     create_random_file_sets, copy2dest
 from mrQA.utils import get_timestamps
+import tempfile
 
 
 @pytest.fixture
@@ -31,9 +32,9 @@ def seed():
                          indirect=['seed'])
 def test_monitor(data_source, n, max_files, seed) -> None:
     rng = default_rng(seed)
-    print(seed)
+    print(f"\nSeed = {seed}\n")
     data_source = Path(data_source)
-    temp_dir = Path('/tmp/')
+    temp_dir = Path(tempfile.mkdtemp())
     temp_input_src = get_temp_input_folder(data_source, temp_dir)
     temp_output_dest = get_temp_output_folder(data_source.stem, temp_dir)
     folder_sets = create_random_file_sets(data_source,
@@ -61,8 +62,9 @@ def test_monitor(data_source, n, max_files, seed) -> None:
 
         test_output_files_created(folder=report_filepath.parent,
                                   fname=report_filepath.stem)
-        test_same_dataset(mrds_path, temp_input_src, temp_output_dest,
+        test_same_dataset(mrds_path, temp_input_src, temp_dir,
                           data_source.stem)
+    shutil.rmtree(temp_dir)
 
 
 class TestMonitorDummyDataset(unittest.TestCase):
