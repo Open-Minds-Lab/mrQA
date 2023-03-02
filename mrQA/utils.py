@@ -269,7 +269,8 @@ def txt2list(txt_filepath: Union[str, Path]) -> list:
         raise FileNotFoundError(f'Invalid path {txt_filepath}')
     # Generate a list of folder paths stored in given txt_file
     with open(txt_filepath, 'r', encoding='utf-8') as fp:
-        line_list = fp.read().split('\n')
+        line_list = [line for line in fp.readlines() if line.strip()]
+    # Don't return empty string
     return line_list
 
 
