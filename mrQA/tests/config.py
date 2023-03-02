@@ -14,8 +14,8 @@ DATASET_PATHS = [
     # ['/media/sinhah/extremessd/ABCD-375/dicom-baseline/', 5, 500],
 ]
 
-DATA_ROOT = Path('/media/sinhah/extremessd/ABCD/active_series/non-recommended/')
-# DATA_ROOT = Path('/ocean/projects/med220005p/sinhah/ABCD/active_series/non-recommended') # noqa
+# DATA_ROOT = Path('/media/sinhah/extremessd/ABCD/active_series/non-recommended/')
+DATA_ROOT = Path('/ocean/projects/med220005p/sinhah/ABCD/active_series/non-recommended') # noqa
 ABCD_DATASET_PATHS = [
     [DATA_ROOT/'t1w', 3, 1],
 ]
