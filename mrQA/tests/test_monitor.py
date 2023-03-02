@@ -14,11 +14,11 @@ from numpy.random import default_rng
 from mrQA import check_compliance
 from mrQA.config import mrds_fpath
 from mrQA.monitor import monitor
-from mrQA.tests.config import DATASET_PATHS
+from mrQA.tests.config import DATASET_PATHS, ABCD_DATASET_PATHS
 from mrQA.tests.utils import test_modified_files, test_output_files_created, \
     test_same_dataset, get_temp_input_folder, get_temp_output_folder, \
-    create_random_file_sets, copy2dest
-from mrQA.utils import get_timestamps
+    create_random_file_sets, copy2dest, pick_random_sets
+from mrQA.utils import get_timestamps, txt2list
 import tempfile
 
 
@@ -30,7 +30,7 @@ def seed():
 
 @pytest.mark.parametrize('data_source, n, max_files, seed', DATASET_PATHS,
                          indirect=['seed'])
-def test_monitor(data_source, n, max_files, seed) -> None:
+def test_monitor_local(data_source, n, max_files, seed) -> None:
     rng = default_rng(seed)
     print(f"\nSeed = {seed}\n")
     data_source = Path(data_source)
@@ -69,7 +69,7 @@ def test_monitor(data_source, n, max_files, seed) -> None:
 
 @pytest.mark.parametrize('data_source, n, seed', ABCD_DATASET_PATHS,
                          indirect=['seed'])
-def test_monitor(data_source, n, seed) -> None:
+def test_monitor_abcd(data_source, n, seed) -> None:
     rng = default_rng(seed)
     print(f"\nSeed = {seed}\n")
     name = data_source.stem

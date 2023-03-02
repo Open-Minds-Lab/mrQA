@@ -12,7 +12,7 @@ from MRdataset.utils import is_same_dataset, files_in_path
 from mrQA import check_compliance
 from mrQA.config import report_fpath, mrds_fpath, past_records_fpath, \
     DATE_SEPARATOR
-from mrQA.utils import files_modified_since, get_last_valid_record
+from mrQA.utils import files_modified_since, get_last_valid_record, txt2list
 
 
 def test_modified_files(last_reported_on,
