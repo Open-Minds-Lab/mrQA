@@ -67,6 +67,44 @@ def test_monitor(data_source, n, max_files, seed) -> None:
     shutil.rmtree(temp_dir)
 
 
+@pytest.mark.parametrize('data_source, n, seed', ABCD_DATASET_PATHS,
+                         indirect=['seed'])
+def test_monitor(data_source, n, seed) -> None:
+    rng = default_rng(seed)
+    print(f"\nSeed = {seed}\n")
+    name = data_source.stem
+    data_source_path = Path(data_source) / 'dicom'
+    per_batch_id_list = txt2list(Path(data_source) / 'dicom_mrqa_files/per_batch_id_list.txt')
+    temp_dir = Path(tempfile.mkdtemp())
+    temp_input_src = get_temp_input_folder(name, temp_dir)
+    temp_output_dest = get_temp_output_folder(name, temp_dir)
+    folder_sets = pick_random_sets(per_batch_id_list, n, rng)
+    time_dict = None
+    for i in range(n):
+        file_set = copy2dest(folder_sets[i], data_source_path, temp_input_src)
+        time.sleep(5)
+        if time_dict:
+            # on the first iteration, time_dict is None.
+            # On subsequent iterations, we want to check
+            # that the files modified since the last report
+            # are the same as the files we copied.
+            test_modified_files(time_dict['utc'], temp_input_src,
+                                temp_output_dest, data_source_path, file_set)
+
+        time_dict = get_timestamps()
+
+        report_filepath = monitor(name=name,
+                                  data_source=temp_input_src,
+                                  output_dir=temp_output_dest)
+        mrds_path = mrds_fpath(report_filepath.parent, report_filepath.stem)
+
+        test_output_files_created(folder=report_filepath.parent,
+                                  fname=report_filepath.stem)
+        test_same_dataset(mrds_path, temp_input_src, temp_dir,
+                          name)
+    shutil.rmtree(temp_dir)
+
+
 class TestMonitorDummyDataset(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

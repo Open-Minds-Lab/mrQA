@@ -64,8 +64,8 @@ def test_same_dataset(mrds_path,
     assert is_same_dataset(complete_dataset, monitor_dataset)
 
 
-def get_temp_input_folder(data_source, temp_dir):
-    temp_folder_path = temp_dir / Path(data_source).stem
+def get_temp_input_folder(name, temp_dir):
+    temp_folder_path = temp_dir / name
     if temp_folder_path.is_dir():
         shutil.rmtree(temp_folder_path)
     temp_folder_path.mkdir(exist_ok=False, parents=True)
@@ -80,6 +80,12 @@ def get_temp_output_folder(name, temp_dir):
     output_dir.mkdir(exist_ok=False, parents=True)
     output_folder_path = output_dir / name
     return output_folder_path
+
+
+def pick_random_sets(per_batch_id_list, n, rng):
+    rand_id_list_paths = rng.choice(per_batch_id_list, n)
+    folder_sets = [txt2list(f) for f in rand_id_list_paths]
+    return folder_sets
 
 
 def create_random_file_sets(temp_input_src, n, max_folders, rng):
