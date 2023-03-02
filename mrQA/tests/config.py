@@ -2,13 +2,16 @@ from pathlib import Path
 
 
 DATASET_PATHS = [
-    ('/media/sinhah/extremessd/ABCD-375/dicom-baseline-subset/', 0, 1000),
-    ('/media/sinhah/extremessd/ABCD-375/dicom-baseline-subset/', 1, 1000),
-    ('/home/sinhah/scan_data/CHA_MJFF', 5, 1000),
-    ('/media/sinhah/extremessd/ABCD-375/dicom-baseline-subset/', 5, 1000),
-    ('/home/sinhah/scan_data/CHA_MJFF', 10, 1000),
-    ('/media/sinhah/extremessd/ABCD-375/dicom-baseline-subset/', 10, 1000),
-    ('/media/sinhah/extremessd/ABCD-375/dicom-baseline/', 10, 1000),
+    # ['/media/sinhah/extremessd/ABCD-375/dicom-baseline-subset/', 0, 200],
+    # ['/media/sinhah/extremessd/ABCD-375/dicom-baseline-subset/', 1, 10, 1],
+    # ['/media/sinhah/extremessd/ABCD-375/dicom-baseline-subset/', 2, 100, 1],
+    ['/media/sinhah/extremessd/ABCD-375/dicom-baseline-subset/', 3, 200, 1],
+    # ['/home/sinhah/scan_data/CHA_MJFF_MOD', 2, 50, 1],
+    ['/home/sinhah/scan_data/CHA_MJFF_MOD', 3, 200, 1],
+    ['/home/sinhah/scan_data/sinhah-20220514_140054', 3, 200, 1],
+    ['/home/sinhah/scan_data/sinhah-20220520_153204', 3, 200, 1],
+    ['/home/sinhah/scan_data/sinhah-20220520_210659', 3, 200, 1],
+    # ['/media/sinhah/extremessd/ABCD-375/dicom-baseline/', 5, 500],
 ]
 
 DATA_ROOT = Path('/media/sinhah/extremessd/ABCD/active_series/non-recommended/')

@@ -569,6 +569,7 @@ def _check_single_run(modality: Modality,
                                      reference,
                                      ignore=['modality', 'BodyPartExamined'])
         else:
+            # TODO: return None
             print(reference)
     else:
         # Reference was set, but value for each key is None
