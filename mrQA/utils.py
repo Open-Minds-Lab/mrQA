@@ -18,7 +18,9 @@ from MRdataset.utils import param_difference, make_hashable
 from dateutil import parser
 
 from mrQA.config import past_records_fpath, report_fpath, mrds_fpath, \
-    subject_list_dir, DATE_SEPARATOR
+    subject_list_dir, DATE_SEPARATOR, CannotComputeMajority, \
+    ReferenceNotSetForModality, \
+    ReferenceNotSetForEchoTime
 
 
 def get_items_upto_count(dict_: Counter, rank: int = 1):
@@ -243,7 +245,7 @@ def split_list(dir_index: list, num_chunks: int) -> typing.Iterable[List[str]]:
     """
     if not is_integer_number(num_chunks):
         raise ValueError(f'Number of chunks must be an integer. '
-                           f'Got {num_chunks}')
+                         f'Got {num_chunks}')
     if num_chunks == 0:
         raise ValueError('Cannot divide list into chunks of size 0')
     if len(dir_index) == 0:
@@ -874,7 +876,8 @@ def get_last_valid_record(folder_path: Path) -> Optional[tuple]:
             if i < -num_records:
                 return None
             last_line = lines[i]
-            last_reported_on, last_report_path, last_mrds_path, _ = last_line.split(',')
+            last_reported_on, last_report_path, last_mrds_path, _ = \
+                last_line.split(',')
             if Path(last_mrds_path).is_file():
                 return last_reported_on, last_report_path, last_mrds_path
             i -= 1
@@ -928,7 +931,6 @@ def get_timestamps():
 def export_subject_lists(output_dir: Union[Path, str],
                          dataset: BaseDataset,
                          folder_name: str) -> dict:
-
     subject_dir = subject_list_dir(output_dir, folder_name)
     sub_lists_by_modality = subject_list2txt(dataset, subject_dir)
     return sub_lists_by_modality
