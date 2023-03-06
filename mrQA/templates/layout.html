@@ -102,7 +102,9 @@
                         {{ name }},
                     {% endfor %}
                 {% else %}
-                    Too long list. Click <a href={{sub_lists_by_modality[modality.name]}}>here</a> for full list.
+                    Too long list. Click
+                    <a href={{ sub_lists_by_modality[modality.name] }}>here</a>
+                    for full list.
                 {% endif %}
             </td>
             <td class="tg-0pky" colspan="1">
@@ -139,12 +141,9 @@
             {% set te = echo_time %}
             {% set reference = modality.get_reference(echo_time) %}
             {% set runs_by_echo = utils._get_runs_by_echo(modality, 3) %}
-            {% if modality.is_multi_echo() %}
-                <h4>Reference {{ loop.index }} | Number of Runs
-                    : {{ runs_by_echo[te]|length }}</h4>
-            {% else %}
-                <h4>Reference</h4>
-            {% endif %}
+            <h4>Reference {{ loop.index }} | Number of Runs
+                : {{ runs_by_echo[te]|length }}</h4>
+
 
             <table class="tg" id="with_margin">
                 <thead>
@@ -208,6 +207,32 @@
         </tbody>
         </table>
         {% endfor %}
+        {% if modality.error_subject_names() %}
+            <table class="tg" id="with_margin">
+                <thead>
+                <tr>
+                    <th class="tg-c3ow"
+                        colspan="4">Error
+                    </th>
+                    <th class="tg-c3ow"
+                        colspan="4">Subject_Session
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td class="tg-0pky" colspan="4"> Could not compute
+                        non-compliance
+                    </td>
+                    <td class="tg-0pky" colspan="2">
+                        {% for entry in modality.error_subject_names() %}
+                            {{ entry }},
+                        {% endfor %}
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        {% endif %}
     {% endif %}
 {% endfor %}
 
@@ -216,10 +241,15 @@
 
     {% if modality.compliant %}
         <h2>Modality : {{ modality.name }}</h2>
+        {% if not modality.get_echo_times() %}
+            <h5 style="color: #ff0000"> Warning : Could not compute
+                reference </h5>
+        {% endif %}
         {% for echo_time in modality.get_echo_times()|sort %}
             {% set reference = modality.get_reference(echo_time) %}
             {% if modality.is_multi_echo() %}
-                <h4>Reference {{ loop.index }}</h4>
+                <h4>Reference {{ loop.index }} | Number of Runs
+                    : {{ runs_by_echo[te]|length }}</h4>
             {% else %}
                 <h4>Reference</h4>
             {% endif %}
@@ -242,6 +272,32 @@
                 </tbody>
             </table>
         {% endfor %}
+        {% if modality.error_subject_names() %}
+            <table class="tg" id="with_margin">
+                <thead>
+                <tr>
+                    <th class="tg-c3ow"
+                        colspan="4">Error
+                    </th>
+                    <th class="tg-c3ow"
+                        colspan="4">Subject_Session
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td class="tg-0pky" colspan="4"> Could not compute
+                        non-compliance
+                    </td>
+                    <td class="tg-0pky" colspan="2">
+                        {% for entry in modality.error_subject_names() %}
+                            {{ entry }},
+                        {% endfor %}
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        {% endif %}
     {% endif %}
 {% endfor %}
 
