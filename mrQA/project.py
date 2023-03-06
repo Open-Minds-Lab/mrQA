@@ -117,7 +117,7 @@ def compare_with_majority(dataset: BaseDataset,
 
         # For each echo time, find the most common values
         for echo_time, run_list in run_by_echo.items():
-            reference = majority_attribute_values(run_list)
+            reference = majority_attribute_values(run_list, echo_time)
             if _validate_reference(reference):
                 modality.set_reference(reference, echo_time)
 

@@ -68,7 +68,8 @@ def record_out_paths(output_dir, dataset_name):
     return report_path, mrds_path, sub_lists_dir_path
 
 
-def majority_attribute_values(list_of_dicts: list, default=None):
+def majority_attribute_values(list_of_dicts: list, echo_time: float,
+                              default=None):
     """
     Given a list of dictionaries, it generates the most common
     values for each key
@@ -77,6 +78,8 @@ def majority_attribute_values(list_of_dicts: list, default=None):
     ----------
     list_of_dicts : list
         a list of dictionaries
+    echo_time : float
+        echo time
     default : Any
         a default value if the key is missing in any dictionary
 
@@ -85,10 +88,22 @@ def majority_attribute_values(list_of_dicts: list, default=None):
     dict
         Key-value pairs specifying the most common values for each key
     """
-    if not _check_args_validity(list_of_dicts):
+    args_valid = False
+    maj_value = default
+
+    try:
+        args_valid = _check_args_validity(list_of_dicts, echo_time)
+    except CannotComputeMajority as e:
+        maj_value = 'Cannot Compute Majority:\n Count < 3'
+        logger.info(f'Cannot compute majority: {e}')
+    except ValueError as e:
+        maj_value = None
+        logger.info(f'Cannot compute majority: {e}')
+
+    if not args_valid:
         maj_attr_values = {}
         for key in list_of_dicts[0].keys():
-            maj_attr_values[key] = None
+            maj_attr_values[key] = maj_value
         return maj_attr_values
     counters_dict = {}
     categories = set()
@@ -160,14 +175,14 @@ def pick_majority(counter_: Counter, parameter: str, default: Any = None):
     # cannot say which is majority
     values = ', '.join([str(x[0]) for x in items_rank1])
     if len(items_rank1) > 1:
-        logger.warning(
+        logger.info(
             'Could not compute reference for %s. Got multiple values'
             ' %s with same count = %s.', parameter, values, items_rank1[0][1])
         return 'Cannot Compute Majority:\nEqual Count'
     return items_rank1[0][0]
 
 
-def _check_args_validity(list_of_dicts: List[dict]) -> bool:
+def _check_args_validity(list_of_dicts: List[dict], echo_time) -> bool:
     """
     Checks if the arguments are valid for computing majority attribute values
     Parameters
@@ -193,10 +208,10 @@ def _check_args_validity(list_of_dicts: List[dict]) -> bool:
         if len(dict_) == 0:
             raise ValueError('Atleast one of dictionaries is empty.')
     if len(list_of_dicts) < 3:
-        logger.warning('Cannot compute majority attribute values. '
-                       'Got less than 3 values for each '
-                       'parameter. Returns majority values as None.')
-        return False
+        logger.info('Cannot compute majority attribute values. '
+                    'Got less than 3 values for each '
+                    'parameter. Returns majority values as None.')
+        raise CannotComputeMajority('Count < 3', te=echo_time)
     return True
 
 
@@ -503,6 +518,8 @@ def _validate_reference(dict_, default=None):
     if not dict_:
         return False
     if all(value == default for value in dict_.values()):
+        return False
+    if all('Cannot Compute Majority' in value for value in dict_.values()):
         return False
     return True
 
