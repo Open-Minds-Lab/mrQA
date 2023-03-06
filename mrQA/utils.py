@@ -577,34 +577,19 @@ def _check_single_run(modality: Modality,
     """
     te = round_if_numeric(run_te, decimals)
     params = round_dict_values(run_params, decimals)
-    te_ref = None
-    delta = None
-    if te in modality.get_echo_times():
+    ignore_keys = ['modality', 'BodyPartExamined']
+    echo_times = modality.get_echo_times()
+    if not echo_times:
+        raise ReferenceNotSetForModality(modality.name)
+
+    if te in echo_times:
         reference = modality.get_reference(te)
-        if _validate_reference(reference):
-            te_ref = reference.get('EchoTime', None)
-            delta = param_difference(params,
-                                     reference,
-                                     ignore=['modality', 'BodyPartExamined'])
-        else:
-            # TODO: return None
-            print(reference)
+        te_ref = te
     else:
-        # Reference was set, but value for each key is None
-        any_te = modality.get_echo_times()
-        if any_te:
-            te = any_te[0]
-            reference = modality.get_reference(te)
-            te_ref = reference.get('EchoTime', None)
-            delta = param_difference(params,
-                                     reference,
-                                     ignore=['modality', 'BodyPartExamined'])
-        # Reference is an empty dict or None
-        else:
-            te_ref = None
-            delta = params
-            logger.warning('There is no reference set for the '
-                           'modality : %s', modality.name)
+        raise ReferenceNotSetForEchoTime(modality.name, run_te)
+
+    delta = param_difference(params, reference,
+                             ignore=ignore_keys)
     return delta, te_ref
 
 
@@ -629,7 +614,7 @@ def _check_against_reference(modality, decimals):
 
     Returns
     -------
-    bool
+    Modality
         True if modality is compliant, False otherwise
     """
     # Set default flags as True, if there is some non-compliance
