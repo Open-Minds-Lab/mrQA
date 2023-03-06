@@ -624,21 +624,40 @@ def _check_against_reference(modality, decimals):
         for session in subject.sessions:
             session.compliant = True
             for i_run in session.runs:
-                i_run.delta, te_ref = _check_single_run(modality,
-                                                        decimals,
-                                                        i_run.echo_time,
-                                                        i_run.params)
-                if i_run.delta:
+                try:
+                    i_run.delta, te_ref = _check_single_run(modality,
+                                                            decimals,
+                                                            i_run.echo_time,
+                                                            i_run.params)
+                    if i_run.delta:
+                        modality.add_non_compliant_subject_name(subject.name)
+                        _store_non_compliance(modality, i_run.delta, te_ref,
+                                              subject.name, session.name)
+                        # NC = non_compliant
+                        # If any run is NC, then session is NC.
+                        session.compliant = False
+                        # If any session is NC, then subject is NC.
+                        subject.compliant = False
+                        # If any subject is NC, then modality is NC.
+                        modality.compliant = False
+                except ReferenceNotSetForEchoTime as e:
+                    modality.add_error_subject_names(f'{subject.name}_'
+                                                     f'{session.name}')
                     modality.add_non_compliant_subject_name(subject.name)
-                    _store(modality, i_run.delta, te_ref,
-                           subject.name, session.name)
-                    # NC = non_compliant
+                    # _store_non_compliance(modality, i_run.delta, 'Various',
+                    #                       subject.name, session.name)
                     # If any run is NC, then session is NC.
                     session.compliant = False
                     # If any session is NC, then subject is NC.
                     subject.compliant = False
                     # If any subject is NC, then modality is NC.
                     modality.compliant = False
+                    logger.info(e)
+                except ReferenceNotSetForModality as e:
+                    modality.add_error_subject_names(f'{subject.name}_'
+                                                     f'{session.name}')
+                    logger.info(e)
+
             if session.compliant:
                 # If after all runs, session is still compliant, then the
                 # session is added to the list of compliant sessions.
@@ -649,7 +668,7 @@ def _check_against_reference(modality, decimals):
             modality.add_compliant_subject_name(subject.name)
     # If after all the subjects, modality is compliant, then the
     # modality should be added to the list of compliant sessions.
-    return modality.compliant
+    return modality
 
 
 def _cli_report(dataset: BaseDataset, report_name):
@@ -688,11 +707,11 @@ def _cli_report(dataset: BaseDataset, report_name):
     return ret_string
 
 
-def _store(modality: Modality,
-           delta: list,
-           echo_time: float,
-           subject_name: str,
-           session_name: str):
+def _store_non_compliance(modality: Modality,
+                          delta: list,
+                          echo_time: float,
+                          subject_name: str,
+                          session_name: str):
     """
     Store the sources of non-compliance like flip angle, ped, tr, te
 

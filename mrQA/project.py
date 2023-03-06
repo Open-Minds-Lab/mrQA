@@ -121,7 +121,7 @@ def compare_with_majority(dataset: BaseDataset,
             if _validate_reference(reference):
                 modality.set_reference(reference, echo_time)
 
-        modality.compliant = _check_against_reference(modality, decimals)
+        modality = _check_against_reference(modality, decimals)
         if modality.compliant:
             dataset.add_compliant_modality_name(modality.name)
 
