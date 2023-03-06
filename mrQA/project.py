@@ -3,6 +3,7 @@ from typing import Union
 
 from MRdataset import save_mr_dataset
 from MRdataset.base import BaseDataset
+from MRdataset.log import logger
 
 from mrQA.config import STRATEGIES_ALLOWED, report_fpath, mrds_fpath
 from mrQA.formatter import HtmlFormatter
@@ -14,7 +15,8 @@ from mrQA.utils import timestamp, majority_attribute_values, _get_runs_by_echo, 
 def check_compliance(dataset: BaseDataset,
                      strategy: str = 'majority',
                      decimals: int = 3,
-                     output_dir: Union[Path, str] = None):
+                     output_dir: Union[Path, str] = None,
+                     verbose: bool = False):
     """
     Main function for checking compliance. Infers the reference protocol
     according to the user chosen strategy, and then generates a compliance
@@ -31,6 +33,9 @@ def check_compliance(dataset: BaseDataset,
         Path to save the report
     decimals : int
         Number of decimal places to round to (default:3).
+    verbose : bool
+        print more if true
+
 
     Returns
     -------
@@ -44,6 +49,10 @@ def check_compliance(dataset: BaseDataset,
     NotImplementedError
         If the input strategy is not supported
     """
+    if verbose:
+        logger.setLevel('INFO')
+    else:
+        logger.setLevel('WARNING')
 
     if not dataset.modalities:
         raise ValueError('Dataset is empty.')
@@ -54,6 +63,10 @@ def check_compliance(dataset: BaseDataset,
         raise NotImplementedError(
             f'Only the following strategies are allowed : \n\t'
             f'{STRATEGIES_ALLOWED}')
+
+    output_dir = Path(output_dir).resolve()
+    if not output_dir.is_dir():
+        raise NotADirectoryError("Provide a valid output directory")
 
     report_path, mrds_path, sub_lists_dir_path = record_out_paths(output_dir,
                                                                   dataset.name)

@@ -82,7 +82,8 @@ def main():
     check_compliance(dataset=dataset,
                      strategy=args.strategy,
                      output_dir=args.output_dir,
-                     decimals=args.decimals)
+                     decimals=args.decimals,
+                     verbose=args.verbose)
     return 0
 
 
