@@ -96,7 +96,7 @@ def majority_attribute_values(list_of_dicts: list, echo_time: float,
     try:
         args_valid = _check_args_validity(list_of_dicts, echo_time)
     except CannotComputeMajority as e:
-        maj_value = 'Cannot Compute Majority:\n Count < 3'
+        maj_value = None  # 'Cannot Compute Majority:\n Count < 3'
         logger.info(f'Cannot compute majority: {e}')
     except ValueError as e:
         maj_value = None
@@ -521,8 +521,11 @@ def _validate_reference(dict_, default=None):
         return False
     if all(value == default for value in dict_.values()):
         return False
-    if all('Cannot Compute Majority' in value for value in dict_.values()):
-        return False
+    # flag = True
+    # for value in dict_.values():
+    #     if value and ('Cannot Compute Majority' in value):
+    #         flag = False
+    #         continue
     return True
 
 

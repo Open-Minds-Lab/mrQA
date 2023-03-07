@@ -5,11 +5,11 @@ from MRdataset import save_mr_dataset
 from MRdataset.base import BaseDataset
 from MRdataset.log import logger
 
-from mrQA.config import STRATEGIES_ALLOWED, report_fpath, mrds_fpath
+from mrQA.config import STRATEGIES_ALLOWED
 from mrQA.formatter import HtmlFormatter
-from mrQA.utils import timestamp, majority_attribute_values, _get_runs_by_echo, \
+from mrQA.utils import majority_attribute_values, _get_runs_by_echo, \
     _check_against_reference, _cli_report, _validate_reference, \
-    export_record, get_timestamps, export_subject_lists, record_out_paths
+    export_subject_lists, record_out_paths
 
 
 def check_compliance(dataset: BaseDataset,
@@ -48,6 +48,8 @@ def check_compliance(dataset: BaseDataset,
         If the input dataset is empty or otherwise invalid
     NotImplementedError
         If the input strategy is not supported
+    NotADirectoryError
+        If the output directory doesn't exist
     """
     if verbose:
         logger.setLevel('INFO')
@@ -67,18 +69,15 @@ def check_compliance(dataset: BaseDataset,
     output_dir = Path(output_dir).resolve()
     output_dir.mkdir(exist_ok=True, parents=True)
     if not output_dir.is_dir():
-        raise NotADirectoryError("Provide a valid output directory")
+        raise NotADirectoryError('Provide a valid output directory')
 
     report_path, mrds_path, sub_lists_dir_path = record_out_paths(output_dir,
                                                                   dataset.name)
-    # Export the record of the dataset
-    # export_record(output_dir)
-
+    save_mr_dataset(mrds_path, dataset)
     generate_report(dataset,
                     report_path,
                     sub_lists_dir_path,
                     output_dir)
-    save_mr_dataset(mrds_path, dataset)
 
     # Print a small message on the console, about non-compliance of dataset
     print(_cli_report(dataset, str(report_path)))
