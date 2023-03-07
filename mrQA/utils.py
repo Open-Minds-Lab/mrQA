@@ -931,6 +931,5 @@ def get_timestamps():
 def export_subject_lists(output_dir: Union[Path, str],
                          dataset: BaseDataset,
                          folder_name: str) -> dict:
-    subject_dir = subject_list_dir(output_dir, folder_name)
-    sub_lists_by_modality = subject_list2txt(dataset, subject_dir)
+    sub_lists_by_modality = subject_list2txt(dataset, output_dir/folder_name)
     return sub_lists_by_modality

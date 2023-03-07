@@ -34,9 +34,10 @@ def test_monitor_local(data_source, n, max_files, seed) -> None:
     rng = default_rng(seed)
     print(f"\nSeed = {seed}\n")
     data_source = Path(data_source)
+    name = data_source.stem
     temp_dir = Path(tempfile.mkdtemp())
-    temp_input_src = get_temp_input_folder(data_source, temp_dir)
-    temp_output_dest = get_temp_output_folder(data_source.stem, temp_dir)
+    temp_input_src = get_temp_input_folder(name, temp_dir)
+    temp_output_dest = get_temp_output_folder(name, temp_dir)
     folder_sets = create_random_file_sets(data_source,
                                           n,
                                           max_files,
@@ -55,7 +56,7 @@ def test_monitor_local(data_source, n, max_files, seed) -> None:
 
         time_dict = get_timestamps()
 
-        report_filepath = monitor(name=data_source.stem,
+        report_filepath = monitor(name=name,
                                   data_source=temp_input_src,
                                   output_dir=temp_output_dest)
         mrds_path = mrds_fpath(report_filepath.parent, report_filepath.stem)
@@ -63,8 +64,8 @@ def test_monitor_local(data_source, n, max_files, seed) -> None:
         test_output_files_created(folder=report_filepath.parent,
                                   fname=report_filepath.stem)
         test_same_dataset(mrds_path, temp_input_src, temp_dir,
-                          data_source.stem)
-    shutil.rmtree(temp_dir)
+                          name)
+    # shutil.rmtree(temp_dir)
 
 
 @pytest.mark.parametrize('data_source, n, seed', ABCD_DATASET_PATHS,

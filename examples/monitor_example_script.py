@@ -39,6 +39,7 @@ def main():
     for folder in sub_dirs:
         if folder.is_dir():
             name = Path(folder).stem
+            print(f"\nProcessing {name}\n")
             output_folder = Path(args.output_dir)/name
             monitor(name=name,
                     data_source=folder,

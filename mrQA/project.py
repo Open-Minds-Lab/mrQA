@@ -65,6 +65,7 @@ def check_compliance(dataset: BaseDataset,
             f'{STRATEGIES_ALLOWED}')
 
     output_dir = Path(output_dir).resolve()
+    output_dir.mkdir(exist_ok=True, parents=True)
     if not output_dir.is_dir():
         raise NotADirectoryError("Provide a valid output directory")
 
