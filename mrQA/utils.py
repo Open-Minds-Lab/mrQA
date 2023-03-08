@@ -12,6 +12,7 @@ from typing import Union, List, Optional, Any
 from subprocess import run, CalledProcessError, TimeoutExpired
 
 import numpy as np
+import tempfile
 from MRdataset.base import Modality, BaseDataset
 from MRdataset.log import logger
 from MRdataset.utils import param_difference, make_hashable
@@ -938,3 +939,13 @@ def export_subject_lists(output_dir: Union[Path, str],
                          folder_name: str) -> dict:
     sub_lists_by_modality = subject_list2txt(dataset, output_dir/folder_name)
     return sub_lists_by_modality
+
+
+def is_writable(dir_path):
+    try:
+        testfile = tempfile.TemporaryFile(dir=dir_path)
+        testfile.close()
+    except (OSError, IOError) as e:
+        logger.error(e)
+        return False
+    return True

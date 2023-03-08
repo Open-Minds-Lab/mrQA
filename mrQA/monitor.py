@@ -9,7 +9,7 @@ from MRdataset.log import logger
 
 from mrQA import check_compliance
 from mrQA.config import PATH_CONFIG, mrds_fpath
-from mrQA.utils import files_modified_since, get_last_valid_record, report_fpath
+from mrQA.utils import files_modified_since, get_last_valid_record, report_fpath, is_writable
 
 
 def get_parser():
@@ -107,6 +107,8 @@ def parse_args():
                 Path(args.output_dir).mkdir(parents=True, exist_ok=True)
             except OSError as exc:
                 raise exc
+    if not is_writable(args.output_dir):
+        raise OSError(f'Output Folder {args.output_dir} is not writable')
     return args
 
 
