@@ -64,9 +64,9 @@ def record_out_paths(output_dir, dataset_name):
     records_filepath = past_records_fpath(output_dir)
     if not records_filepath.parent.is_dir():
         records_filepath.parent.mkdir(parents=True)
-    with open(records_filepath, 'a') as fp:
-        fp.write(f"{utc},{report_path},"
-                 f"{mrds_path},{ts}\n")
+    with open(records_filepath, 'a', encoding='utf-8') as fp:
+        fp.write(f'{utc},{report_path},'
+                 f'{mrds_path},{ts}\n')
     return report_path, mrds_path, sub_lists_dir_path
 
 
@@ -187,10 +187,13 @@ def pick_majority(counter_: Counter, parameter: str, default: Any = None):
 def _check_args_validity(list_of_dicts: List[dict], echo_time) -> bool:
     """
     Checks if the arguments are valid for computing majority attribute values
+
     Parameters
     ----------
     list_of_dicts : list
         a list of dictionaries
+    echo_time : float
+         Echo time of run
 
     Returns
     -------
@@ -914,10 +917,9 @@ def export_record(output_dir, filename, time_dict):
     if not record_filepath.parent.is_dir():
         record_filepath.parent.mkdir(parents=True)
 
-    with open(record_filepath, 'a') as fp:
+    with open(record_filepath, 'a', encoding='utf-8') as fp:
         fp.write(f"{time_dict['utc']},{filename},"
                  f"{time_dict['date_time']}\n")
-    return
 
 
 def get_timestamps():

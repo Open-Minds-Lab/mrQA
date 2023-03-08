@@ -31,7 +31,7 @@ def get_parser():
                                'directory will be used to save reports')
     optional.add_argument('-s', '--style', type=str, default='dicom',
                           help='type of dataset, one of [dicom|bids|other]')
-    optional.add_argument('-n', '--name', type=str.lower,
+    optional.add_argument('-n', '--name', type=str,
                           help='provide a identifier/name for the dataset')
     optional.add_argument('-h', '--help', action='help',
                           default=argparse.SUPPRESS,
