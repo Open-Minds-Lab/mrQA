@@ -23,7 +23,7 @@ def get_parser():
     optional = parser.add_argument_group('optional arguments')
 
     # Add help
-    optional.add_argument('-n', '--name', type=str.lower,
+    optional.add_argument('-n', '--name', type=str,
                           help='provide a identifier/name for the dataset')
     required.add_argument('-d', '--data-source', type=str, required=True,
                           help='directory containing downloaded dataset with '
