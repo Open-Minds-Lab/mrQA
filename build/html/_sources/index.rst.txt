@@ -1,36 +1,26 @@
-Welcome to mrQA's documentation!
-======================================
+mrQA : automatic protocol compliance checks on MR datasets
+=============================================================
+
+
+.. include:: ../README.rst
+.. include:: ./usage.rst
+
+Further
+-------
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Tutorials
+   :maxdepth: 1
+
 
    installation
-   readme
-
-.. toctree::
-   :maxdepth: 2
-   :caption: How-to Guides & Examples
-
+   API
    contributing
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Reference
-
-   mrQA
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Background
-
    authors
-   history
 
 
 
 Indices and tables
-==================
+------------------
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
