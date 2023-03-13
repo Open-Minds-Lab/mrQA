@@ -6,10 +6,11 @@ from typing import Union, List
 
 from MRdataset import import_dataset, load_mr_dataset
 from MRdataset.log import logger
+from MRdataset.utils import is_writable
 
 from mrQA import check_compliance
-from mrQA.config import PATH_CONFIG, mrds_fpath
-from mrQA.utils import files_modified_since, get_last_valid_record, report_fpath, is_writable
+from mrQA.config import PATH_CONFIG
+from mrQA.utils import files_modified_since, get_last_valid_record
 
 
 def get_parser():
@@ -107,6 +108,7 @@ def parse_args():
                 Path(args.output_dir).mkdir(parents=True, exist_ok=True)
             except OSError as exc:
                 raise exc
+    # TODO: Add this check to mrqa and MRdataset
     if not is_writable(args.output_dir):
         raise OSError(f'Output Folder {args.output_dir} is not writable')
     return args

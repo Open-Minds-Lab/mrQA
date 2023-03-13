@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 from MRdataset import import_dataset
-# from mrQA.common import set_logging
+from MRdataset.utils import is_writable
 from MRdataset.log import logger
 
 from mrQA import check_compliance
@@ -30,7 +30,7 @@ def get_parser():
                                ' would be saved. By default, the --data_source '
                                'directory will be used to save reports')
     optional.add_argument('-s', '--style', type=str, default='dicom',
-                          help='type of dataset, one of [dicom|bids|other]')
+                          help='type of dataset, one of [dicom|bids|pybids]')
     optional.add_argument('-n', '--name', type=str,
                           help='provide a identifier/name for the dataset')
     optional.add_argument('-h', '--help', action='help',
@@ -110,6 +110,9 @@ def parse_args():
                 Path(args.output_dir).mkdir(parents=True, exist_ok=True)
             except OSError as exc:
                 raise exc
+
+    if not is_writable(args.output_dir):
+        raise OSError(f'Output Folder {args.output_dir} is not writable')
     return args
 
 

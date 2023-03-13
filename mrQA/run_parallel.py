@@ -181,7 +181,7 @@ def create_script(data_source: Union[str, Path, Iterable] = None,
 
 def split_ids_list(data_source: Union[str, Path],
                    all_ids_path: Union[str, Path],
-                   per_batch_ids,
+                   per_batch_ids: Union[str, Path],
                    output_dir: Union[str, Path],
                    subjects_per_job: int = 50):
     """
