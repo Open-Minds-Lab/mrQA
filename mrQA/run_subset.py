@@ -1,3 +1,5 @@
+""" Console script for running subset of dataset, a part of parallel
+processing"""
 import argparse
 import sys
 from pathlib import Path

@@ -1,6 +1,7 @@
+""" This module contains functions to run the compliance checks in parallel"""
 import time
 from pathlib import Path
-from typing import Iterable, Union, List
+from typing import Iterable, Union
 
 from MRdataset.config import MRDS_EXT
 from MRdataset.utils import valid_paths
@@ -12,20 +13,37 @@ from mrQA.utils import list2txt, split_list, \
     txt2list
 
 
-def process_parallel(data_source,
-                     output_dir,
-                     output_path,
-                     name=None):
+def process_parallel(data_source: Union[str, Path],
+                     output_dir: Union[str, Path],
+                     output_path: Union[str, Path],
+                     name: str = None):
+    """
+    Given a folder(or List[folder]) it will divide the work into smaller
+    jobs. Each job will contain a fixed number of subjects. These jobs can be
+    executed in parallel to save time.
+
+    Parameters
+    ----------
+    data_source: str or Path
+        Path to the folder containing the subject folders
+    output_dir: str or Path
+        Path to the folder where the output will be saved
+    output_path: str or Path
+        Path to the folder where the final output will be saved
+    name: str
+        Name of the final output file
+
+    """
     # One function to process them all!
     # note that it will generate scripts only
     script_list_filepath, mrds_list_filepath = create_script(
-                                                data_source=data_source,
-                                                subjects_per_job=5,
-                                                conda_env='mrcheck',
-                                                conda_dist='anaconda3',
-                                                output_dir=output_dir,
-                                                hpc=False,
-                                                )
+        data_source=data_source,
+        subjects_per_job=5,
+        conda_env='mrcheck',
+        conda_dist='anaconda3',
+        output_dir=output_dir,
+        hpc=False,
+    )
     # Generate slurm scripts and submit jobs, for local parallel processing
     submit_job(scripts_list_filepath=script_list_filepath,
                mrds_list_filepath=mrds_list_filepath,
@@ -46,7 +64,6 @@ def process_parallel(data_source,
 
 def submit_job(scripts_list_filepath: Union[str, Path],
                mrds_list_filepath: Union[str, Path],
-               debug: bool = False,
                hpc: bool = False) -> None:
     """
     Given a folder(or List[folder]) it will divide the work into smaller
@@ -59,8 +76,6 @@ def submit_job(scripts_list_filepath: Union[str, Path],
         Path to the file containing list of bash scripts to be executed
     mrds_list_filepath: str
         Path to the file containing list of partial mrds files to be created
-    debug: bool
-        If True, the dataset will be created locally. This is useful for testing
     hpc: bool
         If True, the scripts will be generated for HPC, not for local execution
     Returns
@@ -68,14 +83,13 @@ def submit_job(scripts_list_filepath: Union[str, Path],
     None
     """
 
-    processes = []
     bash_scripts = valid_paths(txt2list(scripts_list_filepath))
     mrds_files = txt2list(mrds_list_filepath)
     for script_path, output_mrds_path in zip(bash_scripts, mrds_files):
         # Run the script file
         _run_single_batch(script_path=script_path,
-                                   hpc=hpc,
-                                   output_mrds_path=output_mrds_path)
+                          hpc=hpc,
+                          output_mrds_path=output_mrds_path)
 
 
 def create_script(data_source: Union[str, Path, Iterable] = None,
@@ -181,6 +195,10 @@ def split_ids_list(data_source: Union[str, Path],
         Path to the root directory of the data
     all_ids_path : Union[str, Path]
         Path to the output directory
+    per_batch_ids : Union[str, Path]
+        filepath to a file which has paths to all txt files for all jobs.
+        Each of these txt files contains a list of subject ids for
+        corresponding job.
     output_dir : Union[str, Path]
         Name of the output directory
     subjects_per_job : int
@@ -213,5 +231,3 @@ def split_ids_list(data_source: Union[str, Path],
         batch_ids_path_list.append(batch_filepath)
     list2txt(fpath=per_batch_ids, list_=batch_ids_path_list)
     return batch_ids_path_list
-
-

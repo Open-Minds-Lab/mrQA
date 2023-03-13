@@ -1,10 +1,11 @@
+""" Script to merge partial mrds files into a single mrds file after
+parallel processing"""
 from pathlib import Path
 from typing import List, Union
 
 from MRdataset import load_mr_dataset
 from MRdataset import save_mr_dataset
 from MRdataset.base import BaseDataset
-from MRdataset.config import MRDS_EXT
 
 from mrQA.utils import txt2list
 
