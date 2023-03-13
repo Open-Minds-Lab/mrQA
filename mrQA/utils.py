@@ -943,8 +943,9 @@ def export_subject_lists(output_dir: Union[Path, str],
 
 def is_writable(dir_path):
     try:
-        testfile = tempfile.TemporaryFile(dir=dir_path)
-        testfile.close()
+        with tempfile.TemporaryFile(dir=dir_path) as testfile:
+            testfile.write("OS write to directory test.")
+            logger.info(f"Created temp file in {dir_path}")
     except (OSError, IOError) as e:
         logger.error(e)
         return False
