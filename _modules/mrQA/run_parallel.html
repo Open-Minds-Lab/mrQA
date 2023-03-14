@@ -1,0 +1,445 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>mrQA.run_parallel &mdash; mrQA 0.2+127.g68bee9e.dirty documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> mrQA
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2+127.g68bee9e.dirty
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">mrQA : automatic protocol compliance checks on MR datasets</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../API.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../authors.html">Credits</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">mrQA</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>mrQA.run_parallel</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for mrQA.run_parallel</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; This module contains functions to run the compliance checks in parallel&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">MRdataset.config</span> <span class="kn">import</span> <span class="n">MRDS_EXT</span>
+<span class="kn">from</span> <span class="nn">MRdataset.utils</span> <span class="kn">import</span> <span class="n">valid_paths</span>
+
+<span class="kn">from</span> <span class="nn">mrQA.parallel_utils</span> <span class="kn">import</span> <span class="n">_check_args</span><span class="p">,</span> <span class="n">_make_file_folders</span><span class="p">,</span> \
+    <span class="n">_run_single_batch</span><span class="p">,</span> <span class="n">_create_slurm_script</span><span class="p">,</span> <span class="n">_get_num_workers</span><span class="p">,</span> <span class="n">_get_subject_ids</span>
+<span class="kn">from</span> <span class="nn">mrQA.run_merge</span> <span class="kn">import</span> <span class="n">check_and_merge</span>
+<span class="kn">from</span> <span class="nn">mrQA.utils</span> <span class="kn">import</span> <span class="n">list2txt</span><span class="p">,</span> <span class="n">split_list</span><span class="p">,</span> \
+    <span class="n">txt2list</span>
+
+
+<div class="viewcode-block" id="process_parallel"><a class="viewcode-back" href="../../API.html#mrQA.run_parallel.process_parallel">[docs]</a><span class="k">def</span> <span class="nf">process_parallel</span><span class="p">(</span><span class="n">data_source</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+                     <span class="n">output_dir</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+                     <span class="n">output_path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+                     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given a folder(or List[folder]) it will divide the work into smaller</span>
+<span class="sd">    jobs. Each job will contain a fixed number of subjects. These jobs can be</span>
+<span class="sd">    executed in parallel to save time.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data_source: str or Path</span>
+<span class="sd">        Path to the folder containing the subject folders</span>
+<span class="sd">    output_dir: str or Path</span>
+<span class="sd">        Path to the folder where the output will be saved</span>
+<span class="sd">    output_path: str or Path</span>
+<span class="sd">        Path to the folder where the final output will be saved</span>
+<span class="sd">    name: str</span>
+<span class="sd">        Name of the final output file</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># One function to process them all!</span>
+    <span class="c1"># note that it will generate scripts only</span>
+    <span class="n">script_list_filepath</span><span class="p">,</span> <span class="n">mrds_list_filepath</span> <span class="o">=</span> <span class="n">create_script</span><span class="p">(</span>
+        <span class="n">data_source</span><span class="o">=</span><span class="n">data_source</span><span class="p">,</span>
+        <span class="n">subjects_per_job</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+        <span class="n">conda_env</span><span class="o">=</span><span class="s1">&#39;mrcheck&#39;</span><span class="p">,</span>
+        <span class="n">conda_dist</span><span class="o">=</span><span class="s1">&#39;anaconda3&#39;</span><span class="p">,</span>
+        <span class="n">output_dir</span><span class="o">=</span><span class="n">output_dir</span><span class="p">,</span>
+        <span class="n">hpc</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="c1"># Generate slurm scripts and submit jobs, for local parallel processing</span>
+    <span class="n">submit_job</span><span class="p">(</span><span class="n">scripts_list_filepath</span><span class="o">=</span><span class="n">script_list_filepath</span><span class="p">,</span>
+               <span class="n">mrds_list_filepath</span><span class="o">=</span><span class="n">mrds_list_filepath</span><span class="p">,</span>
+               <span class="n">hpc</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># wait until processing completes</span>
+    <span class="n">mrds_files</span> <span class="o">=</span> <span class="n">valid_paths</span><span class="p">(</span><span class="n">txt2list</span><span class="p">(</span><span class="n">mrds_list_filepath</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">mrds_files</span><span class="p">:</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+
+    <span class="n">check_and_merge</span><span class="p">(</span>
+        <span class="n">mrds_list_filepath</span><span class="o">=</span><span class="n">mrds_list_filepath</span><span class="p">,</span>
+        <span class="n">output_path</span><span class="o">=</span><span class="n">output_path</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">name</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="submit_job"><a class="viewcode-back" href="../../API.html#mrQA.run_parallel.submit_job">[docs]</a><span class="k">def</span> <span class="nf">submit_job</span><span class="p">(</span><span class="n">scripts_list_filepath</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+               <span class="n">mrds_list_filepath</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+               <span class="n">hpc</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given a folder(or List[folder]) it will divide the work into smaller</span>
+<span class="sd">    jobs. Each job will contain a fixed number of subjects. These jobs can be</span>
+<span class="sd">    executed in parallel to save time.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    scripts_list_filepath: str</span>
+<span class="sd">        Path to the file containing list of bash scripts to be executed</span>
+<span class="sd">    mrds_list_filepath: str</span>
+<span class="sd">        Path to the file containing list of partial mrds files to be created</span>
+<span class="sd">    hpc: bool</span>
+<span class="sd">        If True, the scripts will be generated for HPC, not for local execution</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">bash_scripts</span> <span class="o">=</span> <span class="n">valid_paths</span><span class="p">(</span><span class="n">txt2list</span><span class="p">(</span><span class="n">scripts_list_filepath</span><span class="p">))</span>
+    <span class="n">mrds_files</span> <span class="o">=</span> <span class="n">txt2list</span><span class="p">(</span><span class="n">mrds_list_filepath</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">script_path</span><span class="p">,</span> <span class="n">output_mrds_path</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">bash_scripts</span><span class="p">,</span> <span class="n">mrds_files</span><span class="p">):</span>
+        <span class="c1"># Run the script file</span>
+        <span class="n">_run_single_batch</span><span class="p">(</span><span class="n">script_path</span><span class="o">=</span><span class="n">script_path</span><span class="p">,</span>
+                          <span class="n">hpc</span><span class="o">=</span><span class="n">hpc</span><span class="p">,</span>
+                          <span class="n">output_mrds_path</span><span class="o">=</span><span class="n">output_mrds_path</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="create_script"><a class="viewcode-back" href="../../API.html#mrQA.run_parallel.create_script">[docs]</a><span class="k">def</span> <span class="nf">create_script</span><span class="p">(</span><span class="n">data_source</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                  <span class="n">style</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;dicom&#39;</span><span class="p">,</span>
+                  <span class="n">include_phantom</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                  <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                  <span class="n">output_dir</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                  <span class="n">debug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                  <span class="n">subjects_per_job</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                  <span class="n">hpc</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                  <span class="n">conda_dist</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                  <span class="n">conda_env</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given a folder(or List[folder]) it will divide the work into smaller</span>
+<span class="sd">    jobs. Each job will contain a fixed number of subjects. These jobs can be</span>
+<span class="sd">    executed in parallel to save time.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data_source: str or List[str]</span>
+<span class="sd">        /path/to/my/dataset containing files</span>
+<span class="sd">    style: str</span>
+<span class="sd">        Specify dataset type. Use one of [dicom]</span>
+<span class="sd">    include_phantom: bool</span>
+<span class="sd">        Include phantom scans in the dataset</span>
+<span class="sd">    verbose: bool</span>
+<span class="sd">        Print progress</span>
+<span class="sd">    output_dir: str</span>
+<span class="sd">        Path to save the output dataset</span>
+<span class="sd">    debug: bool</span>
+<span class="sd">        If True, the dataset will be created locally. This is useful for testing</span>
+<span class="sd">    subjects_per_job: int</span>
+<span class="sd">        Number of subjects per job. Recommended value is 50 or 100</span>
+<span class="sd">    hpc: bool</span>
+<span class="sd">        If True, the scripts will be generated for HPC, not for local execution</span>
+<span class="sd">    conda_dist: str</span>
+<span class="sd">        Name of conda distribution</span>
+<span class="sd">    conda_env: str</span>
+<span class="sd">        Name of conda environment</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">data_src</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">dist</span> <span class="o">=</span> <span class="n">_check_args</span><span class="p">(</span><span class="n">data_source</span><span class="p">,</span> <span class="n">style</span><span class="p">,</span>
+                                                  <span class="n">output_dir</span><span class="p">,</span> <span class="n">debug</span><span class="p">,</span>
+                                                  <span class="n">subjects_per_job</span><span class="p">,</span> <span class="n">hpc</span><span class="p">,</span>
+                                                  <span class="n">conda_dist</span><span class="p">,</span> <span class="n">conda_env</span><span class="p">)</span>
+    <span class="n">folder_paths</span><span class="p">,</span> <span class="n">files_per_batch</span><span class="p">,</span> <span class="n">all_ids_path</span> <span class="o">=</span> <span class="n">_make_file_folders</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span>
+    <span class="n">ids_path_list</span> <span class="o">=</span> <span class="n">split_ids_list</span><span class="p">(</span>
+        <span class="n">data_src</span><span class="p">,</span>
+        <span class="n">all_ids_path</span><span class="o">=</span><span class="n">all_ids_path</span><span class="p">,</span>
+        <span class="n">per_batch_ids</span><span class="o">=</span><span class="n">files_per_batch</span><span class="p">[</span><span class="s1">&#39;ids&#39;</span><span class="p">],</span>
+        <span class="n">output_dir</span><span class="o">=</span><span class="n">folder_paths</span><span class="p">[</span><span class="s1">&#39;ids&#39;</span><span class="p">],</span>
+        <span class="n">subjects_per_job</span><span class="o">=</span><span class="n">subjects_per_job</span>
+    <span class="p">)</span>
+
+    <span class="n">scripts_path_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">mrds_path_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># create a slurm job script for each sub_group of subject ids</span>
+    <span class="k">for</span> <span class="n">ids_filepath</span> <span class="ow">in</span> <span class="n">ids_path_list</span><span class="p">:</span>
+        <span class="c1"># Filename of the bash script should be same as text file.</span>
+        <span class="c1"># Say batch0000.txt points to set of 10 subjects. Then create a</span>
+        <span class="c1"># slurm script file batch0000.sh which will run for these 10 subjects,</span>
+        <span class="c1"># and the final partial mrds pickle file will have the name</span>
+        <span class="c1"># batch0000.mrds.pkl</span>
+        <span class="n">script_filename</span> <span class="o">=</span> <span class="n">ids_filepath</span><span class="o">.</span><span class="n">stem</span> <span class="o">+</span> <span class="s1">&#39;.sh&#39;</span>
+        <span class="n">partial_mrds_filename</span> <span class="o">=</span> <span class="n">ids_filepath</span><span class="o">.</span><span class="n">stem</span> <span class="o">+</span> <span class="n">MRDS_EXT</span>
+        <span class="n">script_filepath</span> <span class="o">=</span> <span class="n">folder_paths</span><span class="p">[</span><span class="s1">&#39;scripts&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">script_filename</span>
+        <span class="n">partial_mrds_filepath</span> <span class="o">=</span> <span class="n">folder_paths</span><span class="p">[</span><span class="s1">&#39;mrds&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">partial_mrds_filename</span>
+
+        <span class="c1"># Keep storing the filenames. The entire list would be saved at the end</span>
+        <span class="n">scripts_path_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">script_filepath</span><span class="p">)</span>
+        <span class="n">mrds_path_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">partial_mrds_filepath</span><span class="p">)</span>
+
+        <span class="c1"># Finally create the slurm script and save to disk</span>
+        <span class="n">_create_slurm_script</span><span class="p">(</span><span class="n">output_script_path</span><span class="o">=</span><span class="n">script_filepath</span><span class="p">,</span>
+                             <span class="n">ids_filepath</span><span class="o">=</span><span class="n">ids_filepath</span><span class="p">,</span>
+                             <span class="n">env</span><span class="o">=</span><span class="n">conda_env</span><span class="p">,</span>
+                             <span class="n">conda_dist</span><span class="o">=</span><span class="n">conda_dist</span><span class="p">,</span>
+                             <span class="n">num_subj_per_job</span><span class="o">=</span><span class="n">subjects_per_job</span><span class="p">,</span>
+                             <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+                             <span class="n">include_phantom</span><span class="o">=</span><span class="n">include_phantom</span><span class="p">,</span>
+                             <span class="n">output_mrds_path</span><span class="o">=</span><span class="n">partial_mrds_filepath</span><span class="p">)</span>
+
+    <span class="c1"># Finally, save the all the paths to create mrds pickle files and all the</span>
+    <span class="c1"># paths to generated scripts in a text file for reference.</span>
+    <span class="n">list2txt</span><span class="p">(</span><span class="n">fpath</span><span class="o">=</span><span class="n">files_per_batch</span><span class="p">[</span><span class="s1">&#39;mrds&#39;</span><span class="p">],</span> <span class="n">list_</span><span class="o">=</span><span class="n">mrds_path_list</span><span class="p">)</span>
+    <span class="n">list2txt</span><span class="p">(</span><span class="n">fpath</span><span class="o">=</span><span class="n">files_per_batch</span><span class="p">[</span><span class="s1">&#39;scripts&#39;</span><span class="p">],</span> <span class="n">list_</span><span class="o">=</span><span class="n">scripts_path_list</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">files_per_batch</span><span class="p">[</span><span class="s1">&#39;scripts&#39;</span><span class="p">],</span> <span class="n">files_per_batch</span><span class="p">[</span><span class="s1">&#39;mrds&#39;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="split_ids_list"><a class="viewcode-back" href="../../API.html#mrQA.run_parallel.split_ids_list">[docs]</a><span class="k">def</span> <span class="nf">split_ids_list</span><span class="p">(</span><span class="n">data_source</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+                   <span class="n">all_ids_path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+                   <span class="n">per_batch_ids</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+                   <span class="n">output_dir</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+                   <span class="n">subjects_per_job</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Splits a given set of subjects into multiple jobs and creates separate</span>
+<span class="sd">    text files containing the list of subjects. Each text file</span>
+<span class="sd">    contains the list of subjects to be processed in a single job.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data_source : Union[str, Path]</span>
+<span class="sd">        Path to the root directory of the data</span>
+<span class="sd">    all_ids_path : Union[str, Path]</span>
+<span class="sd">        Path to the output directory</span>
+<span class="sd">    per_batch_ids : Union[str, Path]</span>
+<span class="sd">        filepath to a file which has paths to all txt files for all jobs.</span>
+<span class="sd">        Each of these txt files contains a list of subject ids for</span>
+<span class="sd">        corresponding job.</span>
+<span class="sd">    output_dir : Union[str, Path]</span>
+<span class="sd">        Name of the output directory</span>
+<span class="sd">    subjects_per_job : int</span>
+<span class="sd">        Number of subjects to process in each job</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    batch_ids_path_list : list</span>
+<span class="sd">        Paths to the text files, each containing a list of subjects</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">all_ids_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">all_ids_path</span><span class="p">)</span>
+    <span class="c1"># List of paths to the txt files,</span>
+    <span class="c1"># each containing the list of subjects per job</span>
+    <span class="n">batch_ids_path_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">subject_list</span> <span class="o">=</span> <span class="n">_get_subject_ids</span><span class="p">(</span><span class="n">data_source</span><span class="p">,</span> <span class="n">all_ids_path</span><span class="p">)</span>
+    <span class="c1"># Get the list of subjects for each job</span>
+    <span class="n">workers</span> <span class="o">=</span> <span class="n">_get_num_workers</span><span class="p">(</span><span class="n">subjects_per_job</span><span class="p">,</span> <span class="n">subject_list</span><span class="p">)</span>
+    <span class="n">subject_subsets</span> <span class="o">=</span> <span class="n">split_list</span><span class="p">(</span><span class="n">subject_list</span><span class="p">,</span> <span class="n">num_chunks</span><span class="o">=</span><span class="n">workers</span><span class="p">)</span>
+
+    <span class="c1"># Create a text file for each job</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">subset</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">subject_subsets</span><span class="p">):</span>
+        <span class="c1"># Create a text file containing the list of subjects for each job</span>
+        <span class="n">batch_filepath</span> <span class="o">=</span> <span class="n">output_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;batch</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s1">04</span><span class="si">}</span><span class="s1">.txt&#39;</span>
+        <span class="c1"># Store to the path given to the text file</span>
+        <span class="n">list2txt</span><span class="p">(</span><span class="n">batch_filepath</span><span class="p">,</span> <span class="n">subset</span><span class="p">)</span>
+        <span class="c1"># Add the path to the text file ( containing the</span>
+        <span class="c1"># list of subjects for each job) to a list, return the list</span>
+        <span class="n">batch_ids_path_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">batch_filepath</span><span class="p">)</span>
+    <span class="n">list2txt</span><span class="p">(</span><span class="n">fpath</span><span class="o">=</span><span class="n">per_batch_ids</span><span class="p">,</span> <span class="n">list_</span><span class="o">=</span><span class="n">batch_ids_path_list</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">batch_ids_path_list</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2023, Harsh Sinha.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

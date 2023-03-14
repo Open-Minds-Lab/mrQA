@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>mrQA : automatic protocol compliance checks on MR datasets &mdash; mrQA 0.2+127.g68bee9e.dirty documentation</title>
+  <title>CLI usage &mdash; mrQA 0.2+127.g68bee9e.dirty documentation</title>
   
 
   
@@ -41,8 +41,7 @@
 
     
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Installation" href="installation.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -56,7 +55,7 @@
           
 
           
-            <a href="#" class="icon icon-home"> mrQA
+            <a href="index.html" class="icon icon-home"> mrQA
           
 
           
@@ -91,8 +90,8 @@
               
             
             
-              <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">mrQA : automatic protocol compliance checks on MR datasets</a></li>
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">mrQA : automatic protocol compliance checks on MR datasets</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
@@ -114,7 +113,7 @@
       <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="#">mrQA</a>
+          <a href="index.html">mrQA</a>
         
       </nav>
 
@@ -145,16 +144,16 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="#" class="icon icon-home"></a> &raquo;</li>
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>mrQA : automatic protocol compliance checks on MR datasets</li>
+      <li>CLI usage</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
           
             
-              <a href="https://github.com/Open-Minds-Lab/mrQA/blob/master/docs/index.rst" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/Open-Minds-Lab/mrQA/blob/master/docs/usage.rst" class="fa fa-github"> Edit on GitHub</a>
             
           
         
@@ -168,20 +167,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="mrqa-automatic-protocol-compliance-checks-on-mr-datasets">
-<h1>mrQA : automatic protocol compliance checks on MR datasets<a class="headerlink" href="#mrqa-automatic-protocol-compliance-checks-on-mr-datasets" title="Permalink to this heading">¶</a></h1>
-<a class="reference external image-reference" href="https://pypi.python.org/pypi/mrQA"><img alt="https://img.shields.io/pypi/v/mrQA.svg" src="https://img.shields.io/pypi/v/mrQA.svg" /></a>
-<a class="reference external image-reference" href="https://travis-ci.com/Open-Minds-Lab/mrQA"><img alt="https://img.shields.io/travis/Open-Minds-Lab/mrQA.svg" src="https://img.shields.io/travis/Open-Minds-Lab/mrQA.svg" /></a>
-<a class="reference external image-reference" href="https://nbviewer.org/github/Open-Minds-Lab/mrQA/blob/master/examples/usage.ipynb"><img alt="https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg" src="https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg" /></a>
-<ul class="simple">
-<li><p>Documentation: <a class="reference external" href="https://open-minds-lab.github.io/mrQA/">https://open-minds-lab.github.io/mrQA/</a></p></li>
-</ul>
-<p>A tool for automatic evaluation of protocol compliance in MRI datasets. The tool analyzes MR acquisition data from DICOM headers and compares it against protocol to determine the level of compliance. It takes as input a dataset in DICOM/BIDS format. The tool outputs a compliance report in HTML format, with a percent compliance score for each protocol. The tool also outputs a JSON file with the compliance scores for each modality. In addition, it highlights any deviations from the protocol. The tool has been specifically created keeping radiologists in mind, but can be used by anyone who wants to evaluate that MR scans are acquired according to the pre-defined protocol and to minimize errors in acquisition process.</p>
-<p>Simple schematic of the library:</p>
-<img alt="_images/schematic_mrQA.png" src="_images/schematic_mrQA.png" />
-<p><code class="docutils literal notranslate"><span class="pre">mrQA</span></code> uses <code class="docutils literal notranslate"><span class="pre">MRDataset</span></code> to efficiently parse various neuroimaging dataset formats, which is available <a class="reference external" href="github.com/Open-Minds-Lab/MRdataset">here</a>.</p>
-<div class="section" id="cli-usage">
-<h2>CLI usage<a class="headerlink" href="#cli-usage" title="Permalink to this heading">¶</a></h2>
+  <div class="section" id="cli-usage">
+<h1>CLI usage<a class="headerlink" href="#cli-usage" title="Permalink to this heading">¶</a></h1>
 <p>A protocol compliance report can be generated directly from the command line
 interface.  The following is an example of generating a protocol compliance report</p>
 <p>For a DICOM dataset:</p>
@@ -194,7 +181,7 @@ interface.  The following is an example of generating a protocol compliance repo
 </div>
 </div>
 <div class="section" id="api-tutorial">
-<h2>API Tutorial<a class="headerlink" href="#api-tutorial" title="Permalink to this heading">¶</a></h2>
+<h1>API Tutorial<a class="headerlink" href="#api-tutorial" title="Permalink to this heading">¶</a></h1>
 <p>The following is a tutorial for using the API to generate a protocol compliance.
 The tutorial assumes that the user has a access to dummy dataset included with
 the    <cite>mrQA</cite> package.
@@ -203,37 +190,12 @@ tutorial will use the <cite>mrQA</cite> package to generate a protocol complianc
 for the dataset.</p>
 <p><a class="reference external" href="https://nbviewer.org/github/Open-Minds-Lab/mrQA/blob/master/examples/usage.ipynb">https://nbviewer.org/github/Open-Minds-Lab/mrQA/blob/master/examples/usage.ipynb</a></p>
 </div>
-<div class="section" id="further">
-<h2>Further<a class="headerlink" href="#further" title="Permalink to this heading">¶</a></h2>
-<div class="toctree-wrapper compound">
-</div>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="API.html">API Reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
-</ul>
-</div>
-</div>
-<div class="section" id="indices-and-tables">
-<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this heading">¶</a></h2>
-<ul class="simple">
-<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
-<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
-<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
-</ul>
-</div>
-</div>
 
 
            </div>
            
           </div>
           <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
 
   <hr/>
 
