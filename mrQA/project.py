@@ -131,7 +131,7 @@ def compare_with_majority(dataset: BaseDataset,
 
 
 def generate_report(dataset: BaseDataset,
-                    report_path: str,
+                    report_path: str or Path,
                     sub_lists_dir_path: str,
                     output_dir: Union[Path, str]) -> Path:
     """
@@ -171,4 +171,4 @@ def generate_report(dataset: BaseDataset,
         # 'time': time_dict
     }
     HtmlFormatter(filepath=report_path, params=args)
-    return report_path
+    return Path(report_path)

@@ -7,12 +7,17 @@ mrQA : automatic protocol compliance checks on MR datasets
 
 Further
 -------
+.. toctree::
+    :hidden:
+
+    self
 
 .. toctree::
    :maxdepth: 1
 
 
    installation
+   examples
    API
    contributing
    authors
