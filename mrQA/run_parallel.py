@@ -95,8 +95,12 @@ def parse_args():
 
 def process_parallel(data_source: Union[str, Path],
                      output_dir: Union[str, Path],
-                     output_path: Union[str, Path],
-                     name: str = None):
+                     out_mrds_path: Union[str, Path],
+                     name: str = None,
+                     subjects_per_job: int = 5,
+                     conda_env: str = 'mrcheck',
+                     conda_dist: str = 'anaconda3',
+                     hpc: bool = False):
     """
     Given a folder(or List[folder]) it will divide the work into smaller
     jobs. Each job will contain a fixed number of subjects. These jobs can be
@@ -108,26 +112,33 @@ def process_parallel(data_source: Union[str, Path],
         Path to the folder containing the subject folders
     output_dir: str or Path
         Path to the folder where the output will be saved
-    output_path: str or Path
-        Path to the folder where the final output will be saved
+    out_mrds_path: str or Path
+        Path to the final output mrds file
     name: str
         Name of the final output file
-
+    subjects_per_job: int
+        Number of subjects to be processed in each job
+    conda_env: str
+        Name of the conda environment to be used
+    conda_dist: str
+        Name of the conda distribution to be used
+    hpc: bool
+        Whether to use HPC or not
     """
     # One function to process them all!
     # note that it will generate scripts only
     script_list_filepath, mrds_list_filepath = create_script(
         data_source=data_source,
-        subjects_per_job=5,
-        conda_env='mrcheck',
-        conda_dist='anaconda3',
+        subjects_per_job=subjects_per_job,
+        conda_env=conda_env,
+        conda_dist=conda_dist,
         output_dir=output_dir,
-        hpc=False,
+        hpc=hpc,
     )
     # Generate slurm scripts and submit jobs, for local parallel processing
     submit_job(scripts_list_filepath=script_list_filepath,
                mrds_list_filepath=mrds_list_filepath,
-               hpc=False)
+               hpc=hpc)
 
     # wait until processing completes
     mrds_files = valid_paths(txt2list(mrds_list_filepath))
@@ -137,7 +148,7 @@ def process_parallel(data_source: Union[str, Path],
 
     check_and_merge(
         mrds_list_filepath=mrds_list_filepath,
-        output_path=output_path,
+        output_path=out_mrds_path,
         name=name
     )
 
