@@ -1,16 +1,96 @@
 """ This module contains functions to run the compliance checks in parallel"""
+import argparse
+import sys
 import time
 from pathlib import Path
 from typing import Iterable, Union
 
 from MRdataset.config import MRDS_EXT
-from MRdataset.utils import valid_paths
+from MRdataset.log import logger
+from MRdataset.utils import valid_paths, is_writable
 
+from mrQA.config import PATH_CONFIG
 from mrQA.parallel_utils import _check_args, _make_file_folders, \
     _run_single_batch, _create_slurm_script, _get_num_workers, _get_subject_ids
 from mrQA.run_merge import check_and_merge
 from mrQA.utils import list2txt, split_list, \
     txt2list
+
+
+def get_parser():
+    parser = argparse.ArgumentParser(
+        description='Parallelize the mrQA compliance checks',
+        add_help=False
+    )
+
+    required = parser.add_argument_group('required arguments')
+    optional = parser.add_argument_group('optional arguments')
+
+    # Add help
+    optional.add_argument('-h', '--help', action='help',
+                          help='show this help message and exit')
+    required.add_argument('-d', '--data-source', nargs='+', required=True,
+                          help='directory containing downloaded dataset with '
+                               'dicom files, supports nested hierarchies')
+    optional.add_argument('-o', '--output-dir', type=str,
+                          help='specify the directory where the report'
+                               ' would be saved. By default, the --data_source '
+                               'directory will be used to save reports')
+    optional.add_argument('-p', '--out-mrds-path', type=str,
+                          help='specify the path to the output mrds file. ')
+    optional.add_argument('-n', '--name', type=str,
+                          help='provide a identifier/name for the dataset')
+    optional.add_argument('-s', '--subjects-per-job', type=int, default=5,
+                          help='number of subjects to process per job')
+    optional.add_argument('-e', '--conda-env', type=str, default='mrcheck',
+                          help='name of conda environment to use')
+    optional.add_argument('-c', '--conda-dist', type=str, default='anaconda3',
+                          help='name of conda distribution to use')
+    optional.add_argument('-H', '--hpc', action='store_true',
+                          help='flag to run on HPC')
+    if len(sys.argv) < 2:
+        logger.critical('Too few arguments!')
+        parser.print_help()
+        parser.exit(1)
+
+    return parser
+
+
+def main():
+    args = parse_args()
+    process_parallel(data_source=args.data_source,
+                     output_dir=args.output_dir,
+                     out_mrds_path=args.out_mrds_path,
+                     name=args.name,
+                     subjects_per_job=args.subjects_per_job,
+                     conda_env=args.conda_env,
+                     conda_dist=args.conda_dist,
+                     hpc=args.hpc)
+
+
+def parse_args():
+    parser = get_parser()
+    args = parser.parse_args()
+
+    if args.verbose:
+        logger.setLevel('INFO')
+    else:
+        logger.setLevel('WARNING')
+
+    if args.output_dir is None:
+        logger.info('Use --output-dir to specify dir for final directory. '
+                    'Using default')
+        args.output_dir = PATH_CONFIG['output_dir'] / args.name.lower()
+    else:
+        if not Path(args.output_dir).is_dir():
+            try:
+                Path(args.output_dir).mkdir(parents=True, exist_ok=True)
+            except OSError as exc:
+                raise exc
+
+    if not is_writable(args.output_dir):
+        raise OSError(f'Output Folder {args.output_dir} is not writable')
+    return args
 
 
 def process_parallel(data_source: Union[str, Path],
