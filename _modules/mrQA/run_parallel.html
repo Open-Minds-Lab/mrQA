@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>mrQA.run_parallel &mdash; mrQA 0+untagged.800.g5f15e24 documentation</title>
+  <title>mrQA.run_parallel &mdash; mrQA 0+untagged.805.g3de32ec documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -32,7 +32,7 @@
             mrQA
           </a>
               <div class="version">
-                0+untagged.800.g5f15e24
+                0+untagged.805.g3de32ec
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -79,24 +79,115 @@
              
   <h1>Source code for mrQA.run_parallel</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot; This module contains functions to run the compliance checks in parallel&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Union</span>
 
+<span class="kn">from</span> <span class="nn">MRdataset</span> <span class="kn">import</span> <span class="n">load_mr_dataset</span>
 <span class="kn">from</span> <span class="nn">MRdataset.config</span> <span class="kn">import</span> <span class="n">MRDS_EXT</span>
-<span class="kn">from</span> <span class="nn">MRdataset.utils</span> <span class="kn">import</span> <span class="n">valid_paths</span>
+<span class="kn">from</span> <span class="nn">MRdataset.log</span> <span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">MRdataset.utils</span> <span class="kn">import</span> <span class="n">valid_paths</span><span class="p">,</span> <span class="n">is_writable</span>
 
+<span class="kn">from</span> <span class="nn">mrQA.config</span> <span class="kn">import</span> <span class="n">PATH_CONFIG</span>
 <span class="kn">from</span> <span class="nn">mrQA.parallel_utils</span> <span class="kn">import</span> <span class="n">_check_args</span><span class="p">,</span> <span class="n">_make_file_folders</span><span class="p">,</span> \
     <span class="n">_run_single_batch</span><span class="p">,</span> <span class="n">_create_slurm_script</span><span class="p">,</span> <span class="n">_get_num_workers</span><span class="p">,</span> <span class="n">_get_subject_ids</span>
 <span class="kn">from</span> <span class="nn">mrQA.run_merge</span> <span class="kn">import</span> <span class="n">check_and_merge</span>
 <span class="kn">from</span> <span class="nn">mrQA.utils</span> <span class="kn">import</span> <span class="n">list2txt</span><span class="p">,</span> <span class="n">split_list</span><span class="p">,</span> \
     <span class="n">txt2list</span>
+<span class="kn">from</span> <span class="nn">mrQA</span> <span class="kn">import</span> <span class="n">check_compliance</span>
+
+
+<div class="viewcode-block" id="get_parser"><a class="viewcode-back" href="../../API.html#mrQA.run_parallel.get_parser">[docs]</a><span class="k">def</span> <span class="nf">get_parser</span><span class="p">():</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Parallelize the mrQA compliance checks&#39;</span><span class="p">,</span>
+        <span class="n">add_help</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span>
+
+    <span class="n">required</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s1">&#39;required arguments&#39;</span><span class="p">)</span>
+    <span class="n">optional</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s1">&#39;optional arguments&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Add help</span>
+    <span class="n">optional</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-h&#39;</span><span class="p">,</span> <span class="s1">&#39;--help&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;help&#39;</span><span class="p">,</span>
+                          <span class="n">help</span><span class="o">=</span><span class="s1">&#39;show this help message and exit&#39;</span><span class="p">)</span>
+    <span class="n">required</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-d&#39;</span><span class="p">,</span> <span class="s1">&#39;--data-source&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                          <span class="n">help</span><span class="o">=</span><span class="s1">&#39;directory containing downloaded dataset with &#39;</span>
+                               <span class="s1">&#39;dicom files, supports nested hierarchies&#39;</span><span class="p">)</span>
+    <span class="n">optional</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="s1">&#39;--output-dir&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                          <span class="n">help</span><span class="o">=</span><span class="s1">&#39;specify the directory where the report&#39;</span>
+                               <span class="s1">&#39; would be saved. By default, the --data_source &#39;</span>
+                               <span class="s1">&#39;directory will be used to save reports&#39;</span><span class="p">)</span>
+    <span class="n">optional</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-p&#39;</span><span class="p">,</span> <span class="s1">&#39;--out-mrds-path&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                          <span class="n">help</span><span class="o">=</span><span class="s1">&#39;specify the path to the output mrds file. &#39;</span><span class="p">)</span>
+    <span class="n">optional</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-n&#39;</span><span class="p">,</span> <span class="s1">&#39;--name&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                          <span class="n">help</span><span class="o">=</span><span class="s1">&#39;provide a identifier/name for the dataset&#39;</span><span class="p">)</span>
+    <span class="n">optional</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-s&#39;</span><span class="p">,</span> <span class="s1">&#39;--subjects-per-job&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                          <span class="n">help</span><span class="o">=</span><span class="s1">&#39;number of subjects to process per job&#39;</span><span class="p">)</span>
+    <span class="n">optional</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-e&#39;</span><span class="p">,</span> <span class="s1">&#39;--conda-env&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;mrcheck&#39;</span><span class="p">,</span>
+                          <span class="n">help</span><span class="o">=</span><span class="s1">&#39;name of conda environment to use&#39;</span><span class="p">)</span>
+    <span class="n">optional</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-c&#39;</span><span class="p">,</span> <span class="s1">&#39;--conda-dist&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;anaconda3&#39;</span><span class="p">,</span>
+                          <span class="n">help</span><span class="o">=</span><span class="s1">&#39;name of conda distribution to use&#39;</span><span class="p">)</span>
+    <span class="n">optional</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-H&#39;</span><span class="p">,</span> <span class="s1">&#39;--hpc&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span>
+                          <span class="n">help</span><span class="o">=</span><span class="s1">&#39;flag to run on HPC&#39;</span><span class="p">)</span>
+    <span class="n">optional</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-v&#39;</span><span class="p">,</span> <span class="s1">&#39;--verbose&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span>
+                          <span class="n">help</span><span class="o">=</span><span class="s1">&#39;allow verbose output on console&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s1">&#39;Too few arguments!&#39;</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">print_help</span><span class="p">()</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">parser</span></div>
+
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../API.html#mrQA.run_parallel.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parse_args</span><span class="p">()</span>
+    <span class="n">process_parallel</span><span class="p">(</span><span class="n">data_source</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">data_source</span><span class="p">,</span>
+                     <span class="n">output_dir</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span>
+                     <span class="n">out_mrds_path</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">out_mrds_path</span><span class="p">,</span>
+                     <span class="n">name</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                     <span class="n">subjects_per_job</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">subjects_per_job</span><span class="p">,</span>
+                     <span class="n">conda_env</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">conda_env</span><span class="p">,</span>
+                     <span class="n">conda_dist</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">conda_dist</span><span class="p">,</span>
+                     <span class="n">hpc</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">hpc</span><span class="p">)</span>
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">load_mr_dataset</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">out_mrds_path</span><span class="p">)</span>
+    <span class="n">check_compliance</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
+                     <span class="n">output_dir</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="parse_args"><a class="viewcode-back" href="../../API.html#mrQA.run_parallel.parse_args">[docs]</a><span class="k">def</span> <span class="nf">parse_args</span><span class="p">():</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">get_parser</span><span class="p">()</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="s1">&#39;INFO&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="s1">&#39;WARNING&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">output_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Use --output-dir to specify dir for final directory. &#39;</span>
+                    <span class="s1">&#39;Using default&#39;</span><span class="p">)</span>
+        <span class="n">args</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">=</span> <span class="n">PATH_CONFIG</span><span class="p">[</span><span class="s1">&#39;output_dir&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">exc</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_writable</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">output_dir</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">OSError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Output Folder </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">output_dir</span><span class="si">}</span><span class="s1"> is not writable&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">args</span></div>
 
 
 <div class="viewcode-block" id="process_parallel"><a class="viewcode-back" href="../../API.html#mrQA.run_parallel.process_parallel">[docs]</a><span class="k">def</span> <span class="nf">process_parallel</span><span class="p">(</span><span class="n">data_source</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
                      <span class="n">output_dir</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
-                     <span class="n">output_path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
-                     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+                     <span class="n">out_mrds_path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+                     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                     <span class="n">subjects_per_job</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+                     <span class="n">conda_env</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;mrcheck&#39;</span><span class="p">,</span>
+                     <span class="n">conda_dist</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;anaconda3&#39;</span><span class="p">,</span>
+                     <span class="n">hpc</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Given a folder(or List[folder]) it will divide the work into smaller</span>
 <span class="sd">    jobs. Each job will contain a fixed number of subjects. These jobs can be</span>
@@ -108,36 +199,43 @@
 <span class="sd">        Path to the folder containing the subject folders</span>
 <span class="sd">    output_dir: str or Path</span>
 <span class="sd">        Path to the folder where the output will be saved</span>
-<span class="sd">    output_path: str or Path</span>
-<span class="sd">        Path to the folder where the final output will be saved</span>
+<span class="sd">    out_mrds_path: str or Path</span>
+<span class="sd">        Path to the final output mrds file</span>
 <span class="sd">    name: str</span>
 <span class="sd">        Name of the final output file</span>
-
+<span class="sd">    subjects_per_job: int</span>
+<span class="sd">        Number of subjects to be processed in each job</span>
+<span class="sd">    conda_env: str</span>
+<span class="sd">        Name of the conda environment to be used</span>
+<span class="sd">    conda_dist: str</span>
+<span class="sd">        Name of the conda distribution to be used</span>
+<span class="sd">    hpc: bool</span>
+<span class="sd">        Whether to use HPC or not</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># One function to process them all!</span>
     <span class="c1"># note that it will generate scripts only</span>
     <span class="n">script_list_filepath</span><span class="p">,</span> <span class="n">mrds_list_filepath</span> <span class="o">=</span> <span class="n">create_script</span><span class="p">(</span>
         <span class="n">data_source</span><span class="o">=</span><span class="n">data_source</span><span class="p">,</span>
-        <span class="n">subjects_per_job</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
-        <span class="n">conda_env</span><span class="o">=</span><span class="s1">&#39;mrcheck&#39;</span><span class="p">,</span>
-        <span class="n">conda_dist</span><span class="o">=</span><span class="s1">&#39;anaconda3&#39;</span><span class="p">,</span>
+        <span class="n">subjects_per_job</span><span class="o">=</span><span class="n">subjects_per_job</span><span class="p">,</span>
+        <span class="n">conda_env</span><span class="o">=</span><span class="n">conda_env</span><span class="p">,</span>
+        <span class="n">conda_dist</span><span class="o">=</span><span class="n">conda_dist</span><span class="p">,</span>
         <span class="n">output_dir</span><span class="o">=</span><span class="n">output_dir</span><span class="p">,</span>
-        <span class="n">hpc</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">hpc</span><span class="o">=</span><span class="n">hpc</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="c1"># Generate slurm scripts and submit jobs, for local parallel processing</span>
     <span class="n">submit_job</span><span class="p">(</span><span class="n">scripts_list_filepath</span><span class="o">=</span><span class="n">script_list_filepath</span><span class="p">,</span>
                <span class="n">mrds_list_filepath</span><span class="o">=</span><span class="n">mrds_list_filepath</span><span class="p">,</span>
-               <span class="n">hpc</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+               <span class="n">hpc</span><span class="o">=</span><span class="n">hpc</span><span class="p">)</span>
 
     <span class="c1"># wait until processing completes</span>
-    <span class="n">mrds_files</span> <span class="o">=</span> <span class="n">valid_paths</span><span class="p">(</span><span class="n">txt2list</span><span class="p">(</span><span class="n">mrds_list_filepath</span><span class="p">))</span>
+    <span class="n">mrds_files</span> <span class="o">=</span> <span class="n">txt2list</span><span class="p">(</span><span class="n">mrds_list_filepath</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">mrds_files</span><span class="p">:</span>
-        <span class="k">while</span> <span class="ow">not</span> <span class="n">file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
             <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
 
     <span class="n">check_and_merge</span><span class="p">(</span>
         <span class="n">mrds_list_filepath</span><span class="o">=</span><span class="n">mrds_list_filepath</span><span class="p">,</span>
-        <span class="n">output_path</span><span class="o">=</span><span class="n">output_path</span><span class="p">,</span>
+        <span class="n">output_path</span><span class="o">=</span><span class="n">out_mrds_path</span><span class="p">,</span>
         <span class="n">name</span><span class="o">=</span><span class="n">name</span>
     <span class="p">)</span></div>
 
