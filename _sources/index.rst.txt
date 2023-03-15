@@ -17,6 +17,7 @@ Further
 
 
    installation
+   examples
    API
    contributing
    authors

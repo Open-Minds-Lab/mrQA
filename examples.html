@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Examples using API &mdash; mrQA 0+untagged.800.g5f15e24 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API Reference" href="API.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            mrQA
+          </a>
+              <div class="version">
+                0+untagged.800.g5f15e24
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">mrQA : automatic protocol compliance checks on MR datasets</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples using API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#general-use-case">General Use-Case</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#parallel-use-case">Parallel Use-Case</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#monitoring-use-case">Monitoring Use-Case</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">mrQA</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Examples using API</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/Open-Minds-Lab/mrQA/blob/master/docs/examples.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="examples-using-api">
+<h1>Examples using API<a class="headerlink" href="#examples-using-api" title="Permalink to this heading"></a></h1>
+<p>The API can be used in a variety of ways to analyze the dataset for generating
+compliance reports. The page describes three typical use-cases for the API</p>
+<section id="general-use-case">
+<h2>General Use-Case<a class="headerlink" href="#general-use-case" title="Permalink to this heading"></a></h2>
+<p>The most common use case for the API is to generate compliance reports for a single
+MRI dataset. In this scenario, a user would typically access the API through
+command-line interface or by writing python scripts. The user should provide the
+API with the location of the dataset, as well as any relevant metadata or
+additional arguments. The API would then analyze the dataset and generate a report
+indicating which modalities/subjects/sessions conform to the specified protocol</p>
+<p>On the CLI, specify the arguments as given below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mrqa</span> <span class="o">--</span><span class="n">data</span><span class="o">-</span><span class="n">source</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">dataset</span> <span class="o">--</span><span class="n">style</span> <span class="n">dicom</span> <span class="o">--</span><span class="n">name</span> <span class="n">my_dicom_dataset</span>
+</pre></div>
+</div>
+<p>To check for a BIDS dataset:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mrqa</span> <span class="o">--</span><span class="n">data</span><span class="o">-</span><span class="n">source</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">dataset</span> <span class="o">--</span><span class="n">style</span> <span class="n">bids</span> <span class="o">--</span><span class="n">name</span> <span class="n">my_bids_dataset</span>
+</pre></div>
+</div>
+<p>Similarly, in a python script:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">MRdataset</span> <span class="kn">import</span> <span class="n">import_dataset</span>
+<span class="kn">from</span> <span class="nn">mrQA</span> <span class="kn">import</span> <span class="n">check_compliance</span>
+
+<span class="n">data_folder</span> <span class="o">=</span> <span class="s2">&quot;/home/datasets/XYZ_dataset&quot;</span>
+<span class="n">output_dir</span> <span class="o">=</span> <span class="s1">&#39;/home/mr_reports/XYZ&#39;</span>
+
+<span class="n">dicom_dataset</span> <span class="o">=</span> <span class="n">import_dataset</span><span class="p">(</span><span class="n">data_source</span><span class="o">=</span><span class="n">data_folder</span><span class="p">,</span>
+                               <span class="n">style</span><span class="o">=</span><span class="s1">&#39;dicom&#39;</span><span class="p">,</span>
+                               <span class="n">name</span><span class="o">=</span><span class="s1">&#39;XYZ_study&#39;</span><span class="p">)</span>
+<span class="n">report_path</span> <span class="o">=</span> <span class="n">check_compliance</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">dicom_dataset</span><span class="p">,</span>
+                               <span class="n">output_dir</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To check for a BIDS dataset, use <cite>style</cite> argument:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bids_dataset</span> <span class="o">=</span> <span class="n">import_dataset</span><span class="p">(</span><span class="n">data_source</span><span class="o">=</span><span class="n">data_folder</span><span class="p">,</span>
+                               <span class="n">style</span><span class="o">=</span><span class="s1">&#39;bids&#39;</span><span class="p">,</span>
+                               <span class="n">name</span><span class="o">=</span><span class="s1">&#39;XYZ_study&#39;</span><span class="p">)</span>
+<span class="n">report_path</span> <span class="o">=</span> <span class="n">check_compliance</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">bids_dataset</span><span class="p">,</span>
+                               <span class="n">output_dir</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="parallel-use-case">
+<h2>Parallel Use-Case<a class="headerlink" href="#parallel-use-case" title="Permalink to this heading"></a></h2>
+<p>In some cases a user may need to generate compliance reports for a large MR-dataset.
+Processing large dicom datasets may be limited by disk reading speed, all the more
+when a user is accessing the data over a network. Typically, the
+API takes an hour to read 100 thousand .dcm files. In this scenario, we recommend
+that the user should split his dataset, and read it in parallel. Then the subsets
+can be merged to a single dataset and checked for compliance. The complete process
+is divided into three steps:</p>
+<ol class="arabic">
+<li><p>Create bash-scripts for each job</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">script_list_filepath</span><span class="p">,</span> <span class="n">mrds_list_filepath</span> <span class="o">=</span> <span class="n">create_script</span><span class="p">(</span>
+        <span class="n">data_source</span><span class="o">=</span><span class="n">data_source</span><span class="p">,</span>
+        <span class="n">subjects_per_job</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+        <span class="n">conda_env</span><span class="o">=</span><span class="s1">&#39;mrcheck&#39;</span><span class="p">,</span>
+        <span class="n">conda_dist</span><span class="o">=</span><span class="s1">&#39;anaconda3&#39;</span><span class="p">,</span>
+        <span class="n">output_dir</span><span class="o">=</span><span class="n">output_dir</span><span class="p">,</span>
+        <span class="n">hpc</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<p>This will generate two txt files: <cite>script_list_filepath</cite> and <cite>mrds_list_filepath</cite>.
+These files contain the paths to corresponding the bash-scripts and the mrds files for each job respectively.
+Note that you need to specify the number of subjects per job. This is the number of subjects that will be
+processed by each job. The number of jobs will be equal to the number of subjects divided by the number of
+subjects per job. For example, if you have 100 subjects and you want to process 5 subjects per job, then
+you will have 20 jobs. The <cite>conda_env</cite> and <cite>conda_dist</cite> arguments are required to activate the conda
+environment in the bash-script. The <cite>hpc</cite> argument is optional and is used to specify whether the jobs
+are to be run on a HPC or not.</p>
+<ol class="arabic" start="2">
+<li><p>Submit jobs/ Execute the generated scripts:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">submit_job</span><span class="p">(</span><span class="n">scripts_list_filepath</span><span class="o">=</span><span class="n">script_list_filepath</span><span class="p">,</span>
+           <span class="n">mrds_list_filepath</span><span class="o">=</span><span class="n">mrds_list_filepath</span><span class="p">,</span>
+           <span class="n">hpc</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<p>This will submit the jobs to the HPC or execute the scripts locally. The <cite>hpc</cite> argument is optional and
+is used to specify whether the jobs are to be run on a HPC or not. If <cite>hpc</cite> is False, then the scripts
+will be executed locally. If <cite>hpc</cite> is True, then the scripts will be submitted to the HPC, using <cite>sbatch</cite>.</p>
+<ol class="arabic" start="3">
+<li><p>Merge datasets and generate report:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">check_and_merge</span><span class="p">(</span>
+    <span class="n">mrds_list_filepath</span><span class="o">=</span><span class="n">mrds_list_filepath</span><span class="p">,</span>
+    <span class="n">output_path</span><span class="o">=</span><span class="n">output_path</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="n">name</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<p>This will merge the datasets generated by each job and generate a report. The <cite>mrds_list_filepath</cite> is
+the path to the txt file containing the paths to the mrds files for each job. The <cite>output_path</cite> is the
+path to the directory where the report will be saved. The <cite>name</cite> is the name of the dataset.</p>
+<p>On the CLI, the above steps can be executed as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mrqa_parallel</span> <span class="o">--</span><span class="n">data</span><span class="o">-</span><span class="n">source</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">dataset</span> <span class="o">--</span><span class="n">style</span> <span class="n">dicom</span> <span class="o">--</span><span class="n">name</span> <span class="n">my_dicom_dataset</span> <span class="o">--</span><span class="n">subjects</span><span class="o">-</span><span class="n">per</span><span class="o">-</span><span class="n">job</span> <span class="mi">5</span> <span class="o">--</span><span class="n">conda_env</span> <span class="n">mrcheck</span> <span class="o">--</span><span class="n">conda_dist</span> <span class="n">anaconda3</span> <span class="o">--</span><span class="n">output_dir</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">output_dir</span> <span class="o">--</span><span class="n">hpc</span> <span class="kc">False</span>
+</pre></div>
+</div>
+<p>Additional points to note:</p>
+<ul class="simple">
+<li><p>The recommended values for ‘subjects-per-job’ are 50-100, depending on the size of the dataset.</p></li>
+<li><p>The current framework was built for HPCs running SLURM. If you are using a different scheduler, you will need to modify the <cite>submit_job</cite> function in <cite>mrQA/run_parallel.py</cite> to submit jobs to your scheduler.</p></li>
+<li><p>The <cite>conda_env</cite> and <cite>conda_dist</cite> arguments are required to activate the conda environment in the bash-script. If you are not using conda, you can remove these arguments and the corresponding lines from the bash-script.</p></li>
+<li><p>The parallelization framework is currently only available for dicom datasets. We are working on adding support for BIDS datasets. In addition it was tested on the ABCD dataset, and we are working on testing it on other datasets.</p></li>
+<li><p>The subject list is generated by reading the folders with a prefix ‘sub-’ in the dataset. If your dataset does not follow this convention, you will need to modify the <cite>_get_subject_ids</cite> function in <cite>mrQA/parallel_utils.py</cite> to generate the subject list. The subject list is used to split the dataset into subsets, and to merge the subsets into a single dataset. We are working on relaxing this requirement.</p></li>
+<li><p>Reaching out to us with any questions or suggestions is always welcome.</p></li>
+</ul>
+</section>
+<section id="monitoring-use-case">
+<h2>Monitoring Use-Case<a class="headerlink" href="#monitoring-use-case" title="Permalink to this heading"></a></h2>
+<p>In some cases, a user may want to monitor the compliance of a dataset over time. For example,
+a user may want to check if the dataset is still compliant with the protocol after a new
+subject is added to the dataset. The user can use the API to generate
+a report for the dataset. If <cite>monitor</cite> method is executed again, the dataset is checked for any new files,
+and the report is updated accordingly. If any changes
+are detected, the user can generate a new report and compare it with the previous report.</p>
+<p>To monitor a dataset:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">monitor</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;my_dataset&#39;</span><span class="p">,</span>
+        <span class="n">data_source</span><span class="o">=</span><span class="s1">&#39;/path/to/dataset&#39;</span><span class="p">,</span>
+        <span class="n">output_dir</span><span class="o">=</span><span class="s1">&#39;/path/to/output_dir&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This will generate a report for the dataset and save it in the <cite>output_dir</cite>. The report name will also have a timestamp appended
+to it. The report will be saved in the <cite>output_dir</cite> as <cite>my_dataset_report_timestamp.html</cite>. The <cite>name</cite> argument is the name of
+the dataset. The <cite>data_source</cite> argument is the path to the dataset. The <cite>output_dir</cite> argument is the path to the directory
+where the report will be saved.</p>
+<p>On the CLI, the above steps can be executed as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mrqa_monitor</span> <span class="o">--</span><span class="n">name</span> <span class="n">my_dataset</span> <span class="o">--</span><span class="n">data</span><span class="o">-</span><span class="n">source</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">dataset</span> <span class="o">--</span><span class="n">output_dir</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">output_dir</span>
+</pre></div>
+</div>
+<p>Additional points to note:</p>
+<ul class="simple">
+<li><p>The <cite>name</cite> argument should be same if the user wants to monitor the same dataset. The files are saved in the <cite>output_dir</cite> with the name <cite>name_report_timestamp.html</cite>. If the <cite>name</cite> argument is different, then the files will be saved with a different name, and it would not be possible to monitor the dataset. If <cite>name</cite> argument is not provided, a random number is used as the name.</p></li>
+<li><p>The <cite>monitor</cite> function can be used to monitor dicom datasets only. We are working on adding support for BIDS datasets.</p></li>
+<li><p>We recommend that the user should run the <cite>monitor</cite> function at least once a day. This will ensure that the report is updated with any new files that are added to the dataset.</p></li>
+<li><p>Reaching out to us with any questions or suggestions is always welcome.</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="API.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Harsh Sinha.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
