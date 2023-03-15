@@ -5,6 +5,7 @@ import time
 from pathlib import Path
 from typing import Iterable, Union
 
+from MRdataset import load_mr_dataset
 from MRdataset.config import MRDS_EXT
 from MRdataset.log import logger
 from MRdataset.utils import valid_paths, is_writable
@@ -15,6 +16,7 @@ from mrQA.parallel_utils import _check_args, _make_file_folders, \
 from mrQA.run_merge import check_and_merge
 from mrQA.utils import list2txt, split_list, \
     txt2list
+from mrQA import check_compliance
 
 
 def get_parser():
@@ -29,7 +31,7 @@ def get_parser():
     # Add help
     optional.add_argument('-h', '--help', action='help',
                           help='show this help message and exit')
-    required.add_argument('-d', '--data-source', nargs='+', required=True,
+    required.add_argument('-d', '--data-source', type=str, required=True,
                           help='directory containing downloaded dataset with '
                                'dicom files, supports nested hierarchies')
     optional.add_argument('-o', '--output-dir', type=str,
@@ -48,6 +50,8 @@ def get_parser():
                           help='name of conda distribution to use')
     optional.add_argument('-H', '--hpc', action='store_true',
                           help='flag to run on HPC')
+    optional.add_argument('-v', '--verbose', action='store_true',
+                          help='allow verbose output on console')
     if len(sys.argv) < 2:
         logger.critical('Too few arguments!')
         parser.print_help()
@@ -66,6 +70,9 @@ def main():
                      conda_env=args.conda_env,
                      conda_dist=args.conda_dist,
                      hpc=args.hpc)
+    dataset = load_mr_dataset(args.out_mrds_path)
+    check_compliance(dataset=dataset,
+                     output_dir=args.output_dir)
 
 
 def parse_args():
@@ -141,9 +148,9 @@ def process_parallel(data_source: Union[str, Path],
                hpc=hpc)
 
     # wait until processing completes
-    mrds_files = valid_paths(txt2list(mrds_list_filepath))
+    mrds_files = txt2list(mrds_list_filepath)
     for file in mrds_files:
-        while not file.exists():
+        while not Path(file).exists():
             time.sleep(100)
 
     check_and_merge(

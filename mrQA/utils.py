@@ -309,9 +309,9 @@ def list2txt(fpath: Path, list_: list) -> None:
     """
     parent_dir = fpath.parent
     parent_dir.mkdir(parents=True, exist_ok=True)
-
+    list_str = [str(x) for x in list_]
     with open(fpath, 'w', encoding='utf-8') as fp:
-        fp.write('\n'.join(list_))
+        fp.write('\n'.join(list_str))
 
 
 def execute_local(script_path: str) -> None:
@@ -341,7 +341,9 @@ def execute_local(script_path: str) -> None:
                                'Real Time: %E',
                                'User Time: %U',
                                'Sys Time: %S'])
-    cmd = ['/usr/bin/time', '-f', format_params, 'bash', script_path]
+    # cmd = ['/usr/bin/time', '-f', format_params, 'bash', str(script_path)]
+    cmd = f'bash {str(script_path)}'
+
     try:
         run(cmd, check=True, shell=True)
     except FileNotFoundError as exc:

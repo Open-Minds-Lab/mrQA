@@ -55,7 +55,8 @@ def _check_args(data_source: Union[str, Path, Iterable] = None,
                                   f'create a folder in '
                                   f'{data_source.parent}'
                                   f'Please provide output_dir')
-
+    else:
+        output_dir = Path(output_dir)
     # Information about conda env is required for creating slurm scripts
     # The snippet below sets some defaults, may not be true for everyone.
     # The user can use the arguments to specify
