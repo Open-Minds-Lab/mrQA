@@ -42,6 +42,7 @@ setup(
         'console_scripts': [
             'mrqa=mrQA.cli:main',
             'mrqa_monitor=mrQA.monitor:main',
+            'mrqa_parallel=mrQA.parallel:main',
             'mrpc_subset=mrQA.run_subset:main'
         ],
     },
