@@ -97,7 +97,7 @@ path to the directory where the report will be saved. The `name` is the name of 
 
 On the CLI, the above steps can be executed as follows::
 
-    mrqa_parallel --data-source /path/to/dataset --style dicom --name my_dicom_dataset --subjects-per-job 5 --conda_env mrcheck --conda_dist anaconda3 --output_dir /path/to/output_dir --hpc False
+    mrqa_parallel --data-source /path/to/dataset --name my_dicom_dataset --subjects-per-job 5 --conda_env mrcheck --conda_dist anaconda3 --output_dir /path/to/output_dir --out-mrds-path /path/to/output_dir/abcd.mrds.pkl
 
 Additional points to note:
 
