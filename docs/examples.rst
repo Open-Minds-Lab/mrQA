@@ -37,6 +37,9 @@ Similarly, in a python script::
 
 To check for a BIDS dataset, use `style` argument::
 
+    from MRdataset import import_dataset
+    from mrQA import check_compliance
+
     bids_dataset = import_dataset(data_source=data_folder,
                                    style='bids',
                                    name='XYZ_study')
@@ -54,6 +57,8 @@ can be merged to a single dataset and checked for compliance. The complete proce
 is divided into three steps:
 
 1. Create bash-scripts for each job ::
+
+    from mrQA.run_parallel import create_script
 
     script_list_filepath, mrds_list_filepath = create_script(
             data_source=data_source,
@@ -75,6 +80,8 @@ are to be run on a HPC or not.
 
 2. Submit jobs/ Execute the generated scripts::
 
+    from mrQA.run_parallel import submit_job
+
     submit_job(scripts_list_filepath=script_list_filepath,
                mrds_list_filepath=mrds_list_filepath,
                hpc=False)
@@ -84,6 +91,8 @@ is used to specify whether the jobs are to be run on a HPC or not. If `hpc` is F
 will be executed locally. If `hpc` is True, then the scripts will be submitted to the HPC, using `sbatch`.
 
 3. Merge datasets and generate report::
+
+    from mrQA.run_merge import check_and_merge
 
     check_and_merge(
         mrds_list_filepath=mrds_list_filepath,
@@ -118,6 +127,8 @@ and the report is updated accordingly. If any changes
 are detected, the user can generate a new report and compare it with the previous report.
 
 To monitor a dataset::
+
+    from mrQA import monitor
 
     monitor(name='my_dataset',
             data_source='/path/to/dataset',
