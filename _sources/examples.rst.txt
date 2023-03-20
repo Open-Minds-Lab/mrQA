@@ -15,11 +15,11 @@ indicating which modalities/subjects/sessions conform to the specified protocol
 
 On the CLI, specify the arguments as given below::
 
-    mrqa --data-source /path/to/dataset --style dicom --name my_dicom_dataset
+    mrqa --data-source /path/to/dataset --format dicom --name my_dicom_dataset
 
 To check for a BIDS dataset::
 
-    mrqa --data-source /path/to/dataset --style bids --name my_bids_dataset
+    mrqa --data-source /path/to/dataset --format bids --name my_bids_dataset
 
 Similarly, in a python script::
 
@@ -30,18 +30,18 @@ Similarly, in a python script::
     output_dir = '/home/mr_reports/XYZ'
 
     dicom_dataset = import_dataset(data_source=data_folder,
-                                   style='dicom',
+                                   ds_format='dicom',
                                    name='XYZ_study')
     report_path = check_compliance(dataset=dicom_dataset,
                                    output_dir=args.output_dir)
 
-To check for a BIDS dataset, use `style` argument::
+To check for a BIDS dataset, use `ds_format` argument::
 
     from MRdataset import import_dataset
     from mrQA import check_compliance
 
     bids_dataset = import_dataset(data_source=data_folder,
-                                   style='bids',
+                                   ds_format='bids',
                                    name='XYZ_study')
     report_path = check_compliance(dataset=bids_dataset,
                                    output_dir=args.output_dir)
@@ -106,7 +106,7 @@ path to the directory where the report will be saved. The `name` is the name of 
 
 On the CLI, the above steps can be executed as follows::
 
-    mrqa_parallel --data-source /path/to/dataset --style dicom --name my_dicom_dataset --subjects-per-job 5 --conda_env mrcheck --conda_dist anaconda3 --output_dir /path/to/output_dir --hpc False
+    mrqa_parallel --data-source /path/to/dataset --format dicom --name my_dicom_dataset --subjects-per-job 5 --conda_env mrcheck --conda_dist anaconda3 --output_dir /path/to/output_dir --hpc False
 
 Additional points to note:
 

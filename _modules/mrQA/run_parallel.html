@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>mrQA.run_parallel &mdash; mrQA 0.2+134.g1a7b362 documentation</title>
+  <title>mrQA.run_parallel &mdash; mrQA 0.2+136.gd798957 documentation</title>
   
 
   
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                0.2+134.g1a7b362
+                0.2+136.gd798957
               </div>
             
           
@@ -358,7 +358,7 @@
 
 
 <div class="viewcode-block" id="create_script"><a class="viewcode-back" href="../../API.html#mrQA.run_parallel.create_script">[docs]</a><span class="k">def</span> <span class="nf">create_script</span><span class="p">(</span><span class="n">data_source</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                  <span class="n">style</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;dicom&#39;</span><span class="p">,</span>
+                  <span class="n">ds_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;dicom&#39;</span><span class="p">,</span>
                   <span class="n">include_phantom</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                   <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                   <span class="n">output_dir</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -376,7 +376,7 @@
 <span class="sd">    ----------</span>
 <span class="sd">    data_source: str or List[str]</span>
 <span class="sd">        /path/to/my/dataset containing files</span>
-<span class="sd">    style: str</span>
+<span class="sd">    ds_format: str</span>
 <span class="sd">        Specify dataset type. Use one of [dicom]</span>
 <span class="sd">    include_phantom: bool</span>
 <span class="sd">        Include phantom scans in the dataset</span>
@@ -396,7 +396,7 @@
 <span class="sd">        Name of conda environment</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">data_src</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">dist</span> <span class="o">=</span> <span class="n">_check_args</span><span class="p">(</span><span class="n">data_source</span><span class="p">,</span> <span class="n">style</span><span class="p">,</span>
+    <span class="n">data_src</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">dist</span> <span class="o">=</span> <span class="n">_check_args</span><span class="p">(</span><span class="n">data_source</span><span class="p">,</span> <span class="n">ds_format</span><span class="p">,</span>
                                                   <span class="n">output_dir</span><span class="p">,</span> <span class="n">debug</span><span class="p">,</span>
                                                   <span class="n">subjects_per_job</span><span class="p">,</span> <span class="n">hpc</span><span class="p">,</span>
                                                   <span class="n">conda_dist</span><span class="p">,</span> <span class="n">conda_env</span><span class="p">)</span>

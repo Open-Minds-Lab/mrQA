@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Examples using API &mdash; mrQA 0.2+134.g1a7b362 documentation</title>
+  <title>Examples using API &mdash; mrQA 0.2+136.gd798957 documentation</title>
   
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                0.2+134.g1a7b362
+                0.2+136.gd798957
               </div>
             
           
@@ -188,11 +188,11 @@ API with the location of the dataset, as well as any relevant metadata or
 additional arguments. The API would then analyze the dataset and generate a report
 indicating which modalities/subjects/sessions conform to the specified protocol</p>
 <p>On the CLI, specify the arguments as given below:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mrqa</span> <span class="o">--</span><span class="n">data</span><span class="o">-</span><span class="n">source</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">dataset</span> <span class="o">--</span><span class="n">style</span> <span class="n">dicom</span> <span class="o">--</span><span class="n">name</span> <span class="n">my_dicom_dataset</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mrqa</span> <span class="o">--</span><span class="n">data</span><span class="o">-</span><span class="n">source</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">dataset</span> <span class="o">--</span><span class="nb">format</span> <span class="n">dicom</span> <span class="o">--</span><span class="n">name</span> <span class="n">my_dicom_dataset</span>
 </pre></div>
 </div>
 <p>To check for a BIDS dataset:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mrqa</span> <span class="o">--</span><span class="n">data</span><span class="o">-</span><span class="n">source</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">dataset</span> <span class="o">--</span><span class="n">style</span> <span class="n">bids</span> <span class="o">--</span><span class="n">name</span> <span class="n">my_bids_dataset</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mrqa</span> <span class="o">--</span><span class="n">data</span><span class="o">-</span><span class="n">source</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">dataset</span> <span class="o">--</span><span class="nb">format</span> <span class="n">bids</span> <span class="o">--</span><span class="n">name</span> <span class="n">my_bids_dataset</span>
 </pre></div>
 </div>
 <p>Similarly, in a python script:</p>
@@ -203,18 +203,18 @@ indicating which modalities/subjects/sessions conform to the specified protocol<
 <span class="n">output_dir</span> <span class="o">=</span> <span class="s1">&#39;/home/mr_reports/XYZ&#39;</span>
 
 <span class="n">dicom_dataset</span> <span class="o">=</span> <span class="n">import_dataset</span><span class="p">(</span><span class="n">data_source</span><span class="o">=</span><span class="n">data_folder</span><span class="p">,</span>
-                               <span class="n">style</span><span class="o">=</span><span class="s1">&#39;dicom&#39;</span><span class="p">,</span>
+                               <span class="n">ds_format</span><span class="o">=</span><span class="s1">&#39;dicom&#39;</span><span class="p">,</span>
                                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;XYZ_study&#39;</span><span class="p">)</span>
 <span class="n">report_path</span> <span class="o">=</span> <span class="n">check_compliance</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">dicom_dataset</span><span class="p">,</span>
                                <span class="n">output_dir</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>To check for a BIDS dataset, use <cite>style</cite> argument:</p>
+<p>To check for a BIDS dataset, use <cite>ds_format</cite> argument:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">MRdataset</span> <span class="kn">import</span> <span class="n">import_dataset</span>
 <span class="kn">from</span> <span class="nn">mrQA</span> <span class="kn">import</span> <span class="n">check_compliance</span>
 
 <span class="n">bids_dataset</span> <span class="o">=</span> <span class="n">import_dataset</span><span class="p">(</span><span class="n">data_source</span><span class="o">=</span><span class="n">data_folder</span><span class="p">,</span>
-                               <span class="n">style</span><span class="o">=</span><span class="s1">&#39;bids&#39;</span><span class="p">,</span>
+                               <span class="n">ds_format</span><span class="o">=</span><span class="s1">&#39;bids&#39;</span><span class="p">,</span>
                                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;XYZ_study&#39;</span><span class="p">)</span>
 <span class="n">report_path</span> <span class="o">=</span> <span class="n">check_compliance</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">bids_dataset</span><span class="p">,</span>
                                <span class="n">output_dir</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span>
@@ -285,7 +285,7 @@ will be executed locally. If <cite>hpc</cite> is True, then the scripts will be 
 the path to the txt file containing the paths to the mrds files for each job. The <cite>output_path</cite> is the
 path to the directory where the report will be saved. The <cite>name</cite> is the name of the dataset.</p>
 <p>On the CLI, the above steps can be executed as follows:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mrqa_parallel</span> <span class="o">--</span><span class="n">data</span><span class="o">-</span><span class="n">source</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">dataset</span> <span class="o">--</span><span class="n">style</span> <span class="n">dicom</span> <span class="o">--</span><span class="n">name</span> <span class="n">my_dicom_dataset</span> <span class="o">--</span><span class="n">subjects</span><span class="o">-</span><span class="n">per</span><span class="o">-</span><span class="n">job</span> <span class="mi">5</span> <span class="o">--</span><span class="n">conda_env</span> <span class="n">mrcheck</span> <span class="o">--</span><span class="n">conda_dist</span> <span class="n">anaconda3</span> <span class="o">--</span><span class="n">output_dir</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">output_dir</span> <span class="o">--</span><span class="n">hpc</span> <span class="kc">False</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mrqa_parallel</span> <span class="o">--</span><span class="n">data</span><span class="o">-</span><span class="n">source</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">dataset</span> <span class="o">--</span><span class="nb">format</span> <span class="n">dicom</span> <span class="o">--</span><span class="n">name</span> <span class="n">my_dicom_dataset</span> <span class="o">--</span><span class="n">subjects</span><span class="o">-</span><span class="n">per</span><span class="o">-</span><span class="n">job</span> <span class="mi">5</span> <span class="o">--</span><span class="n">conda_env</span> <span class="n">mrcheck</span> <span class="o">--</span><span class="n">conda_dist</span> <span class="n">anaconda3</span> <span class="o">--</span><span class="n">output_dir</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">output_dir</span> <span class="o">--</span><span class="n">hpc</span> <span class="kc">False</span>
 </pre></div>
 </div>
 <p>Additional points to note:</p>
