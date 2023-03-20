@@ -104,6 +104,7 @@ def parse_args():
         logger.info('Use --output-dir to specify dir for final directory. '
                     'Using default')
         args.output_dir = PATH_CONFIG['output_dir'] / args.name.lower()
+        args.output_dir.mkdir(exist_ok=True, parents=True)
     else:
         if not Path(args.output_dir).is_dir():
             try:
