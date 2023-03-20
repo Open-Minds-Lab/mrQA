@@ -22,7 +22,7 @@ def test_equivalence_seq_vs_parallel(data_source):
     }
     if not output_path['sequential'].exists():
         sequential_ds = import_dataset(data_source=data_source,
-                                       style='dicom',
+                                       ds_format='dicom',
                                        name='sequential')
         save_mr_dataset(output_path['sequential'], sequential_ds)
     else:
@@ -34,7 +34,7 @@ def test_equivalence_seq_vs_parallel(data_source):
                      'parallel')
 
     # Generate a report for the merged dataset
-    parallel_ds = load_mr_dataset(output_path['parallel'], style='dicom')
+    parallel_ds = load_mr_dataset(output_path['parallel'], ds_format='dicom')
 
     report_path = {
         'sequential': check_compliance(dataset=sequential_ds,
@@ -56,7 +56,7 @@ def test_merging(data_source):
 
     if not output_path_seq.exists():
         sequential_ds = import_dataset(data_source=data_source,
-                                       style='dicom',
+                                       ds_format='dicom',
                                        name='sequential')
         save_mr_dataset(output_path_seq, sequential_ds)
     else:
@@ -84,7 +84,7 @@ def test_merging(data_source):
         if not output_path[i].exists():
             # Process the batch of subjects
             ds = import_dataset(data_source=subject_folders_list,
-                                style='dicom',
+                                ds_format='dicom',
                                 name=f'seq{i}')
             save_mr_dataset(output_path[i], ds)
         else:

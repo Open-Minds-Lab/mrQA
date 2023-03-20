@@ -11,7 +11,7 @@ from mrQA.utils import is_integer_number, execute_local, list2txt
 
 
 def _check_args(data_source: Union[str, Path, Iterable] = None,
-                style: str = 'dicom',
+                ds_format: str = 'dicom',
                 output_dir: Union[str, Path] = None,
                 debug: bool = False,
                 subjects_per_job: int = None,
@@ -22,8 +22,8 @@ def _check_args(data_source: Union[str, Path, Iterable] = None,
     # a job, if code is still being debugged
     if debug and hpc:
         raise AttributeError('Dont debug on hpc!')
-    if style != 'dicom':
-        raise NotImplementedError(f'Expects dicom, Got {style}')
+    if ds_format != 'dicom':
+        raise NotImplementedError(f'Expects dicom, Got {ds_format}')
     if not is_integer_number(subjects_per_job):
         raise RuntimeError('Expects an integer value for subjects per job.'
                            f'Got {subjects_per_job}')

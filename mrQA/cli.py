@@ -29,7 +29,7 @@ def get_parser():
                           help='specify the directory where the report'
                                ' would be saved. By default, the --data_source '
                                'directory will be used to save reports')
-    optional.add_argument('-s', '--style', type=str, default='dicom',
+    optional.add_argument('-f', '--format', type=str, default='dicom',
                           help='type of dataset, one of [dicom|bids|pybids]')
     optional.add_argument('-n', '--name', type=str,
                           help='provide a identifier/name for the dataset')
@@ -54,7 +54,7 @@ def get_parser():
                                'aahead_scout')
     optional.add_argument('--include-nifti-header', action='store_true',
                           help='whether to check nifti headers for compliance,'
-                               'only used when --style==bids')
+                               'only used when --format==bids')
     # Experimental features, not implemented yet.
     optional.add_argument('-l', '--logging', type=int, default=40,
                           help='set logging to appropriate level')
@@ -73,7 +73,7 @@ def main():
     args = parse_args()
 
     dataset = import_dataset(data_source=args.data_source,
-                             style=args.style,
+                             ds_format=args.format,
                              name=args.name,
                              verbose=args.verbose,
                              include_phantom=args.include_phantom,
