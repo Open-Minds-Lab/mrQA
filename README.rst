@@ -1,3 +1,6 @@
+mrQA : automatic protocol compliance checks on MR datasets
+=============================================================
+
 .. image:: https://img.shields.io/pypi/v/mrQA.svg
         :target: https://pypi.python.org/pypi/mrQA
 
@@ -14,7 +17,7 @@ A tool for automatic evaluation of protocol compliance in MRI datasets. The tool
 
 Simple schematic of the library:
 
-.. image:: schematic_mrQA.png
+.. image:: ./docs/schematic_mrQA.png
 
 
 ``mrQA`` uses ``MRDataset`` to efficiently parse various neuroimaging dataset formats, which is available `here <github.com/Open-Minds-Lab/MRdataset>`_.
