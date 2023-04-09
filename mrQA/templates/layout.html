@@ -69,16 +69,16 @@
 {% set utils = imp0rt('mrQA.utils') %}
 
 <h2>Summary of non-compliance:</h2>
-<table class="tg">
+<table class="tg" id="with_margin">
     <thead>
     <tr>
         <th class="tg-0pky" colspan="1">Modality</th>
         <th class="tg-0pky" colspan="1"># non-compliant (%)</th>
         <th class="tg-0pky" colspan="3">Non-compliant subjects</th>
-        <th class="tg-0pky" colspan="1">Reasons</th>
+        <th class="tg-0pky" colspan="1">Parameters</th>
         <th class="tg-0pky" colspan="1"># compliant (%)</th>
         <th class="tg-0pky" colspan="1"># subjects</th>
-        <th class="tg-0pky" colspan="1"># Echo-Times</th>
+{#        <th class="tg-0pky" colspan="1"># Echo-Times</th>#}
 
 
         {#        <th class="tg-0pky" colspan="2">errors</th>#}
@@ -86,49 +86,60 @@
     </thead>
     <tbody>
     {% for modality in dataset.modalities|sort %}
-        <tr>
-            <td class="tg-0pky" colspan="1">{{ modality.name }}</td>
-            {% set percent_non_compliant = 100 * modality.non_compliant_subject_names|length|float / modality.subjects|length|float %}
-            {% set percent_compliant = 100 * modality.compliant_subject_names|length|float / modality.subjects|length|float %}
+        {% if not modality.compliant %}
+        {% if modality.subjects|length > 2%}
+            <tr>
+                <td class="tg-0pky" colspan="1">{{ modality.name }}</td>
+                {% set percent_non_compliant = 100 * modality.non_compliant_subject_names|length|float / modality.subjects|length|float %}
+                {% set percent_compliant = 100 * modality.compliant_subject_names|length|float / modality.subjects|length|float %}
 
-            <td class="tg-0pky" colspan="1">
-                {{ modality.non_compliant_subject_names|length }}
-                ({{ percent_non_compliant|round(2, 'floor') }} %)
-            </td>
+                <td class="tg-0pky" colspan="1">
+                    {{ modality.non_compliant_subject_names|length }}
+                    ({{ percent_non_compliant|round(2, 'floor') }} %)
+                </td>
 
-            <td class="tg-0pky" colspan="3">
-                {% if modality.non_compliant_subject_names|length < 50 %}
-                    {% for name in modality.non_compliant_subject_names|sort %}
-                        {{ name }},
+                <td class="tg-0pky" colspan="3">
+                    {% if modality.non_compliant_subject_names|length < 50 %}
+                        {% for name in modality.non_compliant_subject_names|sort %}
+                            {{ name }},
+                        {% endfor %}
+                    {% else %}
+                        Too many to fit here. Click
+                        <a href={{ sub_lists_by_modality[modality.name] }}>here</a>
+                        for full list.
+                    {% endif %}
+                </td>
+                <td class="tg-0pky" colspan="1">
+                    {% for parameter in modality.non_compliant_params()|sort %}
+                        {{ parameter }},
                     {% endfor %}
-                {% else %}
-                    Too many to fit here. Click
-                    <a href={{ sub_lists_by_modality[modality.name] }}>here</a>
-                    for full list.
-                {% endif %}
-            </td>
-            <td class="tg-0pky" colspan="1">
-                {% for parameter in modality.non_compliant_params()|sort %}
-                    {{ parameter }},
-                {% endfor %}
-            </td>
-            <td class="tg-0pky" colspan="1">
-                {{ modality.compliant_subject_names|length }}
-                ( {{ percent_compliant|round(2, 'floor') }} %)
-            </td>
-            <td class="tg-0pky" colspan="1">
-                {{ modality.subjects|length }}
-            </td>
-            <td class="tg-0pky" colspan="1">
-                {{ modality.get_echo_times() | length }}
-            </td>
-            {#            <td class="tg-0pky" colspan="2">#}
-            {#                {{ mode.error_children|length }}#}
-            {#            </td>#}
-        </tr>
+                </td>
+                <td class="tg-0pky" colspan="1">
+                    {{ modality.compliant_subject_names|length }}
+                    ( {{ percent_compliant|round(2, 'floor') }} %)
+                </td>
+                <td class="tg-0pky" colspan="1">
+                    {{ modality.subjects|length }}
+                </td>
+    {#            <td class="tg-0pky" colspan="1">#}
+    {#                {{ modality.get_echo_times() | length }}#}
+    {#            </td>#}
+                {#            <td class="tg-0pky" colspan="2">#}
+                {#                {{ mode.error_children|length }}#}
+                {#            </td>#}
+            </tr>
+        {% endif %}
+        {% endif %}
     {% endfor %}
     </tbody>
 </table>
+
+    List of fully compliant modalities :
+    {% for modality in dataset.modalities|sort %}
+        {% if modality.compliant %}
+            {{ modality.name }},
+        {% endif %}
+    {% endfor %}
 
 
 {% for modality in dataset.modalities|sort %}
@@ -246,6 +257,7 @@
                 reference </h5>
         {% endif %}
         {% for echo_time in modality.get_echo_times()|sort %}
+            {% set te = echo_time %}
             {% set reference = modality.get_reference(echo_time) %}
             {% set runs_by_echo = utils._get_runs_by_echo(modality, 3) %}
             {% if modality.is_multi_echo() %}
