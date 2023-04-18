@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 from MRdataset import import_dataset
-from MRdataset.utils import is_writable
+from MRdataset.utils import is_writable, valid_dirs
 from MRdataset.log import logger
 
 from mrQA import check_compliance
@@ -100,9 +100,9 @@ def parse_args():
     else:
         logger.setLevel('WARNING')
 
-    # if not Path(args.data_source).is_dir():
-    #     raise OSError('Expected valid directory for --data_source argument, '
-    #                   'Got {0}'.format(args.data_source))
+    if not valid_dirs(args.data_source):
+        raise OSError('Expected valid directory for --data_source argument, '
+                      'Got {0}'.format(args.data_source))
 
     if args.output_dir is None:
         logger.info('Use --output-dir to specify dir for final directory. '
