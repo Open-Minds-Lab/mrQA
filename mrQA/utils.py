@@ -557,7 +557,8 @@ def round_if_numeric(value: Union[int, float],
     if isinstance(value, bool):
         return value
     elif isinstance(value, (int, float)):
-        return np.around(value, decimals=decimals)
+        # round using numpy and then convert to native python type
+        return np.around(value, decimals=decimals).item()
     return value
 
 
