@@ -41,6 +41,9 @@ def get_parser():
                                '(default:0). If decimals are negative it '
                                'specifies the number of positions to the left'
                                'of the decimal point.')
+    optional.add_argument('-t', '--tolerance', type=float, default=0,
+                          help='tolerance for checking against reference '
+                               'protocol. Default is 0.1')
     # TODO: use this flag to store cache
     optional.add_argument('-v', '--verbose', action='store_true',
                           help='allow verbose output on console')
@@ -83,7 +86,8 @@ def main():
                      strategy=args.strategy,
                      output_dir=args.output_dir,
                      decimals=args.decimals,
-                     verbose=args.verbose)
+                     verbose=args.verbose,
+                     tolerance=args.tolerance,)
     return 0
 
 

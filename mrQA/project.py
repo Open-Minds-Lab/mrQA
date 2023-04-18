@@ -16,7 +16,8 @@ def check_compliance(dataset: BaseDataset,
                      strategy: str = 'majority',
                      decimals: int = 3,
                      output_dir: Union[Path, str] = None,
-                     verbose: bool = False):
+                     verbose: bool = False,
+                     tolerance: float = 0.1,) -> Path:
     """
     Main function for checking compliance. Infers the reference protocol
     according to the user chosen strategy, and then generates a compliance
@@ -35,7 +36,8 @@ def check_compliance(dataset: BaseDataset,
         Number of decimal places to round to (default:3).
     verbose : bool
         print more if true
-
+    tolerance : float
+        Tolerance for checking against reference protocol. Default is 0.1
 
     Returns
     -------
@@ -60,7 +62,7 @@ def check_compliance(dataset: BaseDataset,
         raise ValueError('Dataset is empty.')
 
     if strategy == 'majority':
-        dataset = compare_with_majority(dataset, decimals)
+        dataset = compare_with_majority(dataset, decimals, tolerance=tolerance)
     else:
         raise NotImplementedError(
             f'Only the following strategies are allowed : \n\t'
@@ -85,7 +87,8 @@ def check_compliance(dataset: BaseDataset,
 
 
 def compare_with_majority(dataset: BaseDataset,
-                          decimals: int = 3) -> BaseDataset:
+                          decimals: int = 3,
+                          tolerance: float = 0.1) -> BaseDataset:
     """
     Method for post-acquisition compliance. Infers the reference protocol/values
     by looking for the most frequent values, and then identifying deviations
@@ -97,6 +100,8 @@ def compare_with_majority(dataset: BaseDataset,
         for compliance
     decimals : int
         Number of decimal places to round to (default:3).
+    tolerance : float
+        Tolerance for checking against reference protocol. Default is 0.1
 
     Returns
     -------
@@ -121,7 +126,8 @@ def compare_with_majority(dataset: BaseDataset,
             if _validate_reference(reference):
                 modality.set_reference(reference, echo_time)
 
-        modality = _check_against_reference(modality, decimals)
+        modality = _check_against_reference(modality, decimals,
+                                            tolerance=tolerance)
         if modality.compliant:
             dataset.add_compliant_modality_name(modality.name)
 
