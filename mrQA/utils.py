@@ -465,9 +465,10 @@ def subject_list2txt(dataset: BaseDataset,
     output_dir.mkdir(exist_ok=True, parents=True)
     filepaths = {}
     for modality in dataset.modalities:
-        filepath = output_dir / slugify(modality.name)
-        list2txt(filepath, modality.non_compliant_subject_names)
-        filepaths[modality.name] = filepath
+        if not modality.compliant:
+            filepath = output_dir / slugify(modality.name)
+            list2txt(filepath, modality.non_compliant_subject_names)
+            filepaths[modality.name] = filepath
     return filepaths
 
 
