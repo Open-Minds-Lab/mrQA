@@ -130,7 +130,8 @@ def compare_with_majority(dataset: BaseDataset,
                                             tolerance=tolerance)
         if modality.compliant:
             dataset.add_compliant_modality_name(modality.name)
-
+        else:
+            dataset.add_non_compliant_modality_name(modality.name)
     # As we are updating the same dataset by adding non-compliant subject names,
     # and non-compliant modality names, we can return the same dataset
     return dataset
