@@ -4,6 +4,7 @@ from typing import Union
 from MRdataset import save_mr_dataset
 from MRdataset.base import BaseDataset
 from MRdataset.log import logger
+from MRdataset.config import DatasetEmptyException
 
 from mrQA.config import STRATEGIES_ALLOWED
 from mrQA.formatter import HtmlFormatter
@@ -59,7 +60,7 @@ def check_compliance(dataset: BaseDataset,
         logger.setLevel('WARNING')
 
     if not dataset.modalities:
-        raise ValueError('Dataset is empty.')
+        raise DatasetEmptyException
 
     if strategy == 'majority':
         dataset = compare_with_majority(dataset, decimals, tolerance=tolerance)
