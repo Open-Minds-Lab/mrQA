@@ -69,7 +69,8 @@
 {% set utils = imp0rt('mrQA.utils') %}
 
 <h2>Summary of non-compliance:</h2>
-<h3>List of non-compliant modalities - {{ dataset.non_compliant_modality_names|length }}</h3>
+<h3>List of non-compliant modalities
+    - {{ dataset.non_compliant_modality_names|length }}</h3>
 <table class="tg" id="with_margin">
     <thead>
     <tr>
@@ -134,7 +135,8 @@
     {% endfor %}
     </tbody>
 </table>
-<h3> List of fully compliant modalities : {{dataset.compliant_modality_names | length}}</h3>
+<h3> List of fully compliant modalities
+    : {{ dataset.compliant_modality_names | length }}</h3>
 <table class="tg" id="with_margin">
     {% set cols = 4 %}
     {% set rows = (dataset.compliant_modality_names|length // cols) + 1 %}
@@ -273,12 +275,12 @@
             {% set te = echo_time %}
             {% set reference = modality.get_reference(echo_time) %}
             {% set runs_by_echo = utils._get_runs_by_echo(modality, 3) %}
-            {% if modality.is_multi_echo() %}
-                <h4>Reference {{ loop.index }} | Number of Runs
-                    : {{ runs_by_echo[te]|length }}</h4>
-            {% else %}
-                <h4>Reference</h4>
-            {% endif %}
+            {#            {% if modality.is_multi_echo() %}#}
+            <h4>Reference {{ loop.index }} | Number of Runs
+                : {{ runs_by_echo[te]|length }}</h4>
+            {#            {% else %}#}
+            {#                <h4>Reference</h4>#}
+            {#            {% endif %}#}
             <table class="tg" id="with_margin">
                 <thead>
                 <tr>
