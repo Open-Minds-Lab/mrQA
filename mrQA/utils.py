@@ -15,7 +15,7 @@ import numpy as np
 import tempfile
 from MRdataset.base import Modality, BaseDataset
 from MRdataset.log import logger
-from MRdataset.utils import param_difference, make_hashable
+from MRdataset.utils import param_difference, make_hashable, slugify
 from dateutil import parser
 
 from mrQA.config import past_records_fpath, report_fpath, mrds_fpath, \
@@ -400,24 +400,6 @@ def round_dict_values(dict_: dict, decimals: int) -> dict:
     for key, value in new_dict.items():
         new_dict[key] = round_if_numeric(value, decimals)
     return new_dict
-
-
-def slugify(value, allow_unicode=False):
-    """
-    Taken from https://github.com/django/django/blob/master/django/utils/text.py
-    Convert to ASCII if 'allow_unicode' is False. Convert spaces or repeated
-    dashes to single dashes. Remove characters that aren't alphanumerics,
-    underscores, or hyphens. Convert to lowercase. Also strip leading and
-    trailing whitespace, dashes, and underscores.
-    """
-    value = str(value)
-    if allow_unicode:
-        value = unicodedata.normalize('NFKC', value)
-    else:
-        value = unicodedata.normalize(
-            'NFKD', value).encode('ascii', 'ignore').decode('ascii')
-    value = re.sub(r'[^\w\s-]', '', value.lower())
-    return re.sub(r'[-\s]+', '-', value).strip('-_')
 
 
 def is_integer_number(n: Union[int, float]) -> bool:
