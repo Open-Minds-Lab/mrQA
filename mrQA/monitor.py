@@ -33,7 +33,7 @@ def get_parser():
                           help='specify the directory where the report'
                                ' would be saved. By default, the --data_source '
                                'directory will be used to save reports')
-    optional.add_argument('-s', '--style', type=str, default='dicom',
+    optional.add_argument('-f', '--format', type=str, default='dicom',
                           help='type of dataset, one of [dicom]')
     optional.add_argument('-h', '--help', action='help',
                           default=argparse.SUPPRESS,
@@ -122,7 +122,7 @@ def main():
             verbose=args.verbose,
             include_phantom=args.include_phantom,
             decimals=args.decimals,
-            style=args.style,
+            ds_format=args.format,
             strategy=args.strategy)
 
 
@@ -132,7 +132,7 @@ def monitor(name: str,
             verbose: bool = False,
             include_phantom: bool = False,
             decimals: int = 3,
-            style: str = 'dicom',
+            ds_format: str = 'dicom',
             strategy: str = 'majority') -> Path:
     """
     Monitor a dataset folder for changes. Read new files and append to
@@ -153,7 +153,7 @@ def monitor(name: str,
         Whether to include phantom, localizer, aahead_scout
     decimals: int
         Number of decimal places to round to (default:3).
-    style: str
+    ds_format: str
         Type of dataset, one of [dicom]
     strategy: str
         How to examine parameters [majority|reference]
@@ -174,7 +174,7 @@ def monitor(name: str,
                                               output_dir=output_dir)
         if modified_files:
             new_dataset = import_dataset(data_source=modified_files,
-                                         style='dicom',
+                                         ds_format='dicom',
                                          name=name,
                                          verbose=verbose,
                                          include_phantom=include_phantom)
@@ -186,7 +186,7 @@ def monitor(name: str,
         logger.warning('Dataset %s not found in records. Running '
                        'compliance check on entire dataset', name)
         dataset = import_dataset(data_source=data_source,
-                                 style=style,
+                                 ds_format=ds_format,
                                  name=name,
                                  verbose=verbose,
                                  include_phantom=include_phantom)

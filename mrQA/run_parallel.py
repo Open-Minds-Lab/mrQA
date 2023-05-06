@@ -191,7 +191,7 @@ def submit_job(scripts_list_filepath: Union[str, Path],
 
 
 def create_script(data_source: Union[str, Path, Iterable] = None,
-                  style: str = 'dicom',
+                  ds_format: str = 'dicom',
                   include_phantom: bool = False,
                   verbose: bool = False,
                   output_dir: Union[str, Path] = None,
@@ -209,7 +209,7 @@ def create_script(data_source: Union[str, Path, Iterable] = None,
     ----------
     data_source: str or List[str]
         /path/to/my/dataset containing files
-    style: str
+    ds_format: str
         Specify dataset type. Use one of [dicom]
     include_phantom: bool
         Include phantom scans in the dataset
@@ -229,7 +229,7 @@ def create_script(data_source: Union[str, Path, Iterable] = None,
         Name of conda environment
     """
 
-    data_src, output_dir, env, dist = _check_args(data_source, style,
+    data_src, output_dir, env, dist = _check_args(data_source, ds_format,
                                                   output_dir, debug,
                                                   subjects_per_job, hpc,
                                                   conda_dist, conda_env)

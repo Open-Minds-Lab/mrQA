@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 from MRdataset import import_dataset
-from MRdataset.utils import is_writable
+from MRdataset.utils import is_writable, valid_dirs
 from MRdataset.log import logger
 
 from mrQA import check_compliance
@@ -29,7 +29,7 @@ def get_parser():
                           help='specify the directory where the report'
                                ' would be saved. By default, the --data_source '
                                'directory will be used to save reports')
-    optional.add_argument('-s', '--style', type=str, default='dicom',
+    optional.add_argument('-f', '--format', type=str, default='dicom',
                           help='type of dataset, one of [dicom|bids|pybids]')
     optional.add_argument('-n', '--name', type=str,
                           help='provide a identifier/name for the dataset')
@@ -41,6 +41,9 @@ def get_parser():
                                '(default:0). If decimals are negative it '
                                'specifies the number of positions to the left'
                                'of the decimal point.')
+    optional.add_argument('-t', '--tolerance', type=float, default=0,
+                          help='tolerance for checking against reference '
+                               'protocol. Default is 0.1')
     # TODO: use this flag to store cache
     optional.add_argument('-v', '--verbose', action='store_true',
                           help='allow verbose output on console')
@@ -54,7 +57,7 @@ def get_parser():
                                'aahead_scout')
     optional.add_argument('--include-nifti-header', action='store_true',
                           help='whether to check nifti headers for compliance,'
-                               'only used when --style==bids')
+                               'only used when --format==bids')
     # Experimental features, not implemented yet.
     optional.add_argument('-l', '--logging', type=int, default=40,
                           help='set logging to appropriate level')
@@ -73,7 +76,7 @@ def main():
     args = parse_args()
 
     dataset = import_dataset(data_source=args.data_source,
-                             style=args.style,
+                             ds_format=args.format,
                              name=args.name,
                              verbose=args.verbose,
                              include_phantom=args.include_phantom,
@@ -83,7 +86,8 @@ def main():
                      strategy=args.strategy,
                      output_dir=args.output_dir,
                      decimals=args.decimals,
-                     verbose=args.verbose)
+                     verbose=args.verbose,
+                     tolerance=args.tolerance,)
     return 0
 
 
@@ -96,14 +100,15 @@ def parse_args():
     else:
         logger.setLevel('WARNING')
 
-    # if not Path(args.data_source).is_dir():
-    #     raise OSError('Expected valid directory for --data_source argument, '
-    #                   'Got {0}'.format(args.data_source))
+    if not valid_dirs(args.data_source):
+        raise OSError('Expected valid directory for --data_source argument, '
+                      'Got {0}'.format(args.data_source))
 
     if args.output_dir is None:
         logger.info('Use --output-dir to specify dir for final directory. '
                     'Using default')
         args.output_dir = PATH_CONFIG['output_dir'] / args.name.lower()
+        args.output_dir.mkdir(exist_ok=True, parents=True)
     else:
         if not Path(args.output_dir).is_dir():
             try:

@@ -54,7 +54,7 @@ def main():
     if not output_path.exists():
         partial_dataset = read_subset(output_path=args.output_path,
                                       batch_ids_file=args.batch_ids_file,
-                                      style='dicom',
+                                      ds_format='dicom',
                                       verbose=args.verbose,
                                       include_phantom=args.include_phantom,
                                       is_complete=not args.is_partial)
@@ -64,7 +64,7 @@ def main():
 
 
 def read_subset(batch_ids_file: str,
-                style: str,
+                ds_format: str,
                 verbose: bool,
                 include_phantom: bool,
                 **kwargs) -> BaseDataset:
@@ -77,7 +77,7 @@ def read_subset(batch_ids_file: str,
     ----------
     batch_ids_file : str
         path to a text file containing a list of paths (to several folders)
-    style : str
+    ds_format : str
         what kind of MRdataset to create, dicom, bids etc.
     verbose : bool
         print more while doing the job
@@ -93,16 +93,16 @@ def read_subset(batch_ids_file: str,
     Raises
     ------
     NotImplementedError
-        if style is not dicom
+        if ds_format is not dicom
     """
     # Supports only dicom for now
-    if style != 'dicom':
-        raise NotImplementedError(f'Expected style as dicom, Got {style}')
+    if ds_format != 'dicom':
+        raise NotImplementedError(f'Expected ds_format as dicom, Got {ds_format}')
 
     subset = txt2list(batch_ids_file)
     identifier = Path(batch_ids_file).stem
     partial_dataset = import_dataset(data_source=subset,
-                                     style=style,
+                                     ds_format=ds_format,
                                      name=identifier,
                                      verbose=verbose,
                                      include_phantom=include_phantom,

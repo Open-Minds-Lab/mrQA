@@ -15,7 +15,7 @@ import numpy as np
 import tempfile
 from MRdataset.base import Modality, BaseDataset
 from MRdataset.log import logger
-from MRdataset.utils import param_difference, make_hashable
+from MRdataset.utils import param_difference, make_hashable, slugify
 from dateutil import parser
 
 from mrQA.config import past_records_fpath, report_fpath, mrds_fpath, \
@@ -402,24 +402,6 @@ def round_dict_values(dict_: dict, decimals: int) -> dict:
     return new_dict
 
 
-def slugify(value, allow_unicode=False):
-    """
-    Taken from https://github.com/django/django/blob/master/django/utils/text.py
-    Convert to ASCII if 'allow_unicode' is False. Convert spaces or repeated
-    dashes to single dashes. Remove characters that aren't alphanumerics,
-    underscores, or hyphens. Convert to lowercase. Also strip leading and
-    trailing whitespace, dashes, and underscores.
-    """
-    value = str(value)
-    if allow_unicode:
-        value = unicodedata.normalize('NFKC', value)
-    else:
-        value = unicodedata.normalize(
-            'NFKD', value).encode('ascii', 'ignore').decode('ascii')
-    value = re.sub(r'[^\w\s-]', '', value.lower())
-    return re.sub(r'[-\s]+', '-', value).strip('-_')
-
-
 def is_integer_number(n: Union[int, float]) -> bool:
     """
     Check if a number is an integer.
@@ -465,9 +447,10 @@ def subject_list2txt(dataset: BaseDataset,
     output_dir.mkdir(exist_ok=True, parents=True)
     filepaths = {}
     for modality in dataset.modalities:
-        filepath = output_dir / slugify(modality.name)
-        list2txt(filepath, modality.non_compliant_subject_names)
-        filepaths[modality.name] = filepath
+        if not modality.compliant:
+            filepath = output_dir / slugify(modality.name)
+            list2txt(filepath, modality.non_compliant_subject_names)
+            filepaths[modality.name] = filepath
     return filepaths
 
 
@@ -557,14 +540,16 @@ def round_if_numeric(value: Union[int, float],
     if isinstance(value, bool):
         return value
     elif isinstance(value, (int, float)):
-        return np.around(value, decimals=decimals)
+        # round using numpy and then convert to native python type
+        return np.around(value, decimals=decimals).item()
     return value
 
 
 def _check_single_run(modality: Modality,
                       decimals: int,
                       run_te: float,
-                      run_params: dict):
+                      run_params: dict,
+                      tolerance: float = 0.1):
     """
     Check if a single run is compliant with the reference protocol.
 
@@ -578,6 +563,9 @@ def _check_single_run(modality: Modality,
         echo time of the run
     run_params: dict
         parameters of the run
+    tolerance: float
+        tolerance for the difference between the parameters of the run and the
+        reference protocol
 
     Returns
     -------
@@ -600,11 +588,12 @@ def _check_single_run(modality: Modality,
         raise ReferenceNotSetForEchoTime(modality.name, run_te)
 
     delta = param_difference(params, reference,
-                             ignore=ignore_keys)
+                             ignore=ignore_keys,
+                             tolerance=tolerance)
     return delta, te_ref
 
 
-def _check_against_reference(modality, decimals):
+def _check_against_reference(modality, decimals, tolerance):
     """
     Given a modality, check if the parameters of each run are compliant with
     the reference protocol. If all the runs of a session are non-compliant,
@@ -622,6 +611,8 @@ def _check_against_reference(modality, decimals):
         modality node of a dataset
     decimals : int
         number of decimals to round the parameters
+    tolerance : float
+        tolerance to consider a parameter compliant
 
     Returns
     -------
@@ -641,7 +632,8 @@ def _check_against_reference(modality, decimals):
                     i_run.delta, te_ref = _check_single_run(modality,
                                                             decimals,
                                                             i_run.echo_time,
-                                                            i_run.params)
+                                                            i_run.params,
+                                                            tolerance=tolerance)
                     if i_run.delta:
                         modality.add_non_compliant_subject_name(subject.name)
                         _store_non_compliance(modality, i_run.delta, te_ref,

@@ -6,11 +6,11 @@ interface.  The following is an example of generating a protocol compliance repo
 
 For a DICOM dataset::
 
-    mrqa --data-source /path/to/dataset --style dicom --name my_dataset
+    mrqa --data-source /path/to/dataset --format dicom --name my_dataset
 
 For a BIDS dataset::
 
-    mrqa --data-source /path/to/dataset --style bids --name my_dataset
+    mrqa --data-source /path/to/dataset --format bids --name my_dataset
 
 
 

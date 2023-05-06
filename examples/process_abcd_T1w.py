@@ -60,7 +60,7 @@ def main():
         )
     elif args.task == 'report':
         # Generate the final report
-        dataset = load_mr_dataset(OUTPUT_DIR / (name + MRDS_EXT), style='dicom')
+        dataset = load_mr_dataset(OUTPUT_DIR / (name + MRDS_EXT), ds_format='dicom')
         check_compliance(dataset=dataset,
                          output_dir=OUTPUT_DIR / 'reports')
     else:
