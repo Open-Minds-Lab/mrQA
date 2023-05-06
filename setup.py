@@ -17,7 +17,7 @@ requirements = [
     "pydicom",
     "nibabel",
     "dictdiffer",
-    "jinja2",
+    "jinja2>=3.0.3",
 ]
 
 test_requirements = ['pytest>=3', 'hypothesis']
@@ -40,8 +40,9 @@ setup(
                 "protocol compliance",
     entry_points={
         'console_scripts': [
-            'protocol_compliance=mrQA.cli:main',
-            'mr_proto_compl=mrQA.cli:main',
+            'mrqa=mrQA.cli:main',
+            'mrqa_monitor=mrQA.monitor:main',
+            'mrqa_parallel=mrQA.run_parallel:main',
             'mrpc_subset=mrQA.run_subset:main'
         ],
     },

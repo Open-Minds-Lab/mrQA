@@ -54,7 +54,7 @@ def test_compliance_all_clean(num_subjects,
 
         assert set(sub_names_by_modality[modality.name]) == set(
             modality.compliant_subject_names)
-        assert len(modality.reasons_non_compliance) == 0
+        assert len(modality.non_compliant_params) == 0
 
         assert modality.compliant
         assert not modality.is_multi_echo()
@@ -180,8 +180,8 @@ def test_non_compliance_bids(num_noncompliant_subjects,
                                                     repetition_time,
                                                     magnetic_field_strength,
                                                     flip_angle)
-    mrd = import_dataset(fake_dir, include_phantom=True, style='bids')
-    checked_dataset = check_compliance(dataset=mrd, output_dir=mrd.data_root)
+    mrd = import_dataset(fake_dir, include_phantom=True, ds_format='bids')
+    checked_dataset = check_compliance(dataset=mrd, output_dir=mrd.data_source)
 
     # Check on disk, basically the truth
     layout = BIDSLayout(fake_dir)

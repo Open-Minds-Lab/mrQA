@@ -1,201 +1,182 @@
 from pathlib import Path
 from typing import Union
 
-from MRdataset.base import Project
-from MRdataset.utils import param_difference, is_hashable
+from MRdataset import save_mr_dataset
+from MRdataset.base import BaseDataset
+from MRdataset.log import logger
+from MRdataset.config import DatasetEmptyException
 
+from mrQA.config import STRATEGIES_ALLOWED
 from mrQA.formatter import HtmlFormatter
-from mrQA.utils import timestamp, majority_attribute_values
+from mrQA.utils import majority_attribute_values, _get_runs_by_echo, \
+    _check_against_reference, _cli_report, _validate_reference, \
+    export_subject_lists, record_out_paths
 
 
-def check_compliance(dataset: Project,
+def check_compliance(dataset: BaseDataset,
                      strategy: str = 'majority',
+                     decimals: int = 3,
                      output_dir: Union[Path, str] = None,
-                     return_dataset: bool = False,
-                     reference_path = None) -> Union[Project, None]:
+                     verbose: bool = False,
+                     tolerance: float = 0.1,) -> Path:
     """
-    Main function for checking compliance. Calls individual functions for
-    inferring the most frequent values and then generating the report
+    Main function for checking compliance. Infers the reference protocol
+    according to the user chosen strategy, and then generates a compliance
+    report
 
     Parameters
     ----------
-    dataset : Project
-        MRdataset.base.Project instance for the dataset which is to be checked
-        for compliance
+    dataset : BaseDataset
+        BaseDataset instance for the dataset to be checked for compliance
     strategy : str
-        How to get the reference protocol, whether should take most common
-        values as reference or something else
+        Strategy employed to specify or automatically infer the
+        reference protocol. Allowed options are 'majority'
     output_dir: Union[Path, str]
         Path to save the report
-    return_dataset: bool
-        return checked MRdataset.base.Project instance
+    decimals : int
+        Number of decimal places to round to (default:3).
+    verbose : bool
+        print more if true
+    tolerance : float
+        Tolerance for checking against reference protocol. Default is 0.1
+
     Returns
     -------
-    dataset : Project
-        MRdataset.base.Project instance for the dataset which was checked
-        for compliance
+    report_path : Path
+        Path to the generated report
+
+    Raises
+    ------
+    ValueError
+        If the input dataset is empty or otherwise invalid
+    NotImplementedError
+        If the input strategy is not supported
+    NotADirectoryError
+        If the output directory doesn't exist
     """
-    if not dataset.modalities:
-        raise EOFError("Dataset is empty.")
-    if strategy == 'majority':
-        dataset = compare_with_majority(dataset)
+    if verbose:
+        logger.setLevel('INFO')
     else:
-        raise NotImplementedError
-    generate_report(dataset, output_dir)
+        logger.setLevel('WARNING')
 
-    return dataset
+    if not dataset.modalities:
+        raise DatasetEmptyException
+
+    if strategy == 'majority':
+        dataset = compare_with_majority(dataset, decimals, tolerance=tolerance)
+    else:
+        raise NotImplementedError(
+            f'Only the following strategies are allowed : \n\t'
+            f'{STRATEGIES_ALLOWED}')
+
+    output_dir = Path(output_dir).resolve()
+    output_dir.mkdir(exist_ok=True, parents=True)
+    if not output_dir.is_dir():
+        raise NotADirectoryError('Provide a valid output directory')
+
+    report_path, mrds_path, sub_lists_dir_path = record_out_paths(output_dir,
+                                                                  dataset.name)
+    save_mr_dataset(mrds_path, dataset)
+    generate_report(dataset,
+                    report_path,
+                    sub_lists_dir_path,
+                    output_dir)
+
+    # Print a small message on the console, about non-compliance of dataset
+    print(_cli_report(dataset, str(report_path)))
+    return report_path
 
 
-def compare_with_majority(dataset: "Project") -> Project:
+def compare_with_majority(dataset: BaseDataset,
+                          decimals: int = 3,
+                          tolerance: float = 0.1) -> BaseDataset:
     """
     Method for post-acquisition compliance. Infers the reference protocol/values
     by looking for the most frequent values, and then identifying deviations
 
     Parameters
     ----------
-    dataset : Project
-        MRdataset.base.Project instance for the dataset which is to be checked
+    dataset : BaseDataset
+        BaseDataset instance for the dataset which is to be checked
         for compliance
+    decimals : int
+        Number of decimal places to round to (default:3).
+    tolerance : float
+        Tolerance for checking against reference protocol. Default is 0.1
 
     Returns
     -------
-    dataset : Project
-        Adds the non-compliance information to the same Project instance and
+    dataset : BaseDataset
+        Adds the non-compliance information to the same BaseDataset instance and
         returns it.
     """
     # TODO: Check for subset, if incomplete dataset throw error and stop
 
-
     for modality in dataset.modalities:
-        # Calculate reference for comparing
-        run_by_echo = dict()
-        for subject in modality.subjects:
-            for session in subject.sessions:
-                for run in session.runs:
-                    # Use defaultdict instead?
-                    if run.echo_time not in run_by_echo.keys():
-                        run_by_echo[run.echo_time] = []
-                    if run.params:
-                        run_by_echo[run.echo_time].append(run.params)
+        # Reset compliance calculation before re-computing it.
+        modality.reset_compliance()
 
-        for echo_time in run_by_echo.keys():
-            if run_by_echo[echo_time]:
-                reference = majority_attribute_values(run_by_echo[echo_time])
-                if echo_time is None:
-                    modality.set_reference(reference, force=True)
-                else:
-                    modality.set_reference(reference, echo_time)
+        # Infer reference protocol for each echo_time
+        # TODO: segregation via echo_time should be deprecated as multiple TE is
+        #   part of the same run
+        run_by_echo = _get_runs_by_echo(modality, decimals)
 
-        # Start calculating delta for each run
-        flag_modality = True
-        for subject in modality.subjects:
-            flag_subject = True
-            for session in subject.sessions:
-                for run in session.runs:
-                    reference = modality.get_reference(run.echo_time)
-                    if not reference:
-                        continue
-                    run.delta = param_difference(run.params,
-                                                 reference)
-                    # run.delta = param_difference(run.params,
-                    #                              reference,
-                    #                              ignore=['modality',
-                    #                                      'phase_encoding_direction'])
-                    if run.delta:
-                        modality.add_non_compliant_subject_name(subject.name)
-                        dataset.add_non_compliant_modality_name(modality.name)
-                        # reasons = extract_reasons(run.delta)
-                        # modality.reasons_non_compliance.update(reasons)
-                        store_reasons(modality, run, subject.name, session.name)
-                        flag_subject = False
-                        flag_modality = False
-                        modality.compliant = False
-            if flag_subject:
-                modality.add_compliant_subject_name(subject.name)
-        if flag_modality:
-            modality.compliant = flag_modality
+        # For each echo time, find the most common values
+        for echo_time, run_list in run_by_echo.items():
+            reference = majority_attribute_values(run_list, echo_time)
+            if _validate_reference(reference):
+                modality.set_reference(reference, echo_time)
+
+        modality = _check_against_reference(modality, decimals,
+                                            tolerance=tolerance)
+        if modality.compliant:
             dataset.add_compliant_modality_name(modality.name)
+        else:
+            dataset.add_non_compliant_modality_name(modality.name)
+    # As we are updating the same dataset by adding non-compliant subject names,
+    # and non-compliant modality names, we can return the same dataset
     return dataset
 
 
-def store_reasons(modality, run, subject_name, session_name):
-    """
-    Store the sources of non-compliance like flip angle, ped, tr, te
-
-    Parameters
-    ----------
-    modality : MRdataset.base.Modality
-        The modality node, in which these sources of non-compliance were found
-        so that these values can be stored
-    run : MRdataset.base.Run
-        Non-compliant which was found to be non-compliant w.r.t. the reference
-    subject_name : str
-        Non-compliant subject's name
-    session_name : str
-        Non-compliant session name
-    """
-    for entry in run.delta:
-        if entry[0] != 'change':
-            continue
-        _, parameter, [new_value, ref_value] = entry
-
-        if not is_hashable(parameter):
-            parameter = str(parameter)
-
-        modality.update_reason(parameter, run.echo_time, ref_value, new_value,
-                               '{}_{}'.format(subject_name, session_name))
-
-
-def generate_report(dataset: Project, output_dir: Union[Path, str]) -> None:
+def generate_report(dataset: BaseDataset,
+                    report_path: str or Path,
+                    sub_lists_dir_path: str,
+                    output_dir: Union[Path, str]) -> Path:
     """
     Generates an HTML report aggregating and summarizing the non-compliance
     discovered in the dataset.
 
     Parameters
     ----------
-    dataset : Project
-        MRdataset.base.Project instance for the dataset which is to be checked
+    dataset : BaseDataset
+        BaseDataset instance for the dataset which is to be checked
+    report_path : str
+        Name of the file to be generated, without extension. Ensures that
+        naming is consistent across the report, dataset and record files
+    sub_lists_dir_path : str
+        Path to the directory in which the subject lists should be stored
     output_dir : Union[Path, str]
         Directory in which the generated report should be stored.
-    """
-    output_path = Path(output_dir).resolve()
-    if not Path(output_path).is_dir():
-        raise OSError('Expected valid output_directory, '
-                      'Got {0}'.format(output_dir))
-    filename = '{}_{}.html'.format(dataset.name, timestamp())
-    out_path = output_path / filename
-    HtmlFormatter(filepath=out_path, params=dataset)
-    print(otg_report(dataset, filename))
-
-
-def otg_report(dataset, report_name):
-    """
-    Generate a single line report for the dataset
-
-    Parameters
-    ----------
-    dataset : Project
-        MRdataset.base.Project instance for the dataset which is to be checked
-    report_name : str
-        Filename for the report
 
     Returns
     -------
+    output_path : Path
+        Path to the generated report
 
     """
-    result = {}
-    for modality in dataset.modalities:
-        percent_non_compliant = len(modality.non_compliant_subject_names) \
-                                / len(modality.subjects)
-        if percent_non_compliant > 0:
-            result[modality.name] = str(100 * percent_non_compliant)
-    if result:
-        ret_string = 'In {0} dataset, modalities "{1}" are non-compliant. ' \
-                 'See {2} for report'.format(dataset.name,
-                                             ", ".join(result.keys()),
-                                             report_name)
-    else:
-        ret_string = 'In {0} dataset, all modalities are compliant. ' \
-                 'See {1} for report'.format(dataset.name,
-                                             report_name)
-    return ret_string
+    output_dir = Path(output_dir).resolve()
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # time_dict = get_timestamps()
+    sub_lists_by_modality = export_subject_lists(output_dir,
+                                                 dataset,
+                                                 sub_lists_dir_path)
+    # export_record(output_dir, filename, time_dict)
+    # Generate the HTML report and save it to the output_path
+    args = {
+        'ds': dataset,
+        'sub_lists_by_modality': sub_lists_by_modality,
+        # 'time': time_dict
+    }
+    HtmlFormatter(filepath=report_path, params=args)
+    return Path(report_path)

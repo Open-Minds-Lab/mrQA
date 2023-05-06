@@ -1,19 +1,14 @@
-import pickle
-
-from MRdataset import import_dataset
-from MRdataset.config import CACHE_DIR
-
-"""Console script for mrQA."""
+""" Console script for running subset of dataset, a part of parallel
+processing"""
 import argparse
 import sys
 from pathlib import Path
 
-from MRdataset import import_dataset
+from MRdataset import import_dataset, save_mr_dataset
+from MRdataset.base import BaseDataset
+from MRdataset.log import logger
 
-from mrQA import check_compliance
-from mrQA.common import set_logging
-from mrQA.utils import default_thread_count, txt2list, save2pickle
-import logging
+from mrQA.utils import txt2list
 
 
 def main():
@@ -26,27 +21,22 @@ def main():
     required = parser.add_argument_group('required arguments')
     optional = parser.add_argument_group('optional arguments')
 
-    required.add_argument('-i', '--seq_num', type=int, required=True)
-    # Add help
-    optional.add_argument('-n', '--name', type=str,
-                          help='provide a identifier/name for the dataset')
+    required.add_argument('-o', '--output_path', type=str, required=True,
+                          help='complete path to pickle file for storing '
+                               'partial dataset')
+    required.add_argument('-b', '--batch_ids_file', type=str, required=True,
+                          help='text file path specifying the folders to read')
     optional.add_argument('-h', '--help', action='help',
                           default=argparse.SUPPRESS,
                           help='show this help message and exit')
+    optional.add_argument('--is_partial', action='store_true',
+                          help='flag dataset as a partial dataset')
     # TODO: use this flag to store cache
-    optional.add_argument('-r', '--reindex', action='store_true',
-                          help='reindex dataset & regenerate mrQA report')
     optional.add_argument('-v', '--verbose', action='store_true',
                           help='allow verbose output on console')
     optional.add_argument('--include_phantom', action='store_true',
                           help='whether to include phantom, localizer, '
                                'aahead_scout')
-    optional.add_argument('--metadata_root', type=str,
-                          help='directory containing cache')
-    optional.add_argument('-w', '--max_workers', type=int, default=-1,
-                          help='max workers threads for processing'
-                               ' in parallel')
-    logger = set_logging('root')
 
     if len(sys.argv) < 2:
         logger.critical('Too few arguments!')
@@ -54,68 +44,72 @@ def main():
         parser.exit(1)
 
     args = parser.parse_args()
-    # if not Path(args.data_root).is_dir():
-    #     raise OSError('Expected valid directory for --data_root argument, '
-    #                   'Got {0}'.format(args.data_root))
+    output_path = Path(args.output_path).resolve()
 
-    sub_dataset = read_subset(args.name, args.seq_num, 'dicom',
-                              args.reindex, args.verbose,
-                              args.include_phantom, args.metadata_root)
-    master = merge_subset(sub_dataset, args.name + f'_master{args.seq_num}')
-    master.set_cache_path()
-    save2pickle(master)
+    if args.verbose:
+        logger.setLevel('INFO')
+    else:
+        logger.setLevel('WARNING')
 
+    if not output_path.exists():
+        partial_dataset = read_subset(output_path=args.output_path,
+                                      batch_ids_file=args.batch_ids_file,
+                                      ds_format='dicom',
+                                      verbose=args.verbose,
+                                      include_phantom=args.include_phantom,
+                                      is_complete=not args.is_partial)
 
-def read_subset(name, seq_num, style, reindex, verbose, include_phantom,
-                metadata_root):
-    if not metadata_root:
-        metadata_root = Path.home() / CACHE_DIR
-        metadata_root.mkdir(exist_ok=True)
-
-    if not Path(metadata_root).is_dir():
-        raise OSError('Expected valid directory for --metadata_root argument,'
-                      ' Got {0}'.format(metadata_root))
-
-    metadata_root = Path(metadata_root).resolve()
-    filepath = Path(metadata_root) / (name + f'_master{seq_num}.txt')
-
-    subset = txt2list(filepath)
-    parent_set = []
-    for j, folder in enumerate(subset):
-        identifier = name + f'_part{seq_num + j}'
-        child_set = import_dataset(data_root=folder,
-                                   style=style,
-                                   name=identifier,
-                                   reindex=reindex,
-                                   verbose=verbose,
-                                   include_phantom=include_phantom,
-                                   metadata_root=metadata_root,
-                                   save=False)
-        parent_set.append(child_set)
-    return parent_set
+        partial_dataset.is_complete = False
+        save_mr_dataset(args.output_path, partial_dataset)
 
 
-def merge_subset(parent, final_name):
-    master = None
-    if len(parent) < 1:
-        raise EOFError('Cannot merge an empty list!')
-    master = parent[0]
-    for child in parent[1:]:
-        master.merge(child)
-    master.name = final_name
-    return master
+def read_subset(batch_ids_file: str,
+                ds_format: str,
+                verbose: bool,
+                include_phantom: bool,
+                **kwargs) -> BaseDataset:
+    """
+    Given a list of folder paths, reads all dicom files in those folders
+    and returns a MRdataset object. In context, when this function was created,
+    each folder corresponds to a different subject.
+
+    Parameters
+    ----------
+    batch_ids_file : str
+        path to a text file containing a list of paths (to several folders)
+    ds_format : str
+        what kind of MRdataset to create, dicom, bids etc.
+    verbose : bool
+        print more while doing the job
+    include_phantom : bool
+        whether to include phantom files in processing
+    **kwargs: dict
+        additional arguments to pass to import_dataset
+
+    Returns
+    -------
+    BaseDataset
+
+    Raises
+    ------
+    NotImplementedError
+        if ds_format is not dicom
+    """
+    # Supports only dicom for now
+    if ds_format != 'dicom':
+        raise NotImplementedError(f'Expected ds_format as dicom, Got {ds_format}')
+
+    subset = txt2list(batch_ids_file)
+    identifier = Path(batch_ids_file).stem
+    partial_dataset = import_dataset(data_source=subset,
+                                     ds_format=ds_format,
+                                     name=identifier,
+                                     verbose=verbose,
+                                     include_phantom=include_phantom,
+                                     **kwargs)
+    # partial_dataset.walk(), import_dataset already does this
+    return partial_dataset
 
 
-def merge_from_disk(metadata_root, name):
-    chunks = []
-    for file in metadata_root.rglob(name + '_master*.pkl'):
-        if file.is_file():
-            # chunks.append(file)
-            with open(file, 'rb') as f:
-                temp_dict = pickle.load(f)
-                chunks.append(temp_dict)
-    return merge_subset(chunks, name)
-
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     sys.exit(main())  # pragma: no cover

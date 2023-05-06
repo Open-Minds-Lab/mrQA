@@ -11,4 +11,4 @@ Development Lead
 Contributors
 ------------
 
-Tanupat Boonchalermvichien
+* Yaroslav Halchenko

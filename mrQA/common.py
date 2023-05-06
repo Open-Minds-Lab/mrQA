@@ -14,6 +14,3 @@ def set_logging(name):
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     return logger
-    # logging.basicConfig(filename=Path(metadata_root) / 'execution.log',
-    #                     format='%(asctime)s | %(levelname)s: %(message)s',
-    #                     level=level)
