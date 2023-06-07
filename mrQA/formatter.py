@@ -111,7 +111,7 @@ class HtmlFormatter(BaseFormatter):
         extn = ['jinja2.ext.loopcontrols']
         template_env = jinja2.Environment(loader=fs_loader, extensions=extn)
 
-        template_file = "templates/layout.html"
+        template_file = "layout.html"
         template = template_env.get_template(template_file)
 
         output_text = template.render(
