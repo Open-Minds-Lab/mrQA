@@ -3,14 +3,14 @@ from typing import Union
 
 from MRdataset import save_mr_dataset
 from MRdataset.base import BaseDataset
-from MRdataset.log import logger
 from MRdataset.config import DatasetEmptyException
+from MRdataset.log import logger
 
 from mrQA.config import STRATEGIES_ALLOWED
 from mrQA.formatter import HtmlFormatter
 from mrQA.utils import majority_attribute_values, _get_runs_by_echo, \
     _check_against_reference, _cli_report, _validate_reference, \
-    export_subject_lists, record_out_paths
+    export_subject_lists, record_out_paths, get_protocol_from_file
 
 
 def check_compliance(dataset: BaseDataset,
@@ -18,7 +18,8 @@ def check_compliance(dataset: BaseDataset,
                      decimals: int = 3,
                      output_dir: Union[Path, str] = None,
                      verbose: bool = False,
-                     tolerance: float = 0.1,) -> Path:
+                     tolerance: float = 0.1,
+                     reference_path: Union[Path, str] = None) -> Path:
     """
     Main function for checking compliance. Infers the reference protocol
     according to the user chosen strategy, and then generates a compliance
@@ -39,6 +40,9 @@ def check_compliance(dataset: BaseDataset,
         print more if true
     tolerance : float
         Tolerance for checking against reference protocol. Default is 0.1
+    reference_path : Union[Path, str]
+        Path to the reference protocol file. Required if strategy is
+        'reference'
 
     Returns
     -------
@@ -64,6 +68,16 @@ def check_compliance(dataset: BaseDataset,
 
     if strategy == 'majority':
         dataset = compare_with_majority(dataset, decimals, tolerance=tolerance)
+    elif strategy == 'reference':
+        if not reference_path:
+            raise ValueError('Please provide a reference protocol file')
+        reference_path = Path(reference_path).resolve()
+        if not reference_path.is_file():
+            raise FileNotFoundError('Please provide a valid reference file')
+        dataset = compare_with_reference(dataset=dataset,
+                                         reference_path=reference_path,
+                                         decimals=decimals,
+                                         tolerance=tolerance)
     else:
         raise NotImplementedError(
             f'Only the following strategies are allowed : \n\t'
@@ -85,6 +99,49 @@ def check_compliance(dataset: BaseDataset,
     # Print a small message on the console, about non-compliance of dataset
     print(_cli_report(dataset, str(report_path)))
     return report_path
+
+
+def compare_with_reference(dataset: BaseDataset,
+                           reference_path: Path,
+                           decimals: int = 3,
+                           tolerance: float = 0.1) -> BaseDataset:
+    """
+    Method for post-acquisition compliance. Reads the reference protocol/values
+    from a file, and then identifies deviations.
+
+    Parameters
+    ----------
+    dataset: BaseDataset
+        BaseDataset instance for the dataset which is to be checked
+        for compliance
+    reference_path: Path
+        Path to the reference protocol file
+    decimals: int
+        Number of decimal places to round to (default:3).
+    tolerance: float
+        Tolerance for checking against reference protocol. Default is 0.1
+
+    Returns
+    -------
+    dataset: BaseDataset
+        Adds the non-compliance information to the same BaseDataset instance and
+        returns it.
+    """
+
+    # Extract reference protocol from file
+    reference = get_protocol_from_file(reference_path)
+    for modality in dataset.modalities:
+        # Reset compliance calculation before re-computing it.
+        modality.reset_compliance()
+
+        # Set reference protocol from file
+        modality.set_reference(reference)
+        modality = _check_against_reference(modality, decimals, tolerance)
+        if modality.compliant:
+            dataset.add_compliant_modality_name(modality.name)
+        else:
+            dataset.add_non_compliant_modality_name(modality.name)
+    return dataset
 
 
 def compare_with_majority(dataset: BaseDataset,
