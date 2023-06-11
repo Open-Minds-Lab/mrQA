@@ -48,7 +48,8 @@ def get_parser():
     optional.add_argument('-v', '--verbose', action='store_true',
                           help='allow verbose output on console')
     optional.add_argument('-ref', '--reference_path', type=str,
-                          help='.yaml file containing protocol specification')
+                          help='DICOM file containing desired protocol. Only '
+                               'used when --strategy==reference')
     optional.add_argument('--strategy', type=str, default='majority',
                           help='how to examine parameters [majority|reference].'
                                '--reference_path required if using reference')
@@ -87,7 +88,8 @@ def main():
                      output_dir=args.output_dir,
                      decimals=args.decimals,
                      verbose=args.verbose,
-                     tolerance=args.tolerance,)
+                     tolerance=args.tolerance,
+                     reference_path=args.reference_path,)
     return 0
 
 
@@ -118,6 +120,14 @@ def parse_args():
 
     if not is_writable(args.output_dir):
         raise OSError(f'Output Folder {args.output_dir} is not writable')
+
+    if args.reference_path is not None:
+        if not Path(args.reference_path).is_file():
+            raise OSError(f'Expected valid file for --reference_path argument, '
+                          'Got {0}'.format(args.reference_path))
+        if args.strategy != 'reference':
+            raise ValueError('Expected --strategy==reference when using '
+                             '--reference_path')
     return args
 
 
