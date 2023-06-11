@@ -1,19 +1,18 @@
-import re
+import time
 import time
 import typing
-import unicodedata
 import warnings
 from collections import Counter
 from datetime import datetime, timezone
 from itertools import groupby
 from itertools import takewhile
 from pathlib import Path
-from typing import Union, List, Optional, Any
 from subprocess import run, CalledProcessError, TimeoutExpired
+from typing import Union, List, Optional, Any
 
 import numpy as np
-import tempfile
 from MRdataset.base import Modality, BaseDataset
+from MRdataset.dicom_utils import is_dicom_file, parse_imaging_params
 from MRdataset.log import logger
 from MRdataset.utils import param_difference, make_hashable, slugify
 from dateutil import parser
@@ -516,6 +515,23 @@ def _validate_reference(dict_, default=None):
     #         flag = False
     #         continue
     return True
+
+
+def get_protocol_from_file(reference_path: Path) -> dict:
+    """
+    Get the protocol from a file.
+    """
+    # Check if the file exists
+    if not reference_path.is_file():
+        raise FileNotFoundError(f'File {reference_path} not found.')
+    # Check file format
+    if reference_path.suffix == '.json':
+        raise NotImplementedError('JSON format not supported yet.')
+    elif is_dicom_file(reference_path):
+        reference = parse_imaging_params(reference_path)
+    else:
+        raise ValueError('File format not supported.')
+    return reference
 
 
 def round_if_numeric(value: Union[int, float],
