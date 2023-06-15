@@ -181,7 +181,8 @@ def monitor(name: str,
             dataset.merge(new_dataset)
         else:
             logger.warning('No new files found since last report. '
-                           'Regenerating report')
+                           'Returning last report')
+            return last_report_path
     else:
         logger.warning('Dataset %s not found in records. Running '
                        'compliance check on entire dataset', name)
