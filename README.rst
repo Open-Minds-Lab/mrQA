@@ -21,6 +21,13 @@ Documentation: https://open-minds-lab.github.io/mrQA/
 
 ``mrQA`` uses ``MRDataset`` to efficiently parse various neuroimaging dataset formats, which is available `here <github.com/Open-Minds-Lab/MRdataset>`_.
 
+Key features:
+
+- evaluation of protocol compliance (within-sequence across-dataset) in an existing dataset
+- continuous monitoring of incoming data (hourly or daily on XNAT server or similar)
+- parallel processing of very large datasets (like ABCD or UK Biobank) on a HPC cluster
+- few more to be released soon including vertical audit within-session across-sequence checks
+
 Simple schematic of the library:
 
 .. image:: ./docs/schematic_mrQA.png
