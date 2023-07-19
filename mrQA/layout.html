@@ -91,7 +91,9 @@
         {% if not modality.compliant %}
             {% if modality.subjects|length > 2 %}
                 <tr>
-                    <td class="tg-0pky" colspan="1">{{ modality.name }}</td>
+                    <td class="tg-0pky" colspan="1"><a
+                            href=#{{ modality.name }}>{{ modality.name }}</a>
+                    </td>
                     {% set percent_non_compliant = 100 * modality.non_compliant_subject_names|length|float / modality.subjects|length|float %}
                     {% set percent_compliant = 100 * modality.compliant_subject_names|length|float / modality.subjects|length|float %}
 
@@ -147,7 +149,7 @@
                 {% set index = i * cols + j %}
                 {% if index < dataset.compliant_modality_names|length %}
                     <td class="tg-0pky" colspan="1">
-                        {{ dataset.compliant_modality_names[index] }}
+                        <a href=#{{ dataset.compliant_modality_names[index] }}>{{ dataset.compliant_modality_names[index] }}</a>
                     </td>
                 {% endif %}
             {% endfor %}
@@ -161,7 +163,7 @@
 
     {% if not modality.compliant %}
         {% if modality.get_echo_times() %}
-            <h2>Modality : {{ modality.name }}</h2>
+            <h2 id="{{ modality.name }}">Modality : {{ modality.name }}</h2>
         {% endif %}
         {% for echo_time in modality.get_echo_times()|sort %}
             {% set te = echo_time %}
@@ -266,7 +268,7 @@
 {% for modality in dataset.modalities|sort %}
 
     {% if modality.compliant %}
-        <h2>Modality : {{ modality.name }}</h2>
+        <h2 id="{{ modality.name }}">Modality : {{ modality.name }}</h2>
         {% if not modality.get_echo_times() %}
             <h5 style="color: #780000"> Warning : Could not compute
                 reference </h5>
