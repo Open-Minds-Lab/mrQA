@@ -623,10 +623,13 @@ def _check_against_reference(modality, decimals, tolerance):
     # flags will be set to false. Default value in modality class is True,
     # but we cannot rely on that default value.
     modality.compliant = True
+    modality.reset_lists()
     for subject in modality.subjects:
         subject.compliant = True
+        subject.reset_lists()
         for session in subject.sessions:
             session.compliant = True
+            session.reset_lists()
             for i_run in session.runs:
                 try:
                     i_run.delta, te_ref = _check_single_run(modality,

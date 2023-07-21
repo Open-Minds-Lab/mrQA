@@ -62,6 +62,9 @@ def check_compliance(dataset: BaseDataset,
     if not dataset.modalities:
         raise DatasetEmptyException
 
+    # clear the compliant/non-compliant lists
+    dataset.reset_lists()
+
     if strategy == 'majority':
         dataset = compare_with_majority(dataset, decimals, tolerance=tolerance)
     else:
