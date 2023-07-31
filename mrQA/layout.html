@@ -270,6 +270,7 @@
 {% for modality in dataset.modalities|sort %}
 
     {% if modality.compliant %}
+        {% if modality.subjects|length > 2 %}
         <h2 id="{{ modality.name }}">Modality : {{ modality.name }}</h2>
         {% if not modality.get_echo_times() %}
             <h5 style="color: #780000"> Warning : Could not compute
@@ -329,6 +330,7 @@
                 </tr>
                 </tbody>
             </table>
+        {% endif %}
         {% endif %}
     {% endif %}
 {% endfor %}
