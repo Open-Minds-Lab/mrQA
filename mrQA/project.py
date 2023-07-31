@@ -116,26 +116,27 @@ def compare_with_majority(dataset: BaseDataset,
     # TODO: Check for subset, if incomplete dataset throw error and stop
 
     for modality in dataset.modalities:
-        # Reset compliance calculation before re-computing it.
-        modality.reset_compliance()
+        if len(modality.subjects) > 2:
+            # Reset compliance calculation before re-computing it.
+            modality.reset_compliance()
 
-        # Infer reference protocol for each echo_time
-        # TODO: segregation via echo_time should be deprecated as multiple TE is
-        #   part of the same run
-        run_by_echo = _get_runs_by_echo(modality, decimals)
+            # Infer reference protocol for each echo_time
+            # TODO: segregation via echo_time should be deprecated as multiple
+            #  TE is part of the same run
+            run_by_echo = _get_runs_by_echo(modality, decimals)
 
-        # For each echo time, find the most common values
-        for echo_time, run_list in run_by_echo.items():
-            reference = majority_attribute_values(run_list, echo_time)
-            if _validate_reference(reference):
-                modality.set_reference(reference, echo_time)
+            # For each echo time, find the most common values
+            for echo_time, run_list in run_by_echo.items():
+                reference = majority_attribute_values(run_list, echo_time)
+                if _validate_reference(reference):
+                    modality.set_reference(reference, echo_time)
 
-        modality = _check_against_reference(modality, decimals,
-                                            tolerance=tolerance)
-        if modality.compliant:
-            dataset.add_compliant_modality_name(modality.name)
-        else:
-            dataset.add_non_compliant_modality_name(modality.name)
+            modality = _check_against_reference(modality, decimals,
+                                                tolerance=tolerance)
+            if modality.compliant:
+                dataset.add_compliant_modality_name(modality.name)
+            else:
+                dataset.add_non_compliant_modality_name(modality.name)
     # As we are updating the same dataset by adding non-compliant subject names,
     # and non-compliant modality names, we can return the same dataset
     return dataset

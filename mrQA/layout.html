@@ -87,7 +87,8 @@
     </tr>
     </thead>
     <tbody>
-    {% for modality in dataset.modalities|sort %}
+    {% for mname in dataset.non_compliant_modality_names|sort %}
+        {% set modality = dataset.get_modality_by_name(mname) %}
         {% if not modality.compliant %}
             {% if modality.subjects|length > 2 %}
                 <tr>
@@ -158,9 +159,9 @@
     </tbody>
 </table>
 
-
-{% for modality in dataset.modalities|sort %}
-
+{% for mname in dataset.non_compliant_modality_names|sort %}
+    {% set modality = dataset.get_modality_by_name(mname) %}
+{#{% for modality in dataset.modalities|sort %}#}
     {% if not modality.compliant %}
         {% if modality.subjects|length > 2 %}
         {% if modality.get_echo_times() %}
@@ -266,8 +267,9 @@
     {% endif %}
 {% endfor %}
 
-
-{% for modality in dataset.modalities|sort %}
+{% for mname in dataset.compliant_modality_names|sort %}
+    {% set modality = dataset.get_modality_by_name(mname) %}
+{#{% for modality in dataset.modalities|sort %}#}
 
     {% if modality.compliant %}
         {% if modality.subjects|length > 2 %}
