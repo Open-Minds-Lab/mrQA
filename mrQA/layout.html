@@ -162,6 +162,7 @@
 {% for modality in dataset.modalities|sort %}
 
     {% if not modality.compliant %}
+        {% if modality.subjects|length > 2 %}
         {% if modality.get_echo_times() %}
             <h2 id="{{ modality.name }}">Modality : {{ modality.name }}</h2>
         {% endif %}
@@ -261,6 +262,7 @@
                 </tbody>
             </table>
         {% endif %}
+         {% endif %}
     {% endif %}
 {% endfor %}
 
