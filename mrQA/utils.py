@@ -21,7 +21,7 @@ from dateutil import parser
 from mrQA.config import past_records_fpath, report_fpath, mrds_fpath, \
     subject_list_dir, DATE_SEPARATOR, CannotComputeMajority, \
     ReferenceNotSetForModality, \
-    ReferenceNotSetForEchoTime
+    ReferenceNotSetForEchoTime, status_fpath
 
 
 def get_items_upto_count(dict_: Counter, rank: int = 1):
@@ -54,10 +54,10 @@ def timestamp():
     return time_string
 
 
-def record_out_paths(output_dir, dataset_name):
+def record_out_paths(output_dir, dataset):
     ts = timestamp()
     utc = datetime.strptime(ts, '%m_%d_%Y_%H_%M_%S').timestamp()
-    filename = f'{dataset_name}{DATE_SEPARATOR}{ts}'
+    filename = f'{dataset.name}{DATE_SEPARATOR}{ts}'
     report_path = report_fpath(output_dir, filename)
     mrds_path = mrds_fpath(output_dir, filename)
     sub_lists_dir_path = subject_list_dir(output_dir, filename)
@@ -65,10 +65,40 @@ def record_out_paths(output_dir, dataset_name):
     records_filepath = past_records_fpath(output_dir)
     if not records_filepath.parent.is_dir():
         records_filepath.parent.mkdir(parents=True)
+
+    # TODO: writing records only required for monitor,
+    #  move to monitor.py
     with open(records_filepath, 'a', encoding='utf-8') as fp:
         fp.write(f'{utc},{report_path},'
                  f'{mrds_path},{ts}\n')
+
+    record_status(output_dir, dataset, ts)
     return report_path, mrds_path, sub_lists_dir_path
+
+
+def record_status(output_dir, dataset, ts):
+    status_filepath = status_fpath(output_dir)
+    if not status_filepath.parent.is_dir():
+        status_filepath.parent.mkdir(parents=True)
+
+    utc = datetime.strptime(ts, '%m_%d_%Y_%H_%M_%S')
+    time_stamp = datetime.strftime(utc, '%m/%d/%Y_%H:%M:%S')
+
+    n_comp = dataset.non_compliant_modality_names
+    comp = dataset.compliant_modality_names
+    fully_compliant = len(n_comp) == 0
+
+    n_comp_params = set()
+    for name in dataset.non_compliant_modality_names:
+        modality = dataset.get_modality_by_name(name)
+        nc_params = modality.non_compliant_params()
+        n_comp_params.update(nc_params)
+    nc_params_str = ';'.join(n_comp_params)
+
+    with open(status_filepath, 'a', encoding='utf-8') as fp:
+        fp.write(f'{time_stamp},{dataset.name},{fully_compliant},'
+                 f'{len(n_comp)},{len(comp)},{nc_params_str}\n')
+    return status_filepath
 
 
 def majority_attribute_values(list_of_dicts: list, echo_time: float,

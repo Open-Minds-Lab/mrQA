@@ -78,7 +78,7 @@ def check_compliance(dataset: BaseDataset,
         raise NotADirectoryError('Provide a valid output directory')
 
     report_path, mrds_path, sub_lists_dir_path = record_out_paths(output_dir,
-                                                                  dataset.name)
+                                                                  dataset)
     save_mr_dataset(mrds_path, dataset)
     generate_report(dataset,
                     report_path,
