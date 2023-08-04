@@ -70,15 +70,15 @@ def record_out_paths(output_dir, dataset_name):
     return report_path, mrds_path, sub_lists_dir_path
 
 
-def majority_attribute_values(list_of_dicts: list, echo_time: float,
-                              default=None):
+def majority_values(list_seqs: list,
+                    default=None):
     """
     Given a list of dictionaries, it generates the most common
     values for each key
 
     Parameters
     ----------
-    list_of_dicts : list
+    list_seqs : list
         a list of dictionaries
     echo_time : float
         echo time
