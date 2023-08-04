@@ -25,6 +25,8 @@ def get_parser():
     required.add_argument('-d', '--data-source', nargs='+', required=True,
                           help='directory containing downloaded dataset with '
                                'dicom files, supports nested hierarchies')
+    required.add_argument('--config', type=str,
+                          help='path to config file')
     optional.add_argument('-o', '--output-dir', type=str,
                           help='specify the directory where the report'
                                ' would be saved. By default, the --data_source '
@@ -53,12 +55,6 @@ def get_parser():
     optional.add_argument('--strategy', type=str, default='majority',
                           help='how to examine parameters [majority|reference].'
                                '--reference_path required if using reference')
-    optional.add_argument('--include-phantom', action='store_true',
-                          help='whether to include phantom, localizer, '
-                               'aahead_scout')
-    optional.add_argument('--include-nifti-header', action='store_true',
-                          help='whether to check nifti headers for compliance,'
-                               'only used when --format==bids')
     # Experimental features, not implemented yet.
     optional.add_argument('-l', '--logging', type=int, default=40,
                           help='set logging to appropriate level')
@@ -80,8 +76,7 @@ def main():
                              ds_format=args.format,
                              name=args.name,
                              verbose=args.verbose,
-                             include_phantom=args.include_phantom,
-                             include_nifti_header=args.include_nifti_header)
+                             config_path=args.config)
 
     check_compliance(dataset=dataset,
                      strategy=args.strategy,
@@ -105,6 +100,9 @@ def parse_args():
     if not valid_dirs(args.data_source):
         raise OSError('Expected valid directory for --data_source argument, '
                       'Got {0}'.format(args.data_source))
+    if not args.config:
+        raise ValueError('Expected --config argument, '
+                         'Got {0}'.format(args.config))
 
     if args.output_dir is None:
         logger.info('Use --output-dir to specify dir for final directory. '
