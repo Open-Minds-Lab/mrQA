@@ -11,12 +11,12 @@ from subprocess import run, CalledProcessError, TimeoutExpired
 from typing import Union, List, Optional, Any
 
 import numpy as np
-from MRdataset.base import Modality, BaseDataset
+from MRdataset.base import Modality
 from MRdataset.dicom_utils import is_dicom_file, parse_imaging_params
+from MRdataset.experiment import BaseDataset
 from MRdataset.log import logger
 from MRdataset.utils import param_difference, make_hashable, slugify
 from dateutil import parser
-
 from mrQA.config import past_records_fpath, report_fpath, mrds_fpath, \
     subject_list_dir, DATE_SEPARATOR, CannotComputeMajority, \
     ReferenceNotSetForModality, \
@@ -94,7 +94,7 @@ def majority_values(list_seqs: list,
     maj_value = default
 
     try:
-        args_valid = _check_args_validity(list_of_dicts, echo_time)
+        args_valid = _check_args_validity(list_seqs)
     except CannotComputeMajority as e:
         maj_value = None  # 'Cannot Compute Majority:\n Count < 3'
         logger.info(f'Cannot compute majority: {e}')
@@ -103,24 +103,22 @@ def majority_values(list_seqs: list,
         logger.info(f'Cannot compute majority: {e}')
 
     if not args_valid:
-        maj_attr_values = {}
-        for key in list_of_dicts[0].keys():
-            maj_attr_values[key] = maj_value
         return maj_attr_values
+
     counters_dict = {}
     categories = set()
-    for dict_ in list_of_dicts:
-        categories.update(dict_.keys())
-        for key, value in dict_.items():
-            counter = counters_dict.get(key, Counter({default: 0}))
-            value = make_hashable(value)
+    for seq in list_seqs:
+        categories.update(seq.params)
+        for param in seq.params:
+            counter = counters_dict.get(param, Counter({default: 0}))
+            value = seq[param].value
             counter[value] += 1
-            counters_dict[key] = counter
+            counters_dict[param] = counter
 
-    majority_attr_dict = {}
+    majority_dict = {}
     for parameter, counter in counters_dict.items():
-        majority_attr_dict[parameter] = pick_majority(counter, parameter)
-    return majority_attr_dict
+        majority_dict[parameter] = pick_majority(counter, parameter)
+    return majority_dict
 
 
 def extract_reasons(data: list):
@@ -184,13 +182,13 @@ def pick_majority(counter_: Counter, parameter: str, default: Any = None):
     return items_rank1[0][0]
 
 
-def _check_args_validity(list_of_dicts: List[dict], echo_time) -> bool:
+def _check_args_validity(list_: List) -> bool:
     """
     Checks if the arguments are valid for computing majority attribute values
 
     Parameters
     ----------
-    list_of_dicts : list
+    list_ : list
         a list of dictionaries
     echo_time : float
          Echo time of run
@@ -205,18 +203,18 @@ def _check_args_validity(list_of_dicts: List[dict], echo_time) -> bool:
     ValueError
         If the list is empty or if any of the dictionaries is empty
     """
-    if list_of_dicts is None:
-        raise ValueError('Expected a list of dicts, Got NoneType')
-    if len(list_of_dicts) == 0:
+    if list_ is None:
+        raise ValueError('Expected a list of sequences, Got NoneType')
+    if len(list_) == 0:
         raise ValueError('List is empty.')
-    for dict_ in list_of_dicts:
-        if len(dict_) == 0:
-            raise ValueError('Atleast one of dictionaries is empty.')
-    if len(list_of_dicts) < 3:
+    for seq in list_:
+        if len(seq) == 0:
+            raise ValueError('Atleast one of sequences is empty.')
+    if len(list_) < 3:
         logger.info('Cannot compute majority attribute values. '
                     'Got less than 3 values for each '
                     'parameter. Returns majority values as None.')
-        raise CannotComputeMajority('Count < 3', te=echo_time)
+        raise CannotComputeMajority('Count < 3')
     return True
 
 
