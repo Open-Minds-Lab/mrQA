@@ -486,7 +486,7 @@ def _get_runs_by_echo(modality: Modality, decimals: int = 3):
     return run_params_by_te
 
 
-def _validate_reference(dict_, default=None):
+def _valid_reference(dict_, default=None):
     """
     Check if a dictionary is valid. A dictionary is valid if it is not empty
     and if at least one of its values is different from the default value.
@@ -606,6 +606,14 @@ def _check_single_run(modality: Modality,
                              tolerance=tolerance)
     return delta, te_ref
 
+
+def compute_majority(dataset: BaseDataset, seq_name):
+    seq_list = []
+    for subj, sess, runs, seq in dataset.traverse_horizontal(seq_name):
+        seq_list.append(seq)
+
+    dict_ = majority_values(seq_list)
+    return dict_
 
 def _check_against_reference(modality, decimals, tolerance):
     """

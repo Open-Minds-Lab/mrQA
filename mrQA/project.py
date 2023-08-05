@@ -63,11 +63,11 @@ def check_compliance(dataset: BaseDataset,
     else:
         logger.setLevel('WARNING')
 
-    if not dataset.modalities:
+    if not dataset.sequences:
         raise DatasetEmptyException
 
     if strategy == 'majority':
-        dataset = compare_with_majority(dataset, decimals, tolerance=tolerance)
+        compliance_dict = compare_with_majority(dataset, decimals, tolerance=tolerance)
     elif strategy == 'reference':
         if not reference_path:
             raise ValueError('Please provide a reference protocol file')
@@ -146,7 +146,7 @@ def compare_with_reference(dataset: BaseDataset,
 
 def compare_with_majority(dataset: BaseDataset,
                           decimals: int = 3,
-                          tolerance: float = 0.1) -> BaseDataset:
+                          tolerance: float = 0.1) -> Dict:
     """
     Method for post-acquisition compliance. Infers the reference protocol/values
     by looking for the most frequent values, and then identifying deviations
@@ -163,39 +163,43 @@ def compare_with_majority(dataset: BaseDataset,
 
     Returns
     -------
-    dataset : BaseDataset
-        Adds the non-compliance information to the same BaseDataset instance and
-        returns it.
+    dict
+        A dictionary containing the reference protocol, compliant and
+        non-compliant datasets
     """
+
     # TODO: Check for subset, if incomplete dataset throw error and stop
+    ref_protocol = BaseMRImagingProtocol(f'reference_for_{dataset.name}')
+    compliant_dataset = CompliantDataset(dataset.name)
+    non_compliant_dataset = NonCompliantDataset(dataset.name)
 
-    for modality in dataset.modalities:
-        # Reset compliance calculation before re-computing it.
-        modality.reset_compliance()
+    for seq_name in dataset.sequences():
+        ref_sequence = ImagingSequence(name=seq_name)
+        ref_dict = compute_majority(dataset, seq_name)
+        if _valid_reference(ref_dict):
+            ref_sequence.from_dict(ref_dict)
+            ref_protocol.add(ref_sequence)
 
-        # Infer reference protocol for each echo_time
-        # TODO: segregation via echo_time should be deprecated as multiple TE is
-        #   part of the same run
-        run_by_echo = _get_runs_by_echo(modality, decimals)
+        for subj, sess, run, seq in dataset.traverse_horizontal(seq_name):
+            compliant, non_compliant_tuples = ref_sequence.compliant(seq)
+            non_compliant_params = [x[1] for x in non_compliant_tuples]
 
-        # For each echo time, find the most common values
-        for echo_time, run_list in run_by_echo.items():
-            reference = majority_attribute_values(run_list, echo_time)
-            if _validate_reference(reference):
-                modality.set_reference(reference, echo_time)
+            if compliant:
+                compliant_dataset.add(subj, sess, run, seq_name, seq)
+            else:
+                non_compliant_dataset.add(subj, sess, run, seq_name, seq)
+                non_compliant_dataset.add_non_compliant_params(
+                    subj,sess,run,seq_name,non_compliant_params
+                )
 
-        modality = _check_against_reference(modality, decimals,
-                                            tolerance=tolerance)
-        if modality.compliant:
-            dataset.add_compliant_modality_name(modality.name)
-        else:
-            dataset.add_non_compliant_modality_name(modality.name)
-    # As we are updating the same dataset by adding non-compliant subject names,
-    # and non-compliant modality names, we can return the same dataset
-    return dataset
+    return {
+        'reference': ref_protocol,
+        'compliant': compliant_dataset,
+        'non_compliant': non_compliant_dataset,
+    }
 
 
-def generate_report(dataset: BaseDataset,
+def generate_report(compliance_dict: dict,
                     report_path: str or Path,
                     sub_lists_dir_path: str,
                     output_dir: Union[Path, str]) -> Path:
