@@ -1,16 +1,17 @@
 from pathlib import Path
-from typing import Union
+from typing import Union, Dict
 
 from MRdataset import save_mr_dataset
-from MRdataset.base import BaseDataset
 from MRdataset.config import DatasetEmptyException
+from MRdataset.experiment import BaseDataset
 from MRdataset.log import logger
-
+from mrQA.base import CompliantDataset, NonCompliantDataset
 from mrQA.config import STRATEGIES_ALLOWED
 from mrQA.formatter import HtmlFormatter
-from mrQA.utils import majority_attribute_values, _get_runs_by_echo, \
-    _check_against_reference, _cli_report, _validate_reference, \
-    export_subject_lists, record_out_paths, get_protocol_from_file
+from mrQA.utils import _check_against_reference, _cli_report, \
+    export_subject_lists, record_out_paths, get_protocol_from_file, \
+    compute_majority, _valid_reference
+from protocol import BaseMRImagingProtocol, ImagingSequence
 
 
 def check_compliance(dataset: BaseDataset,
@@ -63,8 +64,17 @@ def check_compliance(dataset: BaseDataset,
     else:
         logger.setLevel('WARNING')
 
-    if not dataset.sequences:
+    if not dataset.get_sequence_ids():
         raise DatasetEmptyException
+
+    output_dir = Path(output_dir).resolve()
+    output_dir.mkdir(exist_ok=True, parents=True)
+    if not output_dir.is_dir():
+        raise NotADirectoryError('Provide a valid output directory')
+
+    report_path, mrds_path, sub_lists_dir_path = record_out_paths(output_dir,
+                                                                  dataset.name)
+    save_mr_dataset(mrds_path, dataset)
 
     if strategy == 'majority':
         compliance_dict = compare_with_majority(dataset, decimals, tolerance=tolerance)
@@ -83,21 +93,15 @@ def check_compliance(dataset: BaseDataset,
             f'Only the following strategies are allowed : \n\t'
             f'{STRATEGIES_ALLOWED}')
 
-    output_dir = Path(output_dir).resolve()
-    output_dir.mkdir(exist_ok=True, parents=True)
-    if not output_dir.is_dir():
-        raise NotADirectoryError('Provide a valid output directory')
 
-    report_path, mrds_path, sub_lists_dir_path = record_out_paths(output_dir,
-                                                                  dataset.name)
     save_mr_dataset(mrds_path, dataset)
-    generate_report(dataset,
+    generate_report(compliance_dict,
                     report_path,
                     sub_lists_dir_path,
                     output_dir)
 
     # Print a small message on the console, about non-compliance of dataset
-    print(_cli_report(dataset, str(report_path)))
+    print(_cli_report(compliance_dict, str(report_path)))
     return report_path
 
 
@@ -173,24 +177,24 @@ def compare_with_majority(dataset: BaseDataset,
     compliant_dataset = CompliantDataset(dataset.name)
     non_compliant_dataset = NonCompliantDataset(dataset.name)
 
-    for seq_name in dataset.sequences():
+    for seq_name in dataset.get_sequence_ids():
         ref_sequence = ImagingSequence(name=seq_name)
         ref_dict = compute_majority(dataset, seq_name)
         if _valid_reference(ref_dict):
             ref_sequence.from_dict(ref_dict)
             ref_protocol.add(ref_sequence)
 
-        for subj, sess, run, seq in dataset.traverse_horizontal(seq_name):
-            compliant, non_compliant_tuples = ref_sequence.compliant(seq)
-            non_compliant_params = [x[1] for x in non_compliant_tuples]
+            for subj, sess, run, seq in dataset.traverse_horizontal(seq_name):
+                compliant, non_compliant_tuples = ref_sequence.compliant(seq)
+                non_compliant_params = [x[1] for x in non_compliant_tuples]
 
-            if compliant:
-                compliant_dataset.add(subj, sess, run, seq_name, seq)
-            else:
-                non_compliant_dataset.add(subj, sess, run, seq_name, seq)
-                non_compliant_dataset.add_non_compliant_params(
-                    subj,sess,run,seq_name,non_compliant_params
-                )
+                if compliant:
+                    compliant_dataset.add(subj, sess, run, seq_name, seq)
+                else:
+                    non_compliant_dataset.add(subj, sess, run, seq_name, seq)
+                    non_compliant_dataset.add_non_compliant_params(
+                        subj,sess,run,seq_name,non_compliant_params
+                    )
 
     return {
         'reference': ref_protocol,
@@ -229,15 +233,11 @@ def generate_report(compliance_dict: dict,
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # time_dict = get_timestamps()
-    sub_lists_by_modality = export_subject_lists(output_dir,
-                                                 dataset,
+    sub_lists_by_seq = export_subject_lists(output_dir,
+                                                 compliance_dict,
                                                  sub_lists_dir_path)
     # export_record(output_dir, filename, time_dict)
     # Generate the HTML report and save it to the output_path
-    args = {
-        'ds': dataset,
-        'sub_lists_by_modality': sub_lists_by_modality,
-        # 'time': time_dict
-    }
-    HtmlFormatter(filepath=report_path, params=args)
+    compliance_dict['sub_lists_by_seq'] =  sub_lists_by_seq
+    HtmlFormatter(filepath=report_path, params=compliance_dict)
     return Path(report_path)
