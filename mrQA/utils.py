@@ -103,7 +103,7 @@ def majority_values(list_seqs: list,
         logger.info(f'Cannot compute majority: {e}')
 
     if not args_valid:
-        return maj_attr_values
+        return maj_value
 
     counters_dict = {}
     categories = set()
@@ -443,11 +443,11 @@ def subject_list2txt(dataset: BaseDataset,
     """
     output_dir.mkdir(exist_ok=True, parents=True)
     filepaths = {}
-    for modality in dataset.modalities:
-        if not modality.compliant:
-            filepath = output_dir / slugify(modality.name)
-            list2txt(filepath, modality.non_compliant_subject_names)
-            filepaths[modality.name] = filepath
+    for seq_name in dataset.get_sequence_ids():
+            filepath = output_dir / f'{slugify(seq_name)}.txt'
+            subj_with_sequence = dataset.get_subject_ids(seq_name)
+            list2txt(filepath, subj_with_sequence)
+            filepaths[seq_name] = filepath
     return filepaths
 
 
@@ -698,7 +698,7 @@ def _check_against_reference(modality, decimals, tolerance):
     return modality
 
 
-def _cli_report(dataset: BaseDataset, report_name):
+def _cli_report(compliance_dict: dict, report_name):
     """
     CLI report generator.
     Generate a single line report for the dataset
@@ -716,19 +716,24 @@ def _cli_report(dataset: BaseDataset, report_name):
     """
     result = {}
     # For all the modalities calculate the percent of non-compliance
-    for modality in dataset.modalities:
-        percent_non_compliant = len(modality.non_compliant_subject_names) \
-                                / len(modality.subjects)
+    non_compliant_ds = compliance_dict['non_compliant']
+    compliant_ds = compliance_dict['compliant']
+    for seq_id in non_compliant_ds.get_sequence_ids():
+        ncomp_sub_ids = len(non_compliant_ds.get_subject_ids(seq_id))
+        comp_sub_ids = len(compliant_ds.get_subject_ids(seq_id))
+        total_subjects = comp_sub_ids+ncomp_sub_ids
+
+        percent_non_compliant = ncomp_sub_ids / total_subjects
         if percent_non_compliant > 0:
-            result[modality.name] = str(100 * percent_non_compliant)
+            result[seq_id] = str(100 * percent_non_compliant)
     # Format the result as a string
     if result:
         modalities = ', '.join(result.keys())
-        ret_string = f'In {dataset.name} dataset,' \
+        ret_string = f'In {compliant_ds.name} dataset,' \
                      f' modalities "{modalities}" are non-compliant. ' \
                      f'See {report_name} for report'
     else:
-        ret_string = f'In {dataset.name} dataset, all modalities ' \
+        ret_string = f'In {compliant_ds.name} dataset, all modalities ' \
                      f'are compliant. See {report_name} for report.'
 
     return ret_string
@@ -951,8 +956,11 @@ def get_timestamps():
 
 
 def export_subject_lists(output_dir: Union[Path, str],
-                         dataset: BaseDataset,
+                         compliance_dict: dict,
                          folder_name: str) -> dict:
-    sub_lists_by_modality = subject_list2txt(dataset, output_dir/folder_name)
-    return sub_lists_by_modality
+
+    noncompliant_sub_by_seq = subject_list2txt(compliance_dict['non_compliant'],
+                                             output_dir / folder_name)
+    return noncompliant_sub_by_seq
+
 
