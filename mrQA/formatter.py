@@ -115,8 +115,10 @@ class HtmlFormatter(BaseFormatter):
         template = template_env.get_template(template_file)
 
         output_text = template.render(
-            dataset=self.params['ds'],
-            sub_lists_by_modality=self.params['sub_lists_by_modality'],
+            protocol=self.params['reference'],
+            compliant_ds=self.params['compliant'],
+            non_compliant_ds= self.params['non_compliant'],
+            sub_lists_by_seq=self.params['sub_lists_by_seq'],
             # time=self.params['time'],
             imp0rt=importlib.import_module
         )
