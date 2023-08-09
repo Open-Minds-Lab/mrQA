@@ -5,7 +5,8 @@ from MRdataset import save_mr_dataset
 from MRdataset.config import DatasetEmptyException
 from MRdataset.experiment import BaseDataset
 from MRdataset.log import logger
-from mrQA.base import CompliantDataset, NonCompliantDataset
+
+from mrQA.base import CompliantDataset, NonCompliantDataset, UndeterminedDataset
 from mrQA.config import STRATEGIES_ALLOWED
 from mrQA.formatter import HtmlFormatter
 from mrQA.utils import _check_against_reference, _cli_report, \
@@ -176,15 +177,26 @@ def compare_with_majority(dataset: BaseDataset,
     ref_protocol = BaseMRImagingProtocol(f'reference_for_{dataset.name}')
     compliant_dataset = CompliantDataset(dataset.name)
     non_compliant_dataset = NonCompliantDataset(dataset.name)
+    undetermined_dataset = UndeterminedDataset(dataset.name)
+    flagged = False
 
     for seq_name in dataset.get_sequence_ids():
         ref_sequence = ImagingSequence(name=seq_name)
-        ref_dict = compute_majority(dataset, seq_name)
-        if _valid_reference(ref_dict):
-            ref_sequence.from_dict(ref_dict)
-            ref_protocol.add(ref_sequence)
+        num_subjects = dataset.get_subject_ids(seq_name)
+        if len(num_subjects) > 2:
+            flagged = False
 
-            for subj, sess, run, seq in dataset.traverse_horizontal(seq_name):
+            ref_dict = compute_majority(dataset, seq_name)
+            if _valid_reference(ref_dict):
+                ref_sequence.from_dict(ref_dict)
+                ref_protocol.add(ref_sequence)
+        else:
+            flagged = True
+
+        for subj, sess, run, seq in dataset.traverse_horizontal(seq_name):
+            if flagged:
+                undetermined_dataset.add(subj, sess, run, seq_name, seq)
+            else:
                 compliant, non_compliant_tuples = ref_sequence.compliant(seq)
                 non_compliant_params = [x[1] for x in non_compliant_tuples]
 
@@ -193,13 +205,14 @@ def compare_with_majority(dataset: BaseDataset,
                 else:
                     non_compliant_dataset.add(subj, sess, run, seq_name, seq)
                     non_compliant_dataset.add_non_compliant_params(
-                        subj,sess,run,seq_name,non_compliant_params
+                        subj, sess, run, seq_name, non_compliant_params
                     )
 
     return {
         'reference': ref_protocol,
         'compliant': compliant_dataset,
         'non_compliant': non_compliant_dataset,
+        'undetermined': undetermined_dataset,
     }
 
 

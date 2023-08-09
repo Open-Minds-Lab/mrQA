@@ -117,6 +117,7 @@ class HtmlFormatter(BaseFormatter):
         output_text = template.render(
             protocol=self.params['reference'],
             compliant_ds=self.params['compliant'],
+            undetermined_ds=self.params['undetermined'],
             non_compliant_ds= self.params['non_compliant'],
             sub_lists_by_seq=self.params['sub_lists_by_seq'],
             # time=self.params['time'],

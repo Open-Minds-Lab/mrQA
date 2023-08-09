@@ -150,7 +150,31 @@
     {% endfor %}
     </tbody>
 </table>
+{% endif %}
 
+{% set und_sequences = undetermined_ds.get_sequence_ids() %}
+{% if und_sequences|length > 0 %}
+<h4> Modalities for which compliance could not be determined
+    : {{ und_sequences | length }}</h4>
+<table class="tg" id="with_margin">
+    {% set cols = 4 %}
+    {% set rows = (und_sequences |length // cols) + 1 %}
+    <tbody>
+    {% for i in range(rows) %}
+        <tr>
+            {% for j in range(cols) %}
+                {% set index = i * cols + j %}
+                {% if index < und_sequences |length %}
+                    <td class="tg-0pky" colspan="1">
+                       {{ und_sequences[index] }}
+                    </td>
+                {% endif %}
+            {% endfor %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
 
 {% for seq_id in non_compliant_ds.get_sequence_ids()|sort %}
 <h2>Sequence : {{ seq_id }}</h2>

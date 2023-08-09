@@ -9,6 +9,21 @@ class CompliantDataset(BaseDataset):
         pass
 
 
+class UndeterminedDataset(BaseDataset):
+    """
+    Container to manage properties of sequences whose reference protocol could
+     not be determined. Reasons could be:
+    1. No reference protocol was found
+    2. Multiple reference protocols were found
+    3. Reference protocol was not valid
+    """
+    def __init__(self, name=None):
+        super().__init__(name=name, data_source=None)
+
+    def load(self):
+        pass
+
+
 class NonCompliantDataset(BaseDataset):
     def __init__(self, name=None):
         super().__init__(name=name, data_source=None)
