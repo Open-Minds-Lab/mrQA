@@ -130,8 +130,9 @@
 
 
 {% set comp_sequences = compliant_ds.get_sequence_ids() %}
-<h3> List of fully compliant modalities
+<h3> Fully compliant modalities
     : {{ comp_sequences | length }}</h3>
+{% if comp_sequences|length > 0 %}
 <table class="tg" id="with_margin">
     {% set cols = 4 %}
     {% set rows = (comp_sequences |length // cols) + 1 %}
@@ -218,20 +219,23 @@
 <tbody>
 {% for parameter in non_compliant_params|sort %}
 {% set nc_data = non_compliant_ds.get_non_compliant_param_values(seq_id, parameter)|list %}
+{% set nc_dict = utils.tuples2dict(nc_data) %}
     <tr>
-        <td class="tg-0pky" colspan="4" rowspan="{{ nc_data|length + 1 }}">
+        <td class="tg-0pky" colspan="4" rowspan="{{ nc_dict|length + 1 }}">
                 {{ parameter }}</td>
-        <td class="tg-0pky" colspan="4" rowspan="{{ nc_data|length + 1 }}">
+        <td class="tg-0pky" colspan="4" rowspan="{{ nc_dict|length + 1 }}">
                 {{ ref[parameter].value }}
         </td>
     </tr>
-    {% for subj, nc_param in nc_data %}
+    {% for nc_param, tuples in nc_dict.items() %}
         <tr>
         <td class="tg-0pky" colspan="4">
-                {{ nc_param.value }},
+               {{ nc_param.value }},
         </td>
         <td class="tg-0pky" colspan="2">
-                {{ subj }},
+            {% for sub, path in tuples %}
+                <a href="{{ path }}"> {{ sub }}</a>,
+            {% endfor %}
         </td>
         </tr>
     {% endfor %}

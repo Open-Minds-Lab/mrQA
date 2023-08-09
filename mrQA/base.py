@@ -39,7 +39,12 @@ class NonCompliantDataset(BaseDataset):
             for sess in self._nc_tree_map[subj]:
                 if seq_id in self._nc_tree_map[subj][sess]:
                     for run in self._nc_tree_map[subj][sess][seq_id]:
-                            yield (subj, self._nc_tree_map[subj][sess][seq_id][run][param_name])
+                        params = self._nc_tree_map[subj][sess][seq_id][run][param_name]
+                        path = self.get_path(subj, sess, run, seq_id)
+                        yield params, (subj, path)
+
+    def get_path(self, subject_id, session_id, run_id, seq_id):
+        return str(self._tree_map[subject_id][session_id][seq_id][run_id].path)
 
     def add_non_compliant_params(self, subject_id, session_id, run_id, seq_id,
             non_compliant_params):

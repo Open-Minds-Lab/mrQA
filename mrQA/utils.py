@@ -964,3 +964,9 @@ def export_subject_lists(output_dir: Union[Path, str],
     return noncompliant_sub_by_seq
 
 
+def tuples2dict(mylist):
+    result = {}
+    for i in mylist:
+        key = i[0]
+        result.setdefault(key, []).extend(i[1:])
+    return result
