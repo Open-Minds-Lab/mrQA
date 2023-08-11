@@ -1,7 +1,8 @@
 from pathlib import Path
 from MRdataset import MRDS_EXT
 from MRdataset.config import MRException
-
+from numpy import nan
+from protocol.config import UnspecifiedType
 
 STRATEGIES_ALLOWED = ['majority', ]
 
@@ -23,6 +24,8 @@ PATH_CONFIG = {
 }
 
 DATE_SEPARATOR = '_DATE_'
+
+Unspecified = nan
 
 
 def past_records_fpath(folder):
@@ -103,3 +106,18 @@ class ComplianceWarning(Warning):
     """Library specific exception"""
 
     pass
+
+
+class EqualCountType(UnspecifiedType):
+
+    def __init__(self):
+        super().__init__()
+
+    def __str__(self):
+        return 'EqualCount'
+
+    def __repr__(self):
+        return 'EqualCount'
+
+
+EqualCount = EqualCountType()
