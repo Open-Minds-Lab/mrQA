@@ -19,8 +19,8 @@ from MRdataset.utils import param_difference, make_hashable, slugify
 from dateutil import parser
 from mrQA.config import past_records_fpath, report_fpath, mrds_fpath, \
     subject_list_dir, DATE_SEPARATOR, CannotComputeMajority, \
-    ReferenceNotSetForModality, \
-    ReferenceNotSetForEchoTime
+    ReferenceNotSetForModality, Unspecified, \
+    ReferenceNotSetForEchoTime, EqualCount
 
 
 def get_items_upto_count(dict_: Counter, rank: int = 1):
@@ -111,7 +111,7 @@ def majority_values(list_seqs: list,
         categories.update(seq.params)
         for param in seq.params:
             counter = counters_dict.get(param, Counter({default: 0}))
-            value = seq[param].value
+            value = seq[param]
             counter[value] += 1
             counters_dict[param] = counter
 
@@ -178,7 +178,7 @@ def pick_majority(counter_: Counter, parameter: str, default: Any = None):
         logger.info(
             'Could not compute reference for %s. Got multiple values'
             ' %s with same count = %s.', parameter, values, items_rank1[0][1])
-        return 'Cannot Compute Majority:\nEqual Count'
+        return EqualCount
     return items_rank1[0][0]
 
 
@@ -505,8 +505,8 @@ def _valid_reference(dict_, default=None):
     """
     if not dict_:
         return False
-    if all(value == default for value in dict_.values()):
-        return False
+    # if all(value == default for value in dict_.values()):
+    #     return False
     # flag = True
     # for value in dict_.values():
     #     if value and ('Cannot Compute Majority' in value):
@@ -612,8 +612,9 @@ def compute_majority(dataset: BaseDataset, seq_name):
     for subj, sess, runs, seq in dataset.traverse_horizontal(seq_name):
         seq_list.append(seq)
 
-    dict_ = majority_values(seq_list)
+    dict_ = majority_values(seq_list, default=Unspecified)
     return dict_
+
 
 def _check_against_reference(modality, decimals, tolerance):
     """

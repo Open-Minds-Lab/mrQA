@@ -185,11 +185,9 @@ def compare_with_majority(dataset: BaseDataset,
         num_subjects = dataset.get_subject_ids(seq_name)
         if len(num_subjects) > 2:
             flagged = False
-
             ref_dict = compute_majority(dataset, seq_name)
-            if _valid_reference(ref_dict):
-                ref_sequence.from_dict(ref_dict)
-                ref_protocol.add(ref_sequence)
+            ref_sequence.from_dict(ref_dict)
+            ref_protocol.add(ref_sequence)
         else:
             flagged = True
 
