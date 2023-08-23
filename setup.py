@@ -18,6 +18,7 @@ requirements = [
     "nibabel",
     "dictdiffer",
     "jinja2>=3.0.3",
+    "protocol",
 ]
 
 test_requirements = ['pytest>=3', 'hypothesis']

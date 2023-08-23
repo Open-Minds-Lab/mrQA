@@ -224,8 +224,9 @@ def generate_report(compliance_dict: dict,
 
     Parameters
     ----------
-    dataset : BaseDataset
-        BaseDataset instance for the dataset which is to be checked
+    compliance_dict : dict
+        Dictionary containing the reference protocol, compliant and
+        non-compliant datasets
     report_path : str
         Name of the file to be generated, without extension. Ensures that
         naming is consistent across the report, dataset and record files
@@ -243,12 +244,11 @@ def generate_report(compliance_dict: dict,
     output_dir = Path(output_dir).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # time_dict = get_timestamps()
     sub_lists_by_seq = export_subject_lists(output_dir,
-                                                 compliance_dict,
-                                                 sub_lists_dir_path)
-    # export_record(output_dir, filename, time_dict)
+                                            compliance_dict,
+                                            sub_lists_dir_path)
+
     # Generate the HTML report and save it to the output_path
-    compliance_dict['sub_lists_by_seq'] =  sub_lists_by_seq
+    compliance_dict['sub_lists_by_seq'] = sub_lists_by_seq
     HtmlFormatter(filepath=report_path, params=compliance_dict)
     return Path(report_path)

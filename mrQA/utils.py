@@ -451,39 +451,39 @@ def subject_list2txt(dataset: BaseDataset,
     return filepaths
 
 
-def _get_runs_by_echo(modality: Modality, decimals: int = 3):
-    """
-    Given a modality, return a dictionary with the echo time as key and a list
-    of run parameters as value. The run parameters are rounded to the given
-    number of decimals.
-
-    Parameters
-    ----------
-    modality
-    decimals
-
-    Returns
-    -------
-
-    """
-    runs_in_modality = []
-    for subject in modality.subjects:
-        for session in subject.sessions:
-            runs_in_modality.extend(session.runs)
-
-    def _sort_key(run_):
-        return run_.echo_time
-
-    run_params_by_te = {}
-    runs_in_modality = sorted(runs_in_modality, key=_sort_key)
-    for te, group in groupby(runs_in_modality, key=_sort_key):
-        te_ = round_if_numeric(te, decimals)
-        for i_run in list(group):
-            if te_ not in run_params_by_te:
-                run_params_by_te[te_] = []
-            run_params_by_te[te_].append(round_dict_values(i_run.params,
-                                                           decimals))
-    return run_params_by_te
+# def _get_runs_by_echo(modality: Modality, decimals: int = 3):
+#     """
+#     Given a modality, return a dictionary with the echo time as key and a list
+#     of run parameters as value. The run parameters are rounded to the given
+#     number of decimals.
+#
+#     Parameters
+#     ----------
+#     modality
+#     decimals
+#
+#     Returns
+#     -------
+#
+#     """
+#     runs_in_modality = []
+#     for subject in modality.subjects:
+#         for session in subject.sessions:
+#             runs_in_modality.extend(session.runs)
+#
+#     def _sort_key(run_):
+#         return run_.echo_time
+#
+#     run_params_by_te = {}
+#     runs_in_modality = sorted(runs_in_modality, key=_sort_key)
+#     for te, group in groupby(runs_in_modality, key=_sort_key):
+#         te_ = round_if_numeric(te, decimals)
+#         for i_run in list(group):
+#             if te_ not in run_params_by_te:
+#                 run_params_by_te[te_] = []
+#             run_params_by_te[te_].append(round_dict_values(i_run.params,
+#                                                            decimals))
+#     return run_params_by_te
 
 
 def _valid_reference(dict_, default=None):
@@ -559,52 +559,52 @@ def round_if_numeric(value: Union[int, float],
     return value
 
 
-def _check_single_run(modality: Modality,
-                      decimals: int,
-                      run_te: float,
-                      run_params: dict,
-                      tolerance: float = 0.1):
-    """
-    Check if a single run is compliant with the reference protocol.
-
-    Parameters
-    ----------
-    modality : Modality
-        modality node from BaseDataset
-    decimals: int
-        number of decimals to round to
-    run_te: float
-        echo time of the run
-    run_params: dict
-        parameters of the run
-    tolerance: float
-        tolerance for the difference between the parameters of the run and the
-        reference protocol
-
-    Returns
-    -------
-    tuple
-        tuple containing the echo time of reference protocol,
-        and the delta between the parameters of the run and the reference
-        protocol
-    """
-    te = round_if_numeric(run_te, decimals)
-    params = round_dict_values(run_params, decimals)
-    ignore_keys = ['modality', 'BodyPartExamined']
-    echo_times = modality.get_echo_times()
-    if not echo_times:
-        raise ReferenceNotSetForModality(modality.name)
-
-    if te in echo_times:
-        reference = modality.get_reference(te)
-        te_ref = te
-    else:
-        raise ReferenceNotSetForEchoTime(modality.name, run_te)
-
-    delta = param_difference(params, reference,
-                             ignore=ignore_keys,
-                             tolerance=tolerance)
-    return delta, te_ref
+# def _check_single_run(modality: Modality,
+#                       decimals: int,
+#                       run_te: float,
+#                       run_params: dict,
+#                       tolerance: float = 0.1):
+#     """
+#     Check if a single run is compliant with the reference protocol.
+#
+#     Parameters
+#     ----------
+#     modality : Modality
+#         modality node from BaseDataset
+#     decimals: int
+#         number of decimals to round to
+#     run_te: float
+#         echo time of the run
+#     run_params: dict
+#         parameters of the run
+#     tolerance: float
+#         tolerance for the difference between the parameters of the run and the
+#         reference protocol
+#
+#     Returns
+#     -------
+#     tuple
+#         tuple containing the echo time of reference protocol,
+#         and the delta between the parameters of the run and the reference
+#         protocol
+#     """
+#     te = round_if_numeric(run_te, decimals)
+#     params = round_dict_values(run_params, decimals)
+#     ignore_keys = ['modality', 'BodyPartExamined']
+#     echo_times = modality.get_echo_times()
+#     if not echo_times:
+#         raise ReferenceNotSetForModality(modality.name)
+#
+#     if te in echo_times:
+#         reference = modality.get_reference(te)
+#         te_ref = te
+#     else:
+#         raise ReferenceNotSetForEchoTime(modality.name, run_te)
+#
+#     delta = param_difference(params, reference,
+#                              ignore=ignore_keys,
+#                              tolerance=tolerance)
+#     return delta, te_ref
 
 
 def compute_majority(dataset: BaseDataset, seq_name):
@@ -740,47 +740,47 @@ def _cli_report(compliance_dict: dict, report_name):
     return ret_string
 
 
-def _store_non_compliance(modality: Modality,
-                          delta: list,
-                          echo_time: float,
-                          subject_name: str,
-                          session_name: str):
-    """
-    Store the sources of non-compliance like flip angle, ped, tr, te
-
-    Parameters
-    ----------
-    modality : MRdataset.base.Modality
-        The modality node, in which these sources of non-compliance were found
-        so that these values can be stored
-    delta : list
-        A list of differences between the reference and the non-compliant
-    echo_time: float
-        Echo time of run
-    subject_name : str
-        Non-compliant subject's name
-    session_name : str
-        Non-compliant session name
-    """
-    for entry in delta:
-        if entry[0] == 'change':
-            _, parameter, [new_value, ref_value] = entry
-            if echo_time is None:
-                echo_time = 1.0
-            ref_value = make_hashable(ref_value)
-            new_value = make_hashable(new_value)
-
-            modality.add_non_compliant_param(
-                parameter, echo_time, ref_value, new_value,
-                f'{subject_name}_{session_name}'
-            )
-        elif entry[0] == 'add':
-            for key, value in entry[2]:
-                if echo_time is None:
-                    echo_time = 1.0
-                modality.add_non_compliant_param(
-                    key, echo_time, value, None,
-                    f'{subject_name}_{session_name}')
+# def _store_non_compliance(modality: Modality,
+#                           delta: list,
+#                           echo_time: float,
+#                           subject_name: str,
+#                           session_name: str):
+#     """
+#     Store the sources of non-compliance like flip angle, ped, tr, te
+#
+#     Parameters
+#     ----------
+#     modality : MRdataset.base.Modality
+#         The modality node, in which these sources of non-compliance were found
+#         so that these values can be stored
+#     delta : list
+#         A list of differences between the reference and the non-compliant
+#     echo_time: float
+#         Echo time of run
+#     subject_name : str
+#         Non-compliant subject's name
+#     session_name : str
+#         Non-compliant session name
+#     """
+#     for entry in delta:
+#         if entry[0] == 'change':
+#             _, parameter, [new_value, ref_value] = entry
+#             if echo_time is None:
+#                 echo_time = 1.0
+#             ref_value = make_hashable(ref_value)
+#             new_value = make_hashable(new_value)
+#
+#             modality.add_non_compliant_param(
+#                 parameter, echo_time, ref_value, new_value,
+#                 f'{subject_name}_{session_name}'
+#             )
+#         elif entry[0] == 'add':
+#             for key, value in entry[2]:
+#                 if echo_time is None:
+#                     echo_time = 1.0
+#                 modality.add_non_compliant_param(
+#                     key, echo_time, value, None,
+#                     f'{subject_name}_{session_name}')
 
 
 def _datasets_processed(dir_path, ignore_case=True):
