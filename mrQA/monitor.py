@@ -5,10 +5,10 @@ from pathlib import Path
 from typing import Union, List
 
 from MRdataset import import_dataset, load_mr_dataset
-from MRdataset.log import logger
+from mrQA import logger
 from MRdataset.utils import is_writable
 
-from mrQA import check_compliance
+from mrQA.project import check_compliance
 from mrQA.config import PATH_CONFIG
 from mrQA.utils import files_modified_since, get_last_valid_record
 

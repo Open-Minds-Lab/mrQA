@@ -3,9 +3,9 @@ from typing import Union, Dict
 
 from MRdataset import save_mr_dataset
 from MRdataset.config import DatasetEmptyException
-from MRdataset.experiment import BaseDataset
-from MRdataset.log import logger
+from MRdataset.base import BaseDataset
 
+from mrQA import logger
 from mrQA.base import CompliantDataset, NonCompliantDataset, UndeterminedDataset
 from mrQA.config import STRATEGIES_ALLOWED
 from mrQA.formatter import HtmlFormatter
@@ -71,6 +71,7 @@ def check_compliance(dataset: BaseDataset,
     output_dir = Path(output_dir).resolve()
     output_dir.mkdir(exist_ok=True, parents=True)
     if not output_dir.is_dir():
+        logger.error(f'Output directory {output_dir} does not exist')
         raise NotADirectoryError('Provide a valid output directory')
 
     report_path, mrds_path, sub_lists_dir_path = record_out_paths(output_dir,

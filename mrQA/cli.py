@@ -5,10 +5,11 @@ from pathlib import Path
 
 from MRdataset import import_dataset
 from MRdataset.utils import is_writable, valid_dirs
-from MRdataset.log import logger
 
 from mrQA import check_compliance
 from mrQA.config import PATH_CONFIG
+from mrQA import logger
+from mrQA.logger import init_log_files
 
 
 def get_parser():

@@ -1,5 +1,5 @@
-from MRdataset.experiment import BaseDataset
-
+from MRdataset.base import BaseDataset
+from mrQA import logger
 
 class CompliantDataset(BaseDataset):
     def __init__(self, name=None):

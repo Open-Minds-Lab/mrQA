@@ -1,22 +1,20 @@
 import time
-import time
 import typing
 import warnings
 from collections import Counter
 from datetime import datetime, timezone
-from itertools import groupby
 from itertools import takewhile
 from pathlib import Path
 from subprocess import run, CalledProcessError, TimeoutExpired
 from typing import Union, List, Optional, Any
 
 import numpy as np
-from MRdataset.base import Modality
+from MRdataset.base import BaseDataset
 from MRdataset.dicom_utils import is_dicom_file, parse_imaging_params
-from MRdataset.experiment import BaseDataset
-from MRdataset.log import logger
-from MRdataset.utils import param_difference, make_hashable, slugify
+from MRdataset.utils import slugify
 from dateutil import parser
+
+from mrQA import logger
 from mrQA.config import past_records_fpath, report_fpath, mrds_fpath, \
     subject_list_dir, DATE_SEPARATOR, CannotComputeMajority, \
     ReferenceNotSetForModality, Unspecified, \
@@ -80,8 +78,6 @@ def majority_values(list_seqs: list,
     ----------
     list_seqs : list
         a list of dictionaries
-    echo_time : float
-        echo time
     default : Any
         a default value if the key is missing in any dictionary
 
@@ -165,6 +161,7 @@ def pick_majority(counter_: Counter, parameter: str, default: Any = None):
         If the counter is empty
     """
     if len(counter_) == 0:
+        logger.error('Expected atleast one entry in counter. Got 0')
         raise ValueError('Expected atleast one entry in counter. Got 0')
     if len(counter_) == 1:
         return list(counter_.keys())[0]
