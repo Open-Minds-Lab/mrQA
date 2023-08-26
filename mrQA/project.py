@@ -190,6 +190,7 @@ def compare_with_majority(dataset: BaseDataset,
             ref_sequence.from_dict(ref_dict)
             ref_protocol.add(ref_sequence)
         else:
+            logger.info(f'Not enough subjects for {seq_name} sequence.')
             flagged = True
 
         for subj, sess, run, seq in dataset.traverse_horizontal(seq_name):
@@ -197,11 +198,11 @@ def compare_with_majority(dataset: BaseDataset,
                 undetermined_dataset.add(subj, sess, run, seq_name, seq)
             else:
                 compliant, non_compliant_tuples = ref_sequence.compliant(seq)
-                non_compliant_params = [x[1] for x in non_compliant_tuples]
 
                 if compliant:
                     compliant_dataset.add(subj, sess, run, seq_name, seq)
                 else:
+                    non_compliant_params = [x[1] for x in non_compliant_tuples]
                     non_compliant_dataset.add(subj, sess, run, seq_name, seq)
                     non_compliant_dataset.add_non_compliant_params(
                         subj, sess, run, seq_name, non_compliant_params

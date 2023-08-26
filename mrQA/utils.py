@@ -104,8 +104,8 @@ def majority_values(list_seqs: list,
     counters_dict = {}
     categories = set()
     for seq in list_seqs:
-        categories.update(seq.params)
-        for param in seq.params:
+        categories.update(seq.imaging_params)
+        for param in seq.imaging_params:
             counter = counters_dict.get(param, Counter({default: 0}))
             value = seq[param]
             counter[value] += 1
