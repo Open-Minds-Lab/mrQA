@@ -79,22 +79,17 @@ def check_compliance(dataset: BaseDataset,
     save_mr_dataset(mrds_path, dataset)
 
     if strategy == 'majority':
-        compliance_dict = compare_with_majority(dataset, decimals, tolerance=tolerance)
+        compliance_dict = compare_with_majority(dataset, decimals,
+                                                tolerance=tolerance)
     elif strategy == 'reference':
-        if not reference_path:
-            raise ValueError('Please provide a reference protocol file')
-        reference_path = Path(reference_path).resolve()
-        if not reference_path.is_file():
-            raise FileNotFoundError('Please provide a valid reference file')
-        dataset = compare_with_reference(dataset=dataset,
-                                         reference_path=reference_path,
-                                         decimals=decimals,
-                                         tolerance=tolerance)
+        compliance_dict = compare_with_reference(dataset=dataset,
+                                                 reference_path=reference_path,
+                                                 decimals=decimals,
+                                                 tolerance=tolerance)
     else:
         raise NotImplementedError(
             f'Only the following strategies are allowed : \n\t'
             f'{STRATEGIES_ALLOWED}')
-
 
     save_mr_dataset(mrds_path, dataset)
     generate_report(compliance_dict,
