@@ -10,7 +10,7 @@ from mrQA.config import STRATEGIES_ALLOWED
 from mrQA.formatter import HtmlFormatter
 from mrQA.utils import majority_attribute_values, _get_runs_by_echo, \
     _check_against_reference, _cli_report, _validate_reference, \
-    export_subject_lists, record_out_paths
+    export_subject_lists, record_out_paths, timestamp
 
 
 def check_compliance(dataset: BaseDataset,
@@ -18,7 +18,8 @@ def check_compliance(dataset: BaseDataset,
                      decimals: int = 3,
                      output_dir: Union[Path, str] = None,
                      verbose: bool = False,
-                     tolerance: float = 0.1,) -> Path:
+                     tolerance: float = 0.1,
+                     timestamp = None) -> Path:
     """
     Main function for checking compliance. Infers the reference protocol
     according to the user chosen strategy, and then generates a compliance
@@ -78,7 +79,7 @@ def check_compliance(dataset: BaseDataset,
         raise NotADirectoryError('Provide a valid output directory')
 
     report_path, mrds_path, sub_lists_dir_path = record_out_paths(output_dir,
-                                                                  dataset)
+                                                                  dataset, ts=timestamp)
     save_mr_dataset(mrds_path, dataset)
     generate_report(dataset,
                     report_path,

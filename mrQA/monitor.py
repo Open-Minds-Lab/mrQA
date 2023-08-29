@@ -10,7 +10,8 @@ from MRdataset.utils import is_writable
 
 from mrQA import check_compliance
 from mrQA.config import PATH_CONFIG
-from mrQA.utils import files_modified_since, get_last_valid_record
+from mrQA.utils import files_modified_since, get_last_valid_record, get_status, timestamp, compute_status_diff, \
+    record_status
 
 
 def get_parser():
@@ -178,6 +179,7 @@ def monitor(name: str,
                                          name=name,
                                          verbose=verbose,
                                          include_phantom=include_phantom)
+            prev_status = get_status(dataset)
             dataset.merge(new_dataset)
         else:
             logger.warning('No new files found since last report. '
@@ -191,11 +193,19 @@ def monitor(name: str,
                                  name=name,
                                  verbose=verbose,
                                  include_phantom=include_phantom)
+        prev_status = None
 
+    t_stamp = timestamp()
     report_path = check_compliance(dataset=dataset,
                                    strategy=strategy,
                                    output_dir=output_dir,
-                                   decimals=decimals)
+                                   decimals=decimals,
+                                   timestamp=t_stamp)
+
+    new_status = get_status(dataset)
+    status_diff = compute_status_diff(prev_status, new_status)
+    record_status(output_dir, status_diff, t_stamp)
+
     return report_path
 
 

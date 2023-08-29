@@ -54,8 +54,7 @@ def timestamp():
     return time_string
 
 
-def record_out_paths(output_dir, dataset):
-    ts = timestamp()
+def record_out_paths(output_dir, dataset, ts):
     utc = datetime.strptime(ts, '%m_%d_%Y_%H_%M_%S').timestamp()
     filename = f'{dataset.name}{DATE_SEPARATOR}{ts}'
     report_path = report_fpath(output_dir, filename)
@@ -72,32 +71,99 @@ def record_out_paths(output_dir, dataset):
         fp.write(f'{utc},{report_path},'
                  f'{mrds_path},{ts}\n')
 
-    record_status(output_dir, dataset, ts)
     return report_path, mrds_path, sub_lists_dir_path
 
 
-def record_status(output_dir, dataset, ts):
+def compute_status_diff(status_old, status_new):
+    """
+    Given two status dictionaries, compute the difference between them
+    and return a dictionary with the difference.
+
+    Parameters
+    ----------
+    status_old
+    status_new
+
+    Returns
+    -------
+    dict
+    """
+    if status_old is not None:
+        diff = {}
+        if status_new['ds_name'] != status_old['ds_name']:
+            raise ValueError('Cannot compare status of two different datasets')
+
+        diff['ds_name'] = status_new['ds_name']
+        diff['fully_compliant'] = status_new['fully_compliant']
+        diff['compliance_change'] = status_new['fully_compliant'] != status_old['fully_compliant']
+        diff['n_comp'] = status_new['n_comp'] - status_old['n_comp']
+        diff['comp'] = status_new['comp'] - status_old['comp']
+
+        nc_params = dict()
+        for modality_name in status_new['nc_params']:
+            if modality_name not in status_old['nc_params']:
+                nc_params[modality_name] = status_new['nc_params'][modality_name]
+            else:
+                old_nc_params = set(status_old['nc_params'][modality_name])
+                new_nc_params = set(status_new['nc_params'][modality_name])
+                nc_params[modality_name] = new_nc_params - old_nc_params
+
+        nc_params_set = set()
+        for name, params in nc_params.items():
+            nc_params_set.update(params)
+        diff['nc_params_str'] = f"{{{';'.join(nc_params_set)}}}"
+    else:
+        diff = status_new.copy()
+        diff['compliance_change'] = 'NA'
+
+        nc_params_set = set()
+        for name, params in status_new['nc_params'].items():
+            nc_params_set.update(params)
+        diff['nc_params_str'] = f"{{{';'.join(nc_params_set)}}}"
+    return diff
+
+
+def get_status(dataset):
+    n_comp = dataset.non_compliant_modality_names
+    comp = dataset.compliant_modality_names
+    if len(n_comp) == 0:
+        if len(comp) == 0:
+            fully_compliant = 'Compliance not checked'
+        else:
+            fully_compliant = True
+    else:
+        fully_compliant = False
+
+    n_comp_params = dict()
+    for name in dataset.non_compliant_modality_names:
+        modality = dataset.get_modality_by_name(name)
+        nc_params = modality.non_compliant_params()
+        n_comp_params[name] = nc_params
+
+    return {
+        'ds_name': dataset.name,
+        'fully_compliant': fully_compliant,
+        'n_comp': len(n_comp),
+        'nc_params': n_comp_params,
+        'comp': len(comp)
+    }
+
+
+def record_status(output_dir, status, ts):
     status_filepath = status_fpath(output_dir)
     if not status_filepath.parent.is_dir():
         status_filepath.parent.mkdir(parents=True)
 
     utc = datetime.strptime(ts, '%m_%d_%Y_%H_%M_%S')
     time_stamp = datetime.strftime(utc, '%m/%d/%Y_%H:%M:%S')
-
-    n_comp = dataset.non_compliant_modality_names
-    comp = dataset.compliant_modality_names
-    fully_compliant = len(n_comp) == 0
-
-    n_comp_params = set()
-    for name in dataset.non_compliant_modality_names:
-        modality = dataset.get_modality_by_name(name)
-        nc_params = modality.non_compliant_params()
-        n_comp_params.update(nc_params)
-    nc_params_str = ';'.join(n_comp_params)
-
+    if not status_filepath.exists():
+        with open(status_filepath, 'a', encoding='utf-8') as fp:
+            fp.write(' time stamp | dataset name | fully compliant | change in overall compliance | '
+                     'change in non-compliant modalities | change in compliant modalities | '
+                     'new non-compliant parameters \n')
     with open(status_filepath, 'a', encoding='utf-8') as fp:
-        fp.write(f'{time_stamp},{dataset.name},{fully_compliant},'
-                 f'{len(n_comp)},{len(comp)},{nc_params_str}\n')
+        fp.write(f" {time_stamp} | {status['ds_name']} | {status['fully_compliant']} | {status['compliance_change']} |"
+                 f" {status['n_comp']} | {status['comp']} | {status['nc_params_str']} \n")
     return status_filepath
 
 
@@ -964,6 +1030,5 @@ def get_timestamps():
 def export_subject_lists(output_dir: Union[Path, str],
                          dataset: BaseDataset,
                          folder_name: str) -> dict:
-    sub_lists_by_modality = subject_list2txt(dataset, output_dir/folder_name)
+    sub_lists_by_modality = subject_list2txt(dataset, output_dir / folder_name)
     return sub_lists_by_modality
-
