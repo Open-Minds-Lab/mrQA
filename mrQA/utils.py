@@ -149,22 +149,40 @@ def get_status(dataset):
     }
 
 
-def record_status(output_dir, status, ts):
+def record_status(output_dir, old_dataset, new_dataset, ts):
+    utc = datetime.strptime(ts, '%m_%d_%Y_%H_%M_%S')
+    time_stamp = datetime.strftime(utc, '%m/%d/%Y_%H:%M:%S')
+
+    full_status = []
+    if new_dataset is None:
+        return None
+    for modality in new_dataset.modalities:
+        if modality.name in old_dataset.non_compliant_modality_names:
+            for sub in modality.subjects:
+                old_modality = old_dataset.get_modality_by_name(modality.name)
+                nc_params = old_modality.non_compliant_params(subject_name=sub.name)
+                if any(nc_params):
+                    status = {
+                        'ts': time_stamp,
+                        'ds_name': new_dataset.name,
+                        'modality': modality.name,
+                        'subject': sub.name,
+                        'nc_params': ';'.join(old_modality.non_compliant_params(subject_name=sub.name))
+                    }
+                    full_status.append(status)
     status_filepath = status_fpath(output_dir)
     if not status_filepath.parent.is_dir():
         status_filepath.parent.mkdir(parents=True)
 
-    utc = datetime.strptime(ts, '%m_%d_%Y_%H_%M_%S')
-    time_stamp = datetime.strftime(utc, '%m/%d/%Y_%H:%M:%S')
-    if not status_filepath.exists():
-        with open(status_filepath, 'a', encoding='utf-8') as fp:
-            fp.write(' time stamp | dataset name | fully compliant | change in overall compliance | '
-                     'change in non-compliant modalities | change in compliant modalities | '
-                     'new non-compliant parameters \n')
+    # if not status_filepath.exists():
+    #     with open(status_filepath, 'a', encoding='utf-8') as fp:
+    #         fp.write(' time stamp | dataset name | fully compliant | change in overall compliance | '
+    #                  'change in non-compliant modalities | change in compliant modalities | '
+    #                  'new non-compliant parameters \n')
     with open(status_filepath, 'a', encoding='utf-8') as fp:
-        fp.write(f" {time_stamp} | {status['ds_name']} | {status['fully_compliant']} | {status['compliance_change']} |"
-                 f" {status['n_comp']} | {status['comp']} | {status['nc_params_str']} \n")
-    return status_filepath
+        for i in full_status:
+            fp.write(f" {i['ts']}, {i['ds_name']}, {i['modality']}, {i['subject']}, {i['nc_params']} \n")
+    return None #status_filepath
 
 
 def majority_attribute_values(list_of_dicts: list, echo_time: float,

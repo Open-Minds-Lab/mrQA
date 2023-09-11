@@ -179,7 +179,7 @@ def monitor(name: str,
                                          name=name,
                                          verbose=verbose,
                                          include_phantom=include_phantom)
-            prev_status = get_status(dataset)
+            # prev_status = get_status(dataset)
             dataset.merge(new_dataset)
         else:
             logger.warning('No new files found since last report. '
@@ -194,6 +194,7 @@ def monitor(name: str,
                                  verbose=verbose,
                                  include_phantom=include_phantom)
         prev_status = None
+        new_dataset = None
 
     t_stamp = timestamp()
     report_path = check_compliance(dataset=dataset,
@@ -202,9 +203,9 @@ def monitor(name: str,
                                    decimals=decimals,
                                    timestamp=t_stamp)
 
-    new_status = get_status(dataset)
-    status_diff = compute_status_diff(prev_status, new_status)
-    record_status(output_dir, status_diff, t_stamp)
+    # new_status = get_status(dataset)
+    # status_diff = compute_status_diff(prev_status, new_status)
+    record_status(output_dir, dataset, new_dataset, t_stamp)
 
     return report_path
 
