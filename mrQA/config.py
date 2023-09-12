@@ -30,7 +30,7 @@ def past_records_fpath(folder):
 
 
 def status_fpath(folder):
-    return Path(folder/'status_check.txt')
+    return Path(folder/'status.txt')
 
 
 def report_fpath(folder_path, fname):
