@@ -167,22 +167,17 @@ def record_status(output_dir, old_dataset, new_dataset, ts):
                         'ds_name': new_dataset.name,
                         'modality': modality.name,
                         'subject': sub.name,
-                        'nc_params': ';'.join(old_modality.non_compliant_params(subject_name=sub.name))
+                        'nc_params': ';'.join(nc_params)
                     }
                     full_status.append(status)
     status_filepath = status_fpath(output_dir)
     if not status_filepath.parent.is_dir():
         status_filepath.parent.mkdir(parents=True)
 
-    # if not status_filepath.exists():
-    #     with open(status_filepath, 'a', encoding='utf-8') as fp:
-    #         fp.write(' time stamp | dataset name | fully compliant | change in overall compliance | '
-    #                  'change in non-compliant modalities | change in compliant modalities | '
-    #                  'new non-compliant parameters \n')
     with open(status_filepath, 'a', encoding='utf-8') as fp:
         for i in full_status:
             fp.write(f" {i['ts']}, {i['ds_name']}, {i['modality']}, {i['subject']}, {i['nc_params']} \n")
-    return None #status_filepath
+    return None  # status_filepath
 
 
 def majority_attribute_values(list_of_dicts: list, echo_time: float,

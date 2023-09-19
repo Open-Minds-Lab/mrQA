@@ -4,11 +4,12 @@ import sys
 from pathlib import Path
 
 from MRdataset import import_dataset
-from MRdataset.utils import is_writable, valid_dirs
 from MRdataset.log import logger
+from MRdataset.utils import is_writable, valid_dirs
 
 from mrQA import check_compliance
 from mrQA.config import PATH_CONFIG
+from mrQA.utils import timestamp
 
 
 def get_parser():
@@ -47,8 +48,10 @@ def get_parser():
     # TODO: use this flag to store cache
     optional.add_argument('-v', '--verbose', action='store_true',
                           help='allow verbose output on console')
-    optional.add_argument('-ref', '--reference_path', type=str,
-                          help='.yaml file containing protocol specification')
+    optional.add_argument('-ref', '--reference-path', type=str,
+                          help='.json file containing protocol specification')
+    optional.add_argument( '--config-path', type=str,
+                          help='.json file containing protocol specification')
     optional.add_argument('--strategy', type=str, default='majority',
                           help='how to examine parameters [majority|reference].'
                                '--reference_path required if using reference')
@@ -87,7 +90,10 @@ def main():
                      output_dir=args.output_dir,
                      decimals=args.decimals,
                      verbose=args.verbose,
-                     tolerance=args.tolerance,)
+                     tolerance=args.tolerance,
+                     reference_path=args.reference_path,
+                     config_path=args.config_path,
+                     timestamp=timestamp())
     return 0
 
 
