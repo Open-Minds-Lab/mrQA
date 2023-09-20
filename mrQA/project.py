@@ -12,7 +12,7 @@ from mrQA.formatter import HtmlFormatter
 from mrQA.utils import _check_against_reference, _cli_report, \
     export_subject_lists, record_out_paths, get_protocol_from_file, \
     compute_majority, _valid_reference
-from protocol import BaseMRImagingProtocol, ImagingSequence
+from protocol import BaseMRImagingProtocol, ImagingSequence, SiemensMRImagingProtocol
 
 
 def check_compliance(dataset: BaseDataset,
@@ -130,19 +130,39 @@ def compare_with_reference(dataset: BaseDataset,
     """
 
     # Extract reference protocol from file
-    reference = get_protocol_from_file(reference_path)
-    for modality in dataset.modalities:
-        # Reset compliance calculation before re-computing it.
-        modality.reset_compliance()
+    if not Path(reference_path).is_file():
+        raise FileNotFoundError(f'{reference_path} does not exist')
+    ref_protocol = SiemensMRImagingProtocol(reference_path)
+    compliant_dataset = CompliantDataset(dataset.name)
+    non_compliant_dataset = NonCompliantDataset(dataset.name)
+    undetermined_dataset = UndeterminedDataset(dataset.name)
 
-        # Set reference protocol from file
-        modality.set_reference(reference)
-        modality = _check_against_reference(modality, decimals, tolerance)
-        if modality.compliant:
-            dataset.add_compliant_modality_name(modality.name)
-        else:
-            dataset.add_non_compliant_modality_name(modality.name)
-    return dataset
+    for seq_name in dataset.get_sequence_ids():
+        try:
+            ref_sequence = ref_protocol[seq_name]
+        except KeyError:
+            logger.info(f'No reference protocol for {seq_name} sequence.')
+            continue
+
+        for subj, sess, run, seq in dataset.traverse_horizontal(seq_name):
+            compliant, non_compliant_tuples = ref_sequence.compliant(seq)
+
+            if compliant:
+                compliant_dataset.add(subj, sess, run, seq_name, seq)
+            else:
+                non_compliant_params = [x[1] for x in non_compliant_tuples]
+                non_compliant_dataset.add(subj, sess, run, seq_name, seq)
+                non_compliant_dataset.add_non_compliant_params(
+                    subj, sess, run, seq_name, non_compliant_params
+                )
+
+    return {
+        'reference': ref_protocol,
+        'compliant': compliant_dataset,
+        'non_compliant': non_compliant_dataset,
+        'undetermined': undetermined_dataset,
+    }
+
 
 
 def compare_with_majority(dataset: BaseDataset,

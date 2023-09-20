@@ -50,7 +50,7 @@ def get_parser():
     # TODO: use this flag to store cache
     optional.add_argument('-v', '--verbose', action='store_true',
                           help='allow verbose output on console')
-    optional.add_argument('-ref', '--reference_path', type=str,
+    optional.add_argument('-ref', '--reference-path', type=str,
                           help='DICOM file containing desired protocol. Only '
                                'used when --strategy==reference')
     optional.add_argument('--strategy', type=str, default='majority',
