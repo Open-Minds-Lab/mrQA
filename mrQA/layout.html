@@ -192,7 +192,7 @@
     <tbody>
     <tr>
         {% for param in ref.imaging_params|sort %}
-            <td class="tg-0pky" colspan="2">{{ ref[param].value }}</td>
+            <td class="tg-0pky" colspan="2">{{ ref[param].get_value() }}</td>
         {% endfor %}
     </tr>
     </tbody>
@@ -224,13 +224,13 @@
         <td class="tg-0pky" colspan="4" rowspan="{{ nc_dict|length + 1 }}">
                 {{ parameter }}</td>
         <td class="tg-0pky" colspan="4" rowspan="{{ nc_dict|length + 1 }}">
-                {{ ref[parameter].value }}
+                {{ ref[parameter].get_value() }}
         </td>
     </tr>
     {% for nc_param, tuples in nc_dict.items() %}
         <tr>
         <td class="tg-0pky" colspan="4">
-               {{ nc_param.value }},
+               {{ nc_param.get_value() }},
         </td>
         <td class="tg-0pky" colspan="2">
             {% for sub, path in tuples %}
@@ -263,7 +263,7 @@
     <tr>
         {% for param in ref.imaging_params|sort %}
             <td class="tg-0pky"
-                colspan="2">{{ ref[param].value }}</td>
+                colspan="2">{{ ref[param].get_value() }}</td>
         {% endfor %}
     </tr>
     </tbody>

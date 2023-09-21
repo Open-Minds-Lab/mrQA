@@ -117,6 +117,7 @@ def parse_args():
     if not Path(args.config).is_file():
         raise FileNotFoundError(f'Expected valid config file, '
                                 f'Got {args.config}')
+    else:
         args.config = Path(args.config).resolve()
     return args
 

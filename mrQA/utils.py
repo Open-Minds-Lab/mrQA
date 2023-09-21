@@ -862,8 +862,15 @@ def files_modified_since(last_reported_on: str,
     try:
         run(cmd, check=True, shell=True)
         modified_files = txt2list(out_path)
-        valid_files = [f for f in modified_files if Path(f).is_file()]
-        return valid_files
+        modified_folders = set()
+        for f in modified_files:
+            if not Path(f).is_file():
+                logger.warning(f'File {f} not found.')
+            if not is_dicom_file(f):
+                continue
+            else:
+                modified_folders.add(Path(f).parent)
+        return list(modified_folders)
     except FileNotFoundError as exc:
         logger.error(
             'Process failed because file could not be found.\n %s', exc)
