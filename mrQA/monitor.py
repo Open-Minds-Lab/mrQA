@@ -10,7 +10,7 @@ from MRdataset.utils import is_writable
 
 from mrQA.project import check_compliance
 from mrQA.config import PATH_CONFIG
-from mrQA.utils import files_modified_since, get_last_valid_record
+from mrQA.utils import files_modified_since, get_last_valid_record, record_status
 
 
 def get_parser():
@@ -29,6 +29,8 @@ def get_parser():
     required.add_argument('-d', '--data-source', type=str, required=True,
                           help='directory containing downloaded dataset with '
                                'dicom files, supports nested hierarchies')
+    required.add_argument('--config', type=str,
+                          help='path to config file')
     optional.add_argument('-o', '--output-dir', type=str,
                           help='specify the directory where the report'
                                ' would be saved. By default, the --data_source '
@@ -43,6 +45,9 @@ def get_parser():
                                '(default:0). If decimals are negative it '
                                'specifies the number of positions to the left'
                                'of the decimal point.')
+    optional.add_argument('-t', '--tolerance', type=float, default=0,
+                            help='tolerance for checking against reference '
+                                 'protocol. Default is 0')
     optional.add_argument('-v', '--verbose', action='store_true',
                           help='allow verbose output on console')
     optional.add_argument('-ref', '--reference-path', type=str,
@@ -50,9 +55,6 @@ def get_parser():
     optional.add_argument('--strategy', type=str, default='majority',
                           help='how to examine parameters [majority|reference].'
                                '--reference-path required if using reference')
-    optional.add_argument('--include-phantom', action='store_true',
-                          help='whether to include phantom, localizer, '
-                               'aahead_scout')
 
     if len(sys.argv) < 2:
         logger.critical('Too few arguments!')
@@ -111,6 +113,11 @@ def parse_args():
     # TODO: Add this check to mrqa and MRdataset
     if not is_writable(args.output_dir):
         raise OSError(f'Output Folder {args.output_dir} is not writable')
+
+    if not Path(args.config).is_file():
+        raise FileNotFoundError(f'Expected valid config file, '
+                                f'Got {args.config}')
+        args.config = Path(args.config).resolve()
     return args
 
 
@@ -123,7 +130,10 @@ def main():
             include_phantom=args.include_phantom,
             decimals=args.decimals,
             ds_format=args.format,
-            strategy=args.strategy)
+            strategy=args.strategy,
+            config_path=args.config,
+            tolerance=args.tolerance,
+            reference_path=args.reference_path,)
 
 
 def monitor(name: str,
@@ -133,7 +143,10 @@ def monitor(name: str,
             include_phantom: bool = False,
             decimals: int = 3,
             ds_format: str = 'dicom',
-            strategy: str = 'majority') -> Path:
+            strategy: str = 'majority',
+            config_path: Path = None,
+            tolerance = 0,
+            reference_path=None) -> Path:
     """
     Monitor a dataset folder for changes. Read new files and append to
     existing dataset. Run compliance check on the updated dataset.
@@ -177,11 +190,13 @@ def monitor(name: str,
                                          ds_format='dicom',
                                          name=name,
                                          verbose=verbose,
-                                         include_phantom=include_phantom)
+                                         config_path=config_path,)
+            # prev_status = get_status(dataset)
             dataset.merge(new_dataset)
         else:
             logger.warning('No new files found since last report. '
-                           'Regenerating report')
+                           'Returning last report')
+            return last_report_path
     else:
         logger.warning('Dataset %s not found in records. Running '
                        'compliance check on entire dataset', name)
@@ -189,12 +204,19 @@ def monitor(name: str,
                                  ds_format=ds_format,
                                  name=name,
                                  verbose=verbose,
-                                 include_phantom=include_phantom)
+                                 config_path=config_path,)
+        new_dataset = None
 
     report_path = check_compliance(dataset=dataset,
                                    strategy=strategy,
                                    output_dir=output_dir,
-                                   decimals=decimals)
+                                   decimals=decimals,
+                                   verbose=verbose,
+                                   tolerance=tolerance,
+                                   reference_path=reference_path,)
+
+    record_status(output_dir, dataset, new_dataset, t_stamp)
+
     return report_path
 
 
