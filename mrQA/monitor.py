@@ -5,12 +5,12 @@ from pathlib import Path
 from typing import Union, List
 
 from MRdataset import import_dataset, load_mr_dataset
-from mrQA import logger
 from MRdataset.utils import is_writable
 
-from mrQA.project import check_compliance
+from mrQA import logger
 from mrQA.config import PATH_CONFIG
-from mrQA.utils import files_modified_since, get_last_valid_record, record_status
+from mrQA.project import check_compliance
+from mrQA.utils import files_modified_since, get_last_valid_record
 
 
 def get_parser():
@@ -46,8 +46,8 @@ def get_parser():
                                'specifies the number of positions to the left'
                                'of the decimal point.')
     optional.add_argument('-t', '--tolerance', type=float, default=0,
-                            help='tolerance for checking against reference '
-                                 'protocol. Default is 0')
+                          help='tolerance for checking against reference '
+                               'protocol. Default is 0')
     optional.add_argument('-v', '--verbose', action='store_true',
                           help='allow verbose output on console')
     optional.add_argument('-ref', '--reference-path', type=str,
@@ -134,7 +134,7 @@ def main():
             strategy=args.strategy,
             config_path=args.config,
             tolerance=args.tolerance,
-            reference_path=args.reference_path,)
+            reference_path=args.reference_path, )
 
 
 def monitor(name: str,
@@ -146,7 +146,7 @@ def monitor(name: str,
             ds_format: str = 'dicom',
             strategy: str = 'majority',
             config_path: Path = None,
-            tolerance = 0,
+            tolerance=0,
             reference_path=None) -> Path:
     """
     Monitor a dataset folder for changes. Read new files and append to
@@ -183,15 +183,15 @@ def monitor(name: str,
         last_reported_on, last_report_path, last_mrds_path = last_record
         # TODO: delete old logs, only keep latest 3-4 reports in the folder
         dataset = load_mr_dataset(last_mrds_path)
-        modified_files = files_modified_since(input_dir=data_source,
-                                              last_reported_on=last_reported_on,
-                                              output_dir=output_dir)
-        if modified_files:
-            new_dataset = import_dataset(data_source=modified_files,
+        modified_folders = files_modified_since(input_dir=data_source,
+                                                last_reported_on=last_reported_on,
+                                                output_dir=output_dir)
+        if modified_folders:
+            new_dataset = import_dataset(data_source=modified_folders,
                                          ds_format='dicom',
                                          name=name,
                                          verbose=verbose,
-                                         config_path=config_path,)
+                                         config_path=config_path, )
             # prev_status = get_status(dataset)
             dataset.merge(new_dataset)
         else:
@@ -205,18 +205,17 @@ def monitor(name: str,
                                  ds_format=ds_format,
                                  name=name,
                                  verbose=verbose,
-                                 config_path=config_path,)
+                                 config_path=config_path, )
         new_dataset = None
 
     report_path = check_compliance(dataset=dataset,
-                                   strategy=strategy,
                                    output_dir=output_dir,
                                    decimals=decimals,
                                    verbose=verbose,
                                    tolerance=tolerance,
-                                   reference_path=reference_path,)
+                                   reference_path=reference_path, )
 
-    record_status(output_dir, dataset, new_dataset, t_stamp)
+    # record_status(output_dir, dataset, new_dataset)
 
     return report_path
 
