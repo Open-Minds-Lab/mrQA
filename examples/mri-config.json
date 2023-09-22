@@ -5,7 +5,8 @@
         "phantom": false,
         "nifti_header": false,
         "moco": false,
-        "sbref": false
+        "sbref": false,
+        "derived": false
     },
     "use_echonumbers": true,
     "include_parameters": [
