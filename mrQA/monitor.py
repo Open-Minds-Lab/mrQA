@@ -50,12 +50,10 @@ def get_parser():
                                'protocol. Default is 0')
     optional.add_argument('-v', '--verbose', action='store_true',
                           help='allow verbose output on console')
-    optional.add_argument('-ref', '--reference-path', type=str,
-                          help='.yaml file containing protocol specification')
-    optional.add_argument('--strategy', type=str, default='majority',
-                          help='how to examine parameters [majority|reference].'
-                               '--reference-path required if using reference')
-
+    optional.add_argument('-ref', '--ref-protocol-path', type=str,
+                          help='XML file containing desired protocol. If not '
+                               'provided, the protocol will be inferred from '
+                               'the dataset.')
     if len(sys.argv) < 2:
         logger.critical('Too few arguments!')
         parser.print_help()
@@ -128,10 +126,8 @@ def main():
             data_source=args.data_source,
             output_dir=args.output_dir,
             verbose=args.verbose,
-            include_phantom=args.include_phantom,
             decimals=args.decimals,
             ds_format=args.format,
-            strategy=args.strategy,
             config_path=args.config,
             tolerance=args.tolerance,
             reference_path=args.reference_path, )
@@ -141,10 +137,8 @@ def monitor(name: str,
             data_source: Union[str, List, Path],
             output_dir: Union[str, Path],
             verbose: bool = False,
-            include_phantom: bool = False,
             decimals: int = 3,
             ds_format: str = 'dicom',
-            strategy: str = 'majority',
             config_path: Path = None,
             tolerance=0,
             reference_path=None) -> Path:
@@ -163,14 +157,16 @@ def monitor(name: str,
         Path to the folder where the report, and dataset would be saved.
     verbose: bool
         Whether to print verbose output on console.
-    include_phantom: bool
-        Whether to include phantom, localizer, aahead_scout
     decimals: int
         Number of decimal places to round to (default:3).
     ds_format: str
         Type of dataset, one of [dicom]
-    strategy: str
-        How to examine parameters [majority|reference]
+    config_path: str
+        Path to the config file
+    tolerance: float
+        Tolerance for checking against reference protocol. Default is 0
+    reference_path: str
+        Path to the reference protocol file.
 
     Returns
     -------
@@ -197,7 +193,7 @@ def monitor(name: str,
         else:
             logger.warning('No new files found since last report. '
                            'Returning last report')
-            return last_report_path
+            return
     else:
         logger.warning('Dataset %s not found in records. Running '
                        'compliance check on entire dataset', name)
@@ -208,18 +204,18 @@ def monitor(name: str,
                                  config_path=config_path, )
         new_dataset = None
 
-    report_path = check_compliance(dataset=dataset,
-                                   output_dir=output_dir,
-                                   decimals=decimals,
-                                   verbose=verbose,
-                                   tolerance=tolerance,
-                                   reference_path=reference_path, )
+    compliance_summary_dict = check_compliance(dataset=dataset,
+                                               output_dir=output_dir,
+                                               decimals=decimals,
+                                               verbose=verbose,
+                                               tolerance=tolerance,
+                                               reference_path=reference_path, )
 
     log_latest_non_compliance(ncomp_data=compliance_summary_dict['non_compliant'],
                               latest_data=new_dataset,
                               output_dir=output_dir, )
 
-    return report_path
+    return
 
 
 if __name__ == '__main__':

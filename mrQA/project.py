@@ -17,7 +17,7 @@ def check_compliance(dataset: BaseDataset,
                      output_dir: Union[Path, str] = None,
                      verbose: bool = False,
                      tolerance: float = 0.1,
-                     reference_path: Union[Path, str] = None) -> Optional[Path]:
+                     reference_path: Union[Path, str] = None) -> Optional[Dict]:
     """
     Main function for checking compliance. Infers the reference protocol
     according to the user chosen strategy, and then generates a compliance
@@ -79,20 +79,20 @@ def check_compliance(dataset: BaseDataset,
     else:
         ref_protocol = get_protocol_from_file(reference_path)
 
-    compliance_dict = compare_with_reference(dataset=dataset,
-                                             reference_protocol=ref_protocol,
-                                             decimals=decimals,
-                                             tolerance=tolerance)
+    compliance_summary_dict = compare_with_reference(dataset=dataset,
+                                                     reference_protocol=ref_protocol,
+                                                     decimals=decimals,
+                                                     tolerance=tolerance)
 
-    if compliance_dict:
-        generate_report(compliance_dict,
+    if compliance_summary_dict:
+        generate_report(compliance_summary_dict,
                         report_path,
                         sub_lists_dir_path,
                         output_dir)
 
         # Print a small message on the console, about non-compliance of dataset
-        print(_cli_report(compliance_dict, str(report_path)))
-        return report_path
+        print(_cli_report(compliance_summary_dict, str(report_path)))
+        return compliance_summary_dict
     else:
         logger.error('Could not generate report')
         return None
@@ -176,7 +176,7 @@ def compare_with_reference(dataset: BaseDataset,
     }
 
 
-def generate_report(compliance_dict: dict,
+def generate_report(compliance_summary_dict: dict,
                     report_path: str or Path,
                     sub_lists_dir_path: str,
                     output_dir: Union[Path, str]) -> Path:
@@ -186,7 +186,7 @@ def generate_report(compliance_dict: dict,
 
     Parameters
     ----------
-    compliance_dict : dict
+    compliance_summary_dict : dict
         Dictionary containing the reference protocol, compliant and
         non-compliant datasets
     report_path : str
@@ -207,10 +207,10 @@ def generate_report(compliance_dict: dict,
     output_dir.mkdir(parents=True, exist_ok=True)
 
     sub_lists_by_seq = export_subject_lists(output_dir,
-                                            compliance_dict,
+                                            compliance_summary_dict,
                                             sub_lists_dir_path)
 
     # Generate the HTML report and save it to the output_path
-    compliance_dict['sub_lists_by_seq'] = sub_lists_by_seq
-    HtmlFormatter(filepath=report_path, params=compliance_dict)
+    compliance_summary_dict['sub_lists_by_seq'] = sub_lists_by_seq
+    HtmlFormatter(filepath=report_path, params=compliance_summary_dict)
     return Path(report_path)
