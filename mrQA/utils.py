@@ -51,10 +51,10 @@ def timestamp():
     return time_string
 
 
-def record_out_paths(output_dir, dataset_name):
+def record_out_paths(output_dir, dataset):
     ts = timestamp()
     utc = datetime.strptime(ts, '%m_%d_%Y_%H_%M_%S').timestamp()
-    filename = f'{dataset_name}{DATE_SEPARATOR}{ts}'
+    filename = f'{dataset.name}{DATE_SEPARATOR}{ts}'
     report_path = report_fpath(output_dir, filename)
     mrds_path = mrds_fpath(output_dir, filename)
     sub_lists_dir_path = subject_list_dir(output_dir, filename)

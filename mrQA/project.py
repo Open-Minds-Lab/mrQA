@@ -1,27 +1,23 @@
 from pathlib import Path
-from typing import Union, Dict
+from typing import Union, Dict, Optional
 
-from MRdataset import save_mr_dataset
-from MRdataset.config import DatasetEmptyException
-from MRdataset.base import BaseDataset
+from MRdataset import save_mr_dataset, BaseDataset, DatasetEmptyException
+from protocol import MRImagingProtocol, SiemensMRImagingProtocol
 
 from mrQA import logger
 from mrQA.base import CompliantDataset, NonCompliantDataset, UndeterminedDataset
-from mrQA.config import STRATEGIES_ALLOWED
 from mrQA.formatter import HtmlFormatter
-from mrQA.utils import _check_against_reference, _cli_report, \
-    export_subject_lists, record_out_paths, get_protocol_from_file, \
-    compute_majority, _valid_reference
-from protocol import BaseMRImagingProtocol, ImagingSequence, SiemensMRImagingProtocol
+from mrQA.utils import _cli_report, \
+    export_subject_lists, record_out_paths, \
+    compute_majority
 
 
 def check_compliance(dataset: BaseDataset,
-                     strategy: str = 'majority',
                      decimals: int = 3,
                      output_dir: Union[Path, str] = None,
                      verbose: bool = False,
                      tolerance: float = 0.1,
-                     reference_path: Union[Path, str] = None) -> Path:
+                     reference_path: Union[Path, str] = None) -> Optional[Path]:
     """
     Main function for checking compliance. Infers the reference protocol
     according to the user chosen strategy, and then generates a compliance
@@ -63,7 +59,7 @@ def check_compliance(dataset: BaseDataset,
     if verbose:
         logger.setLevel('INFO')
     else:
-        logger.setLevel('WARNING')
+        logger.setLevel('ERROR')
 
     if not dataset.get_sequence_ids():
         raise DatasetEmptyException
@@ -75,21 +71,18 @@ def check_compliance(dataset: BaseDataset,
         raise NotADirectoryError('Provide a valid output directory')
 
     report_path, mrds_path, sub_lists_dir_path = record_out_paths(output_dir,
-                                                                  dataset.name)
+                                                                  dataset)
     save_mr_dataset(mrds_path, dataset)
 
-    if strategy == 'majority':
-        compliance_dict = compare_with_majority(dataset, decimals,
-                                                tolerance=tolerance)
-    elif strategy == 'reference':
-        compliance_dict = compare_with_reference(dataset=dataset,
-                                                 reference_path=reference_path,
-                                                 decimals=decimals,
-                                                 tolerance=tolerance)
+    if reference_path is None:
+        ref_protocol = infer_protocol(dataset)
     else:
-        raise NotImplementedError(
-            f'Only the following strategies are allowed : \n\t'
-            f'{STRATEGIES_ALLOWED}')
+        ref_protocol = get_protocol_from_file(reference_path)
+
+    compliance_dict = compare_with_reference(dataset=dataset,
+                                             reference_protocol=ref_protocol,
+                                             decimals=decimals,
+                                             tolerance=tolerance)
 
     save_mr_dataset(mrds_path, dataset)
     generate_report(compliance_dict,

@@ -69,6 +69,7 @@
 {% set utils = imp0rt('mrQA.utils') %}
 
 <h2>Summary of non-compliance: {{ compliant_ds.name }}</h2>
+<h4>Protocol Type : {{ protocol.type.name }}</h4>
 <h3>List of non-compliant modalities
     - {{ non_compliant_ds.get_sequence_ids()|length }}</h3>
 <table class="tg" id="with_margin">
