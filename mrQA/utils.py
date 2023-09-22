@@ -511,22 +511,6 @@ def _valid_reference(dict_, default=None):
     return True
 
 
-def get_protocol_from_file(reference_path: Path) -> dict:
-    """
-    Get the protocol from a file.
-    """
-    # Check if the file exists
-    if not reference_path.is_file():
-        raise FileNotFoundError(f'File {reference_path} not found.')
-    # Check file format
-    if reference_path.suffix == '.json':
-        raise NotImplementedError('JSON format not supported yet.')
-    elif is_dicom_file(reference_path):
-        reference = parse_imaging_params(reference_path)
-    else:
-        raise ValueError('File format not supported.')
-    return reference
-
 
 def round_if_numeric(value: Union[int, float],
                      decimals: int = 3) -> Union[int, float, np.ndarray]:
