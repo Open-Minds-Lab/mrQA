@@ -33,7 +33,7 @@ def get_parser():
                                ' would be saved. By default, the --data_source '
                                'directory will be used to save reports')
     optional.add_argument('-f', '--format', type=str, default='dicom',
-                          help='type of dataset, one of [dicom|bids|pybids]')
+                          help='type of dataset, one of [dicom|bids]')
     optional.add_argument('-n', '--name', type=str,
                           help='provide a identifier/name for the dataset')
     optional.add_argument('-h', '--help', action='help',
@@ -50,12 +50,10 @@ def get_parser():
     # TODO: use this flag to store cache
     optional.add_argument('-v', '--verbose', action='store_true',
                           help='allow verbose output on console')
-    optional.add_argument('-ref', '--reference-path', type=str,
-                          help='DICOM file containing desired protocol. Only '
-                               'used when --strategy==reference')
-    optional.add_argument('--strategy', type=str, default='majority',
-                          help='how to examine parameters [majority|reference].'
-                               '--reference_path required if using reference')
+    optional.add_argument('-ref', '--ref-protocol-path', type=str,
+                          help='XML file containing desired protocol. If not '
+                               'provided, the protocol will be inferred from '
+                               'the dataset.')
     # Experimental features, not implemented yet.
     optional.add_argument('-l', '--logging', type=int, default=40,
                           help='set logging to appropriate level')
@@ -80,12 +78,11 @@ def main():
                              config_path=args.config)
 
     check_compliance(dataset=dataset,
-                     strategy=args.strategy,
                      output_dir=args.output_dir,
                      decimals=args.decimals,
                      verbose=args.verbose,
                      tolerance=args.tolerance,
-                     reference_path=args.reference_path,)
+                     reference_path=args.ref_protocol_path, )
     return 0
 
 
@@ -124,9 +121,6 @@ def parse_args():
         if not Path(args.reference_path).is_file():
             raise OSError(f'Expected valid file for --reference_path argument, '
                           'Got {0}'.format(args.reference_path))
-        if args.strategy != 'reference':
-            raise ValueError('Expected --strategy==reference when using '
-                             '--reference_path')
     return args
 
 
