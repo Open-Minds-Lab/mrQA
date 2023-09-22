@@ -1,4 +1,4 @@
-from mrQA.utils import majority_values, files_modified_since
+from mrQA.utils import majority_values, folders_modified_since
 from mrQA.utils import list2txt, txt2list
 import unittest
 import tempfile
@@ -197,7 +197,7 @@ class TestModifiedTimeDirectory(unittest.TestCase):
     def test_invalid_path(self):
         with self.assertRaises(FileNotFoundError):
             now = datetime.now(timezone.utc)
-            files_modified_since('/tmp/mrqa', now.strftime("%m/%d/%Y %H:%M:%S"))
+            folders_modified_since('/tmp/mrqa', now.strftime("%m/%d/%Y %H:%M:%S"))
 
     @staticmethod
     def create_dummy_directory():
@@ -219,8 +219,8 @@ class TestModifiedTimeDirectory(unittest.TestCase):
         now = datetime(2023, 2, 5, 18, 00)
         # datetime.now(timezone.utc)
         date_time = now.strftime("%m/%d/%Y %H:%M:%S")
-        valid_files = files_modified_since(self.temp_ds, date_time, '/tmp/',
-                                           time_format='datetime')
+        valid_files = folders_modified_since(self.temp_ds, date_time, '/tmp/',
+                                             time_format='datetime')
         print(valid_files)
 
 

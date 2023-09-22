@@ -17,7 +17,7 @@ from mrQA import logger
 from mrQA.config import past_records_fpath, report_fpath, mrds_fpath, \
     subject_list_dir, DATE_SEPARATOR, CannotComputeMajority, \
     ReferenceNotSetForModality, Unspecified, \
-    ReferenceNotSetForEchoTime, EqualCount
+    ReferenceNotSetForEchoTime, EqualCount, status_fpath
 
 
 def get_items_upto_count(dict_: Counter, rank: int = 1):
@@ -949,6 +949,49 @@ def export_subject_lists(output_dir: Union[Path, str],
     noncompliant_sub_by_seq = subject_list2txt(compliance_dict['non_compliant'],
                                                output_dir / folder_name)
     return noncompliant_sub_by_seq
+
+
+def log_latest_non_compliance(ncomp_data, latest_data, output_dir):
+    """
+    Log the latest non-compliance data from recent sessions to a file
+
+    Parameters
+    ----------
+    ncomp_data
+    latest_data
+    output_dir
+
+    Returns
+    -------
+
+    """
+    if latest_data is None:
+        return
+    full_status = []
+    for seq_id in latest_data.get_sequence_ids():
+        for subj_id, sess_id, run_id, seq in latest_data.traverse_horizontal(seq_id):
+            try:
+                nc_param_dict = ncomp_data.get_non_compliant_params(
+                    subject_id=subj_id, session_id=sess_id,
+                    run_id=run_id, seq_id=seq_id)
+                status = {
+                    'ts' : seq.timestamp,
+                    'subject': subj_id,
+                    'sequence': seq_id,
+                    'ds_name': latest_data.name,
+                    'nc_params': ';'.join(nc_param_dict.keys())
+                }
+                full_status.append(status)
+            except KeyError:
+                continue
+    status_filepath = status_fpath(output_dir)
+    if not status_filepath.parent.is_dir():
+        status_filepath.parent.mkdir(parents=True)
+
+    with open(status_filepath, 'a', encoding='utf-8') as fp:
+        for i in full_status:
+            fp.write(f" {i['ts']}, {i['ds_name']}, {i['sequence']}, {i['subject']}, {i['nc_params']} \n")
+    return None  # status_filepath
 
 
 def tuples2dict(mylist):

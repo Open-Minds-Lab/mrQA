@@ -215,7 +215,9 @@ def monitor(name: str,
                                    tolerance=tolerance,
                                    reference_path=reference_path, )
 
-    # record_status(output_dir, dataset, new_dataset)
+    log_latest_non_compliance(ncomp_data=compliance_summary_dict['non_compliant'],
+                              latest_data=new_dataset,
+                              output_dir=output_dir, )
 
     return report_path
 
