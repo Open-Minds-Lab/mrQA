@@ -10,7 +10,7 @@ from MRdataset.utils import is_writable
 from mrQA import logger
 from mrQA.config import PATH_CONFIG
 from mrQA.project import check_compliance
-from mrQA.utils import files_modified_since, get_last_valid_record
+from mrQA.utils import folders_modified_since, get_last_valid_record, log_latest_non_compliance
 
 
 def get_parser():
@@ -183,9 +183,9 @@ def monitor(name: str,
         last_reported_on, last_report_path, last_mrds_path = last_record
         # TODO: delete old logs, only keep latest 3-4 reports in the folder
         dataset = load_mr_dataset(last_mrds_path)
-        modified_folders = files_modified_since(input_dir=data_source,
-                                                last_reported_on=last_reported_on,
-                                                output_dir=output_dir)
+        modified_folders = folders_modified_since(input_dir=data_source,
+                                                  last_reported_on=last_reported_on,
+                                                  output_dir=output_dir)
         if modified_folders:
             new_dataset = import_dataset(data_source=modified_folders,
                                          ds_format='dicom',

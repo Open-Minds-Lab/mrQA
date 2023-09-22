@@ -9,8 +9,7 @@ from subprocess import run, CalledProcessError, TimeoutExpired
 from typing import Union, List, Optional, Any
 
 import numpy as np
-from MRdataset.base import BaseDataset
-from MRdataset.dicom_utils import is_dicom_file, parse_imaging_params
+from MRdataset import BaseDataset, is_dicom_file
 from MRdataset.utils import slugify
 from dateutil import parser
 
@@ -441,10 +440,10 @@ def subject_list2txt(dataset: BaseDataset,
     output_dir.mkdir(exist_ok=True, parents=True)
     filepaths = {}
     for seq_name in dataset.get_sequence_ids():
-            filepath = output_dir / f'{slugify(seq_name)}.txt'
-            subj_with_sequence = dataset.get_subject_ids(seq_name)
-            list2txt(filepath, subj_with_sequence)
-            filepaths[seq_name] = filepath
+        filepath = output_dir / f'{slugify(seq_name)}.txt'
+        subj_with_sequence = dataset.get_subject_ids(seq_name)
+        list2txt(filepath, subj_with_sequence)
+        filepaths[seq_name] = filepath
     return filepaths
 
 
@@ -719,7 +718,7 @@ def _cli_report(compliance_dict: dict, report_name):
     for seq_id in non_compliant_ds.get_sequence_ids():
         ncomp_sub_ids = len(non_compliant_ds.get_subject_ids(seq_id))
         comp_sub_ids = len(compliant_ds.get_subject_ids(seq_id))
-        total_subjects = comp_sub_ids+ncomp_sub_ids
+        total_subjects = comp_sub_ids + ncomp_sub_ids
 
         percent_non_compliant = ncomp_sub_ids / total_subjects
         if percent_non_compliant > 0:
@@ -804,10 +803,10 @@ def _datasets_processed(dir_path, ignore_case=True):
         return [x.name.lower() for x in dir_path.iterdir() if x.is_dir()]
 
 
-def files_modified_since(last_reported_on: str,
-                         input_dir: Union[str, Path],
-                         output_dir: Union[str, Path],
-                         time_format: str = 'timestamp') -> List:
+def folders_modified_since(last_reported_on: str,
+                           input_dir: Union[str, Path],
+                           output_dir: Union[str, Path],
+                           time_format: str = 'timestamp') -> List:
     """
     Find files modified since a given time
 
@@ -853,7 +852,7 @@ def files_modified_since(last_reported_on: str,
         raise NotImplementedError("Expected one of ['timestamp', 'datetime']."
                                   f'Got {time_format}')
 
-    out_path = Path(output_dir) / 'modified_files_since.txt'
+    out_path = Path(output_dir) / 'modified_folders_since.txt'
     if out_path.is_file():
         out_path.unlink()
 
@@ -963,9 +962,8 @@ def get_timestamps():
 def export_subject_lists(output_dir: Union[Path, str],
                          compliance_dict: dict,
                          folder_name: str) -> dict:
-
     noncompliant_sub_by_seq = subject_list2txt(compliance_dict['non_compliant'],
-                                             output_dir / folder_name)
+                                               output_dir / folder_name)
     return noncompliant_sub_by_seq
 
 

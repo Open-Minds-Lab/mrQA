@@ -157,12 +157,15 @@ def compare_with_reference(dataset: BaseDataset,
             compliant, non_compliant_tuples = ref_sequence.compliant(seq, rtol=tolerance, decimals=decimals)
 
             if compliant:
-                compliant_dataset.add(subj, sess, run, seq_name, seq)
+                compliant_dataset.add(subject_id=subj, session_id=sess,
+                                      run_id=run, seq_id=seq_name, seq=seq)
             else:
                 non_compliant_params = [x[1] for x in non_compliant_tuples]
-                non_compliant_dataset.add(subj, sess, run, seq_name, seq)
+                non_compliant_dataset.add(subject_id=subj, session_id=sess,
+                                          run_id=run, seq_id=seq_name, seq=seq)
                 non_compliant_dataset.add_non_compliant_params(
-                    subj, sess, run, seq_name, non_compliant_params
+                    subject_id=subj, session_id=sess, run_id=run,
+                    seq_id=seq_name, non_compliant_params=non_compliant_params
                 )
 
     return {

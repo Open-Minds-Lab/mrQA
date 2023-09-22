@@ -12,7 +12,7 @@ from MRdataset.utils import files_in_path
 from mrQA import check_compliance
 from mrQA.config import report_fpath, mrds_fpath, past_records_fpath, \
     DATE_SEPARATOR
-from mrQA.utils import files_modified_since, get_last_valid_record, txt2list
+from mrQA.utils import folders_modified_since, get_last_valid_record, txt2list
 
 
 def test_modified_files(last_reported_on,
@@ -20,7 +20,7 @@ def test_modified_files(last_reported_on,
                         temp_output_dest,
                         data_source,
                         file_set):
-    modified_files = files_modified_since(
+    modified_files = folders_modified_since(
         input_dir=temp_input_src,
         last_reported_on=last_reported_on,
         output_dir=temp_output_dest)
