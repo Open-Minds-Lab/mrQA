@@ -84,61 +84,77 @@ def check_compliance(dataset: BaseDataset,
                                              decimals=decimals,
                                              tolerance=tolerance)
 
-    save_mr_dataset(mrds_path, dataset)
-    generate_report(compliance_dict,
-                    report_path,
-                    sub_lists_dir_path,
-                    output_dir)
+    if compliance_dict:
+        generate_report(compliance_dict,
+                        report_path,
+                        sub_lists_dir_path,
+                        output_dir)
 
-    # Print a small message on the console, about non-compliance of dataset
-    print(_cli_report(compliance_dict, str(report_path)))
-    return report_path
+        # Print a small message on the console, about non-compliance of dataset
+        print(_cli_report(compliance_dict, str(report_path)))
+        return report_path
+    else:
+        logger.error('Could not generate report')
+        return None
+
+
+def get_protocol_from_file(reference_path: Path,
+                           vendor: str = 'siemens'):
+    # Extract reference protocol from file
+    if isinstance(reference_path, str):
+        reference_path = Path(reference_path)
+    if not isinstance(reference_path, Path):
+        raise TypeError(f'Expected Path or str, got {type(reference_path)}')
+
+    if not reference_path.is_file():
+        raise FileNotFoundError(f'{reference_path} does not exist')
+    # TODO: Add support for other file formats, like json and dcm
+    if reference_path.suffix != '.xml':
+        raise ValueError(f'Expected xml file, got {reference_path.suffix}')
+    # TODO: Add support for other vendors, like GE and Philips
+    if vendor != 'siemens':
+        raise NotImplementedError(f'Only Siemens protocols are supported')
+    ref_protocol = SiemensMRImagingProtocol(filepath=reference_path)
+    return ref_protocol
+
+
+def infer_protocol(dataset: BaseDataset):
+    # TODO: Check for subset, if incomplete dataset throw error and stop
+    ref_protocol = MRImagingProtocol(f'reference_for_{dataset.name}')
+    # create reference protocol for each sequence
+    reference_by_seq = {}
+    for seq_name in dataset.get_sequence_ids():
+        num_subjects = dataset.get_subject_ids(seq_name)
+        # If subjects are less than 3, then we can't infer a reference
+        if len(num_subjects) > 2:
+            reference = compute_majority(dataset, seq_name)
+            reference_by_seq[seq_name] = reference
+    # update the reference protocol with dictonary
+    ref_protocol.add_sequences_from_dict(reference_by_seq)
+    return ref_protocol
 
 
 def compare_with_reference(dataset: BaseDataset,
-                           reference_path: Path,
+                           reference_protocol: MRImagingProtocol,
                            decimals: int = 3,
-                           tolerance: float = 0.1) -> BaseDataset:
-    """
-    Method for post-acquisition compliance. Reads the reference protocol/values
-    from a file, and then identifies deviations.
+                           tolerance: float = 0.1) -> Optional[Dict]:
+    if not reference_protocol:
+        logger.error('Reference protocol is empty')
+        return None
 
-    Parameters
-    ----------
-    dataset: BaseDataset
-        BaseDataset instance for the dataset which is to be checked
-        for compliance
-    reference_path: Path
-        Path to the reference protocol file
-    decimals: int
-        Number of decimal places to round to (default:3).
-    tolerance: float
-        Tolerance for checking against reference protocol. Default is 0.1
-
-    Returns
-    -------
-    dataset: BaseDataset
-        Adds the non-compliance information to the same BaseDataset instance and
-        returns it.
-    """
-
-    # Extract reference protocol from file
-    if not Path(reference_path).is_file():
-        raise FileNotFoundError(f'{reference_path} does not exist')
-    ref_protocol = SiemensMRImagingProtocol(reference_path)
     compliant_dataset = CompliantDataset(dataset.name)
     non_compliant_dataset = NonCompliantDataset(dataset.name)
     undetermined_dataset = UndeterminedDataset(dataset.name)
 
     for seq_name in dataset.get_sequence_ids():
         try:
-            ref_sequence = ref_protocol[seq_name]
+            ref_sequence = reference_protocol[seq_name]
         except KeyError:
             logger.info(f'No reference protocol for {seq_name} sequence.')
             continue
 
         for subj, sess, run, seq in dataset.traverse_horizontal(seq_name):
-            compliant, non_compliant_tuples = ref_sequence.compliant(seq)
+            compliant, non_compliant_tuples = ref_sequence.compliant(seq, rtol=tolerance, decimals=decimals)
 
             if compliant:
                 compliant_dataset.add(subj, sess, run, seq_name, seq)
@@ -150,74 +166,7 @@ def compare_with_reference(dataset: BaseDataset,
                 )
 
     return {
-        'reference': ref_protocol,
-        'compliant': compliant_dataset,
-        'non_compliant': non_compliant_dataset,
-        'undetermined': undetermined_dataset,
-    }
-
-
-
-def compare_with_majority(dataset: BaseDataset,
-                          decimals: int = 3,
-                          tolerance: float = 0.1) -> Dict:
-    """
-    Method for post-acquisition compliance. Infers the reference protocol/values
-    by looking for the most frequent values, and then identifying deviations
-
-    Parameters
-    ----------
-    dataset : BaseDataset
-        BaseDataset instance for the dataset which is to be checked
-        for compliance
-    decimals : int
-        Number of decimal places to round to (default:3).
-    tolerance : float
-        Tolerance for checking against reference protocol. Default is 0.1
-
-    Returns
-    -------
-    dict
-        A dictionary containing the reference protocol, compliant and
-        non-compliant datasets
-    """
-
-    # TODO: Check for subset, if incomplete dataset throw error and stop
-    ref_protocol = BaseMRImagingProtocol(f'reference_for_{dataset.name}')
-    compliant_dataset = CompliantDataset(dataset.name)
-    non_compliant_dataset = NonCompliantDataset(dataset.name)
-    undetermined_dataset = UndeterminedDataset(dataset.name)
-    flagged = False
-
-    for seq_name in dataset.get_sequence_ids():
-        ref_sequence = ImagingSequence(name=seq_name)
-        num_subjects = dataset.get_subject_ids(seq_name)
-        if len(num_subjects) > 2:
-            flagged = False
-            ref_dict = compute_majority(dataset, seq_name)
-            ref_sequence.from_dict(ref_dict)
-            ref_protocol.add(ref_sequence)
-        else:
-            logger.info(f'Not enough subjects for {seq_name} sequence.')
-            flagged = True
-
-        for subj, sess, run, seq in dataset.traverse_horizontal(seq_name):
-            if flagged:
-                undetermined_dataset.add(subj, sess, run, seq_name, seq)
-            else:
-                compliant, non_compliant_tuples = ref_sequence.compliant(seq)
-
-                if compliant:
-                    compliant_dataset.add(subj, sess, run, seq_name, seq)
-                else:
-                    non_compliant_params = [x[1] for x in non_compliant_tuples]
-                    non_compliant_dataset.add(subj, sess, run, seq_name, seq)
-                    non_compliant_dataset.add_non_compliant_params(
-                        subj, sess, run, seq_name, non_compliant_params
-                    )
-
-    return {
-        'reference': ref_protocol,
+        'reference': reference_protocol,
         'compliant': compliant_dataset,
         'non_compliant': non_compliant_dataset,
         'undetermined': undetermined_dataset,
