@@ -120,7 +120,7 @@ def parse_args():
     if args.ref_protocol_path is not None:
         if not Path(args.ref_protocol_path).is_file():
             raise OSError(f'Expected valid file for --ref-protocol-path argument, '
-                          'Got {0}'.format(args.ref-protocol-path))
+                          'Got {0}'.format(args.ref_protocol_path))
     return args
 
 
