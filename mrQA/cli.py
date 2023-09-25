@@ -117,10 +117,10 @@ def parse_args():
     if not is_writable(args.output_dir):
         raise OSError(f'Output Folder {args.output_dir} is not writable')
 
-    if args.reference_path is not None:
-        if not Path(args.reference_path).is_file():
-            raise OSError(f'Expected valid file for --reference_path argument, '
-                          'Got {0}'.format(args.reference_path))
+    if args.ref_protocol_path is not None:
+        if not Path(args.ref_protocol_path).is_file():
+            raise OSError(f'Expected valid file for --ref-protocol-path argument, '
+                          'Got {0}'.format(args.ref-protocol-path))
     return args
 
 

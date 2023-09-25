@@ -130,7 +130,7 @@ def main():
             ds_format=args.format,
             config_path=args.config,
             tolerance=args.tolerance,
-            reference_path=args.reference_path, )
+            reference_path=args.ref_protocol_path, )
 
 
 def monitor(name: str,
