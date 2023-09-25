@@ -8,10 +8,10 @@ import logging
 
 from mrQA.logger import INFO_FORMATTER, init_log_files
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.WARNING)
 # defines the stream handler
 _ch = logging.StreamHandler()  # creates the handler
-_ch.setLevel(logging.INFO)  # sets the handler info
+_ch.setLevel(logging.WARNING)  # sets the handler info
 # sets the handler formatting
 _ch.setFormatter(logging.Formatter(INFO_FORMATTER))
 # adds the handler to the global variable: log

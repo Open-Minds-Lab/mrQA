@@ -91,7 +91,7 @@
         {% set non_compliant_params = non_compliant_ds.get_non_compliant_param_ids(seq_id) %}
             {% if non_compliant_ds.get_subject_ids(seq_id) %}{# |length > 2 #}
                 <tr>
-                    <td class="tg-0pky" colspan="1">{{ seq_id }}</td>
+                    <td class="tg-0pky" colspan="1"><a  href=#{{seq_id}}>{{seq_id}}</a></td>
                     {% set percent_non_compliant = 100 * ncomp_sub_ids|length|float / total_subjects %}
                     {% set percent_compliant = 100 * comp_sub_ids|length|float / total_subjects %}
 
@@ -143,8 +143,8 @@
             {% for j in range(cols) %}
                 {% set index = i * cols + j %}
                 {% if index < comp_sequences |length %}
-                    <td class="tg-0pky" colspan="1">
-                       {{ comp_sequences[index] }}
+                    <td class="tg-0pky" colspan="1"><a href=#{{comp_sequences[index]}}>
+                       {{comp_sequences[index]}}</a>
                     </td>
                 {% endif %}
             {% endfor %}

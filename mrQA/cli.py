@@ -3,7 +3,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from MRdataset import import_dataset
+from MRdataset import import_dataset, load_mr_dataset
 from MRdataset.utils import is_writable, valid_dirs
 
 from mrQA import check_compliance
@@ -54,6 +54,9 @@ def get_parser():
                           help='XML file containing desired protocol. If not '
                                'provided, the protocol will be inferred from '
                                'the dataset.')
+    optional.add_argument('-pkl', '--mrds-pkl-path', type=str,
+                          help='.mrds.pkl file can be provided to facilitate '
+                               'faster re-runs.')
     # Experimental features, not implemented yet.
     optional.add_argument('-l', '--logging', type=int, default=40,
                           help='set logging to appropriate level')
@@ -70,12 +73,14 @@ def get_parser():
 
 def main():
     args = parse_args()
-
-    dataset = import_dataset(data_source=args.data_source,
-                             ds_format=args.format,
-                             name=args.name,
-                             verbose=args.verbose,
-                             config_path=args.config)
+    if args.mrds_pkl_path:
+        dataset = load_mr_dataset(args.mrds_pkl_path)
+    else:
+        dataset = import_dataset(data_source=args.data_source,
+                                 ds_format=args.format,
+                                 name=args.name,
+                                 verbose=args.verbose,
+                                 config_path=args.config)
 
     check_compliance(dataset=dataset,
                      output_dir=args.output_dir,
@@ -121,6 +126,11 @@ def parse_args():
         if not Path(args.ref_protocol_path).is_file():
             raise OSError(f'Expected valid file for --ref-protocol-path argument, '
                           'Got {0}'.format(args.ref_protocol_path))
+    if args.mrds_pkl_path is not None:
+        if not Path(args.mrds_pkl_path).is_file():
+            raise OSError(f'Expected valid file for --mrds-pkl-path argument, '
+                          'Got {0}'.format(args.mrds_pkl_path))
+
     return args
 
 

@@ -50,7 +50,7 @@ def timestamp():
     return time_string
 
 
-def record_out_paths(output_dir, dataset):
+def make_output_paths(output_dir, dataset):
     ts = timestamp()
     utc = datetime.strptime(ts, '%m_%d_%Y_%H_%M_%S').timestamp()
     filename = f'{dataset.name}{DATE_SEPARATOR}{ts}'

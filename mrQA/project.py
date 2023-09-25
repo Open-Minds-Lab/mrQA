@@ -8,7 +8,7 @@ from mrQA import logger
 from mrQA.base import CompliantDataset, NonCompliantDataset, UndeterminedDataset
 from mrQA.formatter import HtmlFormatter
 from mrQA.utils import _cli_report, \
-    export_subject_lists, record_out_paths, \
+    export_subject_lists, make_output_paths, \
     compute_majority
 
 
@@ -61,29 +61,37 @@ def check_compliance(dataset: BaseDataset,
     else:
         logger.setLevel('ERROR')
 
+    # Check if dataset is empty
     if not dataset.get_sequence_ids():
         raise DatasetEmptyException
 
+    # Check if output directory exists, create if not
     output_dir = Path(output_dir).resolve()
     output_dir.mkdir(exist_ok=True, parents=True)
     if not output_dir.is_dir():
         logger.error(f'Output directory {output_dir} does not exist')
         raise NotADirectoryError('Provide a valid output directory')
 
-    report_path, mrds_path, sub_lists_dir_path = record_out_paths(output_dir,
-                                                                  dataset)
+    # Create paths for report, mrds pkl file and sub_lists
+    report_path, mrds_path, sub_lists_dir_path = make_output_paths(output_dir,
+                                                                   dataset)
+    # Save the dataset to a pickle file
     save_mr_dataset(mrds_path, dataset)
 
+    # Infer reference protocol if not provided
     if reference_path is None:
-        ref_protocol = infer_protocol(dataset)
+        ref_protocol = infer_protocol(dataset, config_path=config_path)
     else:
         ref_protocol = get_protocol_from_file(reference_path)
 
+    # Compare the dataset with reference protocol (inferred or user-defined)
     compliance_summary_dict = compare_with_reference(dataset=dataset,
                                                      reference_protocol=ref_protocol,
                                                      decimals=decimals,
-                                                     tolerance=tolerance)
+                                                     tolerance=tolerance,
+                                                     config_path=config_path)
 
+    # Generate the report if checking compliance was successful
     if compliance_summary_dict:
         generate_report(compliance_summary_dict,
                         report_path,
@@ -99,7 +107,23 @@ def check_compliance(dataset: BaseDataset,
 
 
 def get_protocol_from_file(reference_path: Path,
-                           vendor: str = 'siemens'):
+                           vendor: str = 'siemens') -> MRImagingProtocol:
+    """
+    Extracts the reference protocol from the file. Supports only Siemens
+    protocols in xml format. Raises error otherwise.
+
+    Parameters
+    ----------
+    reference_path : Union[Path, str]
+        Path to the reference protocol file
+    vendor: str
+        Vendor of the scanner. Default is Siemens
+
+    Returns
+    -------
+    ref_protocol : MRImagingProtocol
+        Reference protocol extracted from the file
+    """
     # Extract reference protocol from file
     if isinstance(reference_path, str):
         reference_path = Path(reference_path)
