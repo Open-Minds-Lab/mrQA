@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from typing import Union, Dict, Optional
 
@@ -17,6 +18,7 @@ def check_compliance(dataset: BaseDataset,
                      output_dir: Union[Path, str] = None,
                      verbose: bool = False,
                      tolerance: float = 0.1,
+                     config_path: Union[Path, str] = None,
                      reference_path: Union[Path, str] = None) -> Optional[Dict]:
     """
     Main function for checking compliance. Infers the reference protocol
@@ -26,10 +28,7 @@ def check_compliance(dataset: BaseDataset,
     Parameters
     ----------
     dataset : BaseDataset
-        BaseDataset instance for the dataset to be checked for compliance
-    strategy : str
-        Strategy employed to specify or automatically infer the
-        reference protocol. Allowed options are 'majority'
+        Dataset to be checked for compliance
     output_dir: Union[Path, str]
         Path to save the report
     decimals : int
@@ -41,12 +40,13 @@ def check_compliance(dataset: BaseDataset,
     reference_path : Union[Path, str]
         Path to the reference protocol file. Required if strategy is
         'reference'
-
+    config_path : Union[Path, str]
+        Path to the config file
     Returns
     -------
-    report_path : Path
-        Path to the generated report
-
+    compliance_dict : Dict
+        Dictionary containing the reference protocol, compliant and
+        non-compliant datasets
     Raises
     ------
     ValueError
@@ -142,7 +142,26 @@ def get_protocol_from_file(reference_path: Path,
     return ref_protocol
 
 
-def infer_protocol(dataset: BaseDataset):
+def infer_protocol(dataset: BaseDataset,
+                   config_path: Union[Path, str]) -> MRImagingProtocol:
+    """
+    Infers the reference protocol from the dataset. The reference protocol
+    is inferred by computing the majority for each of the parameters for each sequence
+    in the dataset.
+
+    Parameters
+    ----------
+    dataset: BaseDataset
+        Dataset to be checked for compliance
+    config_path: Union[Path, str]
+        Path to the config file
+    Returns
+    -------
+    ref_protocol : MRImagingProtocol
+        Reference protocol inferred from the dataset
+    """
+    config_dict = get_config_from_file(config_path)
+
     # TODO: Check for subset, if incomplete dataset throw error and stop
     ref_protocol = MRImagingProtocol(f'reference_for_{dataset.name}')
     # create reference protocol for each sequence
@@ -151,7 +170,9 @@ def infer_protocol(dataset: BaseDataset):
         num_subjects = dataset.get_subject_ids(seq_name)
         # If subjects are less than 3, then we can't infer a reference
         if len(num_subjects) > 2:
-            reference = compute_majority(dataset, seq_name)
+            reference = compute_majority(dataset=dataset,
+                                         seq_name=seq_name,
+                                         config_dict=config_dict)
             reference_by_seq[seq_name] = reference
     # update the reference protocol with dictonary
     ref_protocol.add_sequences_from_dict(reference_by_seq)
@@ -161,7 +182,32 @@ def infer_protocol(dataset: BaseDataset):
 def compare_with_reference(dataset: BaseDataset,
                            reference_protocol: MRImagingProtocol,
                            decimals: int = 3,
-                           tolerance: float = 0.1) -> Optional[Dict]:
+                           tolerance: float = 0.1,
+                           config_path: Union[Path, str] = None) -> Optional[Dict]:
+    """
+    Compares the dataset with the reference protocol (either inferred or
+    user-defined). Returns a dictionary containing the reference protocol,
+    compliant and non-compliant datasets.
+
+    Parameters
+    ----------
+    dataset: BaseDataset
+        Dataset to be checked for compliance
+    reference_protocol: MRImagingProtocol
+        Reference protocol to be compared with
+    decimals: int
+        Number of decimal places to round to (default:3).
+    tolerance: float
+        Tolerance for checking against reference protocol. Default is 0.1
+    config_path: Union[Path, str]
+        Path to the config file
+    Returns
+    -------
+
+    """
+    config_dict = get_config_from_file(config_path)
+    include_params = config_dict['include_parameters']
+
     if not reference_protocol:
         logger.error('Reference protocol is empty')
         return None
@@ -178,7 +224,9 @@ def compare_with_reference(dataset: BaseDataset,
             continue
 
         for subj, sess, run, seq in dataset.traverse_horizontal(seq_name):
-            compliant, non_compliant_tuples = ref_sequence.compliant(seq, rtol=tolerance, decimals=decimals)
+            compliant, non_compliant_tuples = ref_sequence.compliant(seq, rtol=tolerance,
+                                                                     decimals=decimals,
+                                                                     include_params=include_params)
 
             if compliant:
                 compliant_dataset.add(subject_id=subj, session_id=sess,
@@ -199,6 +247,19 @@ def compare_with_reference(dataset: BaseDataset,
         'undetermined': undetermined_dataset,
     }
 
+
+def get_config_from_file(config_path: Union[Path, str]) -> dict:
+    if isinstance(config_path, str):
+        config_path = Path(config_path)
+    if not isinstance(config_path, Path):
+        raise TypeError(f'Expected Path or str, got {type(config_path)}')
+    if not config_path.is_file():
+        raise FileNotFoundError(f'{config_path} does not exist')
+
+    # read json file
+    with open(config_path, 'r') as f:
+        config = json.load(f)
+    return config
 
 def generate_report(compliance_summary_dict: dict,
                     report_path: str or Path,

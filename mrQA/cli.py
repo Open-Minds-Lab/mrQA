@@ -87,6 +87,7 @@ def main():
                      decimals=args.decimals,
                      verbose=args.verbose,
                      tolerance=args.tolerance,
+                     config_path=args.config,
                      reference_path=args.ref_protocol_path, )
     return 0
 

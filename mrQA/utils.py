@@ -68,7 +68,8 @@ def make_output_paths(output_dir, dataset):
 
 
 def majority_values(list_seqs: list,
-                    default=None):
+                    default=None,
+                    include_keys: list = None,):
     """
     Given a list of dictionaries, it generates the most common
     values for each key
@@ -102,9 +103,11 @@ def majority_values(list_seqs: list,
 
     counters_dict = {}
     categories = set()
+    if not include_keys:
+        raise ValueError('Expected a list of keys to include. Got None')
     for seq in list_seqs:
-        categories.update(seq.imaging_params)
-        for param in seq.imaging_params:
+        categories.update(include_keys)
+        for param in include_keys:
             counter = counters_dict.get(param, Counter({default: 0}))
             value = seq[param]
             counter[value] += 1
@@ -587,12 +590,16 @@ def round_if_numeric(value: Union[int, float],
 #     return delta, te_ref
 
 
-def compute_majority(dataset: BaseDataset, seq_name):
+def compute_majority(dataset: BaseDataset, seq_name, config_dict=None):
+    # if config_dict is not None:
+    # TODO: parse begin and end times
+    # TODO: add option to exclude subjects
+    include_parameters = config_dict.get('include_parameters', None)
     seq_list = []
     for subj, sess, runs, seq in dataset.traverse_horizontal(seq_name):
         seq_list.append(seq)
 
-    dict_ = majority_values(seq_list, default=Unspecified)
+    dict_ = majority_values(seq_list, default=Unspecified, include_keys=include_parameters)
     return dict_
 
 

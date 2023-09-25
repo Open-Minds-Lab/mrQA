@@ -185,14 +185,14 @@
 <table class="tg" id="with_margin">
     <thead>
     <tr>
-        {% for param in ref.imaging_params|sort %}
+        {% for param in ref|sort %}
             <th class="tg-0pky" colspan="2">{{ param }}</th>
         {% endfor %}
     </tr>
     </thead>
     <tbody>
     <tr>
-        {% for param in ref.imaging_params|sort %}
+        {% for param in ref|sort %}
             <td class="tg-0pky" colspan="2">{{ ref[param].get_value() }}</td>
         {% endfor %}
     </tr>
@@ -255,14 +255,14 @@
 <table class="tg" id="with_margin">
     <thead>
     <tr>
-        {% for param in ref.imaging_params|sort %}
+        {% for param in ref|sort %}
             <th class="tg-0pky" colspan="2">{{ param }}</th>
         {% endfor %}
     </tr>
     </thead>
     <tbody>
     <tr>
-        {% for param in ref.imaging_params|sort %}
+        {% for param in ref|sort %}
             <td class="tg-0pky"
                 colspan="2">{{ ref[param].get_value() }}</td>
         {% endfor %}
