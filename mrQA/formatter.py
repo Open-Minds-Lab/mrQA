@@ -120,6 +120,7 @@ class HtmlFormatter(BaseFormatter):
             undetermined_ds=self.params['undetermined'],
             non_compliant_ds= self.params['non_compliant'],
             sub_lists_by_seq=self.params['sub_lists_by_seq'],
+            complete_ds=self.params['complete_ds'],
             # time=self.params['time'],
             imp0rt=importlib.import_module
         )

@@ -12,7 +12,7 @@
     "include_parameters": [
         "BodyPartExamined",
         "EchoTrainLength",
-        "IPat",
+        "ParallelAcquisitionTechnique",
         "MagneticFieldStrength",
         "MRAcquisitionType",
         "MultiSliceMode",

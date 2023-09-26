@@ -86,14 +86,14 @@
     <tbody>
     {% for seq_id in non_compliant_ds.get_sequence_ids()|sort %}
         {% set ncomp_sub_ids = non_compliant_ds.get_subject_ids(seq_id) %}
-        {% set comp_sub_ids = compliant_ds.get_subject_ids(seq_id) %}
-        {% set total_subjects = comp_sub_ids|length + ncomp_sub_ids|length %}
+        {% set total_subjects = complete_ds.get_subject_ids(seq_id) | length %}
+        {% set comp_subject_count = total_subjects - ncomp_sub_ids|length %}
         {% set non_compliant_params = non_compliant_ds.get_non_compliant_param_ids(seq_id) %}
             {% if non_compliant_ds.get_subject_ids(seq_id) %}{# |length > 2 #}
                 <tr>
                     <td class="tg-0pky" colspan="1"><a  href=#{{seq_id}}>{{seq_id}}</a></td>
                     {% set percent_non_compliant = 100 * ncomp_sub_ids|length|float / total_subjects %}
-                    {% set percent_compliant = 100 * comp_sub_ids|length|float / total_subjects %}
+                    {% set percent_compliant = 100 * comp_subject_count|float / total_subjects %}
 
                     <td class="tg-0pky" colspan="1">
                         {{  ncomp_sub_ids | length }}
@@ -117,7 +117,7 @@
                         {% endfor %}
                     </td>
                     <td class="tg-0pky" colspan="1">
-                        {{ comp_sub_ids|length }}
+                        {{ comp_subject_count }}
                         ( {{ percent_compliant|round(2, 'floor') }} %)
                     </td>
                     <td class="tg-0pky" colspan="1">

@@ -217,21 +217,26 @@ def compare_with_reference(dataset: BaseDataset,
     undetermined_dataset = UndeterminedDataset(dataset.name)
 
     for seq_name in dataset.get_sequence_ids():
+        # a temporary placeholder for compliant sequences. It will be
+        # merged to compliant dataset if all the subjects are compliant
+        temp_dataset = CompliantDataset(dataset.name)
         try:
             ref_sequence = reference_protocol[seq_name]
         except KeyError:
             logger.info(f'No reference protocol for {seq_name} sequence.')
             continue
 
+        compliant_flag = True
         for subj, sess, run, seq in dataset.traverse_horizontal(seq_name):
             compliant, non_compliant_tuples = ref_sequence.compliant(seq, rtol=tolerance,
                                                                      decimals=decimals,
                                                                      include_params=include_params)
 
             if compliant:
-                compliant_dataset.add(subject_id=subj, session_id=sess,
-                                      run_id=run, seq_id=seq_name, seq=seq)
+                temp_dataset.add(subject_id=subj, session_id=sess,
+                                 run_id=run, seq_id=seq_name, seq=seq)
             else:
+                compliant_flag = False
                 non_compliant_params = [x[1] for x in non_compliant_tuples]
                 non_compliant_dataset.add(subject_id=subj, session_id=sess,
                                           run_id=run, seq_id=seq_name, seq=seq)
@@ -239,8 +244,12 @@ def compare_with_reference(dataset: BaseDataset,
                     subject_id=subj, session_id=sess, run_id=run,
                     seq_id=seq_name, non_compliant_params=non_compliant_params
                 )
+        # only add the sequence if all the subjects, sessions are compliant
+        if compliant_flag:
+            compliant_dataset.merge(temp_dataset)
 
     return {
+        'complete_ds': dataset,
         'reference': reference_protocol,
         'compliant': compliant_dataset,
         'non_compliant': non_compliant_dataset,
@@ -260,6 +269,7 @@ def get_config_from_file(config_path: Union[Path, str]) -> dict:
     with open(config_path, 'r') as f:
         config = json.load(f)
     return config
+
 
 def generate_report(compliance_summary_dict: dict,
                     report_path: str or Path,
