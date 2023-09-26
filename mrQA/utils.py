@@ -109,7 +109,7 @@ def majority_values(list_seqs: list,
         categories.update(include_keys)
         for param in include_keys:
             counter = counters_dict.get(param, Counter({default: 0}))
-            value = seq[param]
+            value = seq.get(param, default)
             counter[value] += 1
             counters_dict[param] = counter
 

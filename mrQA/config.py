@@ -25,7 +25,7 @@ PATH_CONFIG = {
 
 DATE_SEPARATOR = '_DATE_'
 
-Unspecified = nan
+Unspecified = UnspecifiedType()
 
 
 def past_records_fpath(folder):
