@@ -179,7 +179,7 @@
 {% endif %}
 
 {% for seq_id in non_compliant_ds.get_sequence_ids()|sort %}
-<h2>Sequence : {{ seq_id }}</h2>
+<h2 id="{{seq_id}}">Sequence : {{ seq_id }}</h2>
 {% set ref = protocol[seq_id] %}
 <h4>Reference</h4>
 <table class="tg" id="with_margin">
@@ -247,7 +247,7 @@
 {% endfor %}
 
 {% for seq_id in compliant_ds.get_sequence_ids()|sort %}
-<h2>Sequence : {{ seq_id }}</h2>
+<h2 id="{{seq_id}}">Sequence : {{ seq_id }}</h2>
 {% set ref = protocol[seq_id] %}
 <h4>Reference</h4>
 
