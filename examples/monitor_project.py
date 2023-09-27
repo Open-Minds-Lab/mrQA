@@ -30,6 +30,9 @@ def main():
                           help='A txt file containing a'
                                'list of folders to be skipped while'
                                'monitoring')
+    required.add_argument('--config', type=str,
+                          help='path to config file')
+
     args = parser.parse_args()
     if Path(args.data_root).exists():
         data_root = Path(args.data_root)
@@ -57,11 +60,11 @@ def main():
                 dirs.remove(fpath)
 
     pool = mp.Pool(processes=10)
-    arguments = [(f, args.output_dir) for f in dirs]
+    arguments = [(f, args.output_dir, args.config) for f in dirs]
     pool.starmap(run, arguments)
 
 
-def run(folder_path, output_dir):
+def run(folder_path, output_dir, config_path):
     name = Path(folder_path).stem
     print(f"\nProcessing {name}\n")
     output_folder = Path(output_dir) / name
@@ -73,7 +76,7 @@ def run(folder_path, output_dir):
                 verbose=False,
                 ds_format='dicom',
                 tolerance=0,
-                config_path='./mri-config-full.json',
+                config_path=config_path,
                 )
     except DatasetEmptyException as e:
         logger.warning(f'{e}: Folder {name} has no DICOM files.')
