@@ -139,7 +139,7 @@ def monitor(name: str,
             verbose: bool = False,
             decimals: int = 3,
             ds_format: str = 'dicom',
-            config_path: Path = None,
+            config_path: Union[Path,str] = None,
             tolerance=0,
             reference_path=None) -> Path:
     """

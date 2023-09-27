@@ -70,6 +70,10 @@ def run(folder_path, output_dir):
                 data_source=folder_path,
                 output_dir=output_folder,
                 decimals=2,
+                verbose=False,
+                ds_format='dicom',
+                tolerance=0,
+                config_path='./mri-config-full.json',
                 )
     except DatasetEmptyException as e:
         logger.warning(f'{e}: Folder {name} has no DICOM files.')
