@@ -5,13 +5,11 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-
 from MRdataset import load_mr_dataset, import_dataset
-from MRdataset.utils import files_in_path
-
 from mrQA import check_compliance
 from mrQA.config import report_fpath, mrds_fpath, past_records_fpath, \
     DATE_SEPARATOR
+from mrQA.utils import files_in_path
 from mrQA.utils import folders_modified_since, get_last_valid_record, txt2list
 
 

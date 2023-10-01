@@ -3,13 +3,13 @@ import argparse
 import sys
 from pathlib import Path
 
-from MRdataset import import_dataset, load_mr_dataset
-from MRdataset.utils import is_writable, valid_dirs
+from MRdataset import import_dataset, load_mr_dataset, valid_dirs
 
 from mrQA import check_compliance
 from mrQA.config import PATH_CONFIG
 from mrQA import logger
 from mrQA.logger import init_log_files
+from mrQA.utils import is_writable
 
 
 def get_parser():
