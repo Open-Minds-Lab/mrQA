@@ -3,8 +3,8 @@ from mrQA import logger
 
 
 class CompliantDataset(BaseDataset):
-    def __init__(self, name=None):
-        super().__init__(name=name, data_source=None)
+    def __init__(self, name=None, data_source=None, ds_format=None):
+        super().__init__(name=name, data_source=data_source, ds_format=ds_format)
 
     def load(self):
         pass
@@ -19,16 +19,16 @@ class UndeterminedDataset(BaseDataset):
     3. Reference protocol was not valid
     """
 
-    def __init__(self, name=None):
-        super().__init__(name=name, data_source=None)
+    def __init__(self, name=None, data_source=None, ds_format=None):
+        super().__init__(name=name, data_source=data_source, ds_format=ds_format)
 
     def load(self):
         pass
 
 
 class NonCompliantDataset(BaseDataset):
-    def __init__(self, name=None):
-        super().__init__(name=name, data_source=None)
+    def __init__(self, name=None, data_source=None, ds_format=None):
+        super().__init__(name=name, data_source=data_source, ds_format=ds_format)
         self._nc_flat_map = {}
         self._nc_tree_map = {}
         self._nc_params_map = {}

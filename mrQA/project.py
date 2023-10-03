@@ -212,14 +212,22 @@ def compare_with_reference(dataset: BaseDataset,
         logger.error('Reference protocol is empty')
         return None
 
-    compliant_dataset = CompliantDataset(dataset.name)
-    non_compliant_dataset = NonCompliantDataset(dataset.name)
-    undetermined_dataset = UndeterminedDataset(dataset.name)
+    compliant_dataset = CompliantDataset(name=dataset.name,
+                                         data_source=dataset.data_source,
+                                         ds_format=dataset.format)
+    non_compliant_dataset = NonCompliantDataset(name=dataset.name,
+                                                data_source=dataset.data_source,
+                                                ds_format=dataset.format)
+    undetermined_dataset = UndeterminedDataset(name=dataset.name,
+                                               data_source=dataset.data_source,
+                                               ds_format=dataset.format)
 
     for seq_name in dataset.get_sequence_ids():
         # a temporary placeholder for compliant sequences. It will be
         # merged to compliant dataset if all the subjects are compliant
-        temp_dataset = CompliantDataset(dataset.name)
+        temp_dataset = CompliantDataset(name=dataset.name,
+                                        data_source=dataset.data_source,
+                                        ds_format=dataset.format)
         try:
             ref_sequence = reference_protocol[seq_name]
         except KeyError:
