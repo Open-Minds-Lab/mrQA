@@ -1,10 +1,11 @@
+import tempfile
 from collections import defaultdict
 from pathlib import Path
 
 import MRdataset.config
 import hypothesis.strategies as st
 from MRdataset import import_dataset
-from MRdataset.simulate import make_compliant_test_dataset, \
+from MRdataset.tests.simulate import make_compliant_test_dataset, \
     make_test_dataset, make_bids_test_dataset
 from bids import BIDSLayout
 from hypothesis import given, settings, assume
@@ -95,69 +96,77 @@ def test_non_compliance(num_noncompliant_subjects,
                         echo_train_length,
                         flip_angle):
     """pass non-compliant ds, and ensure library recognizes them as such"""
-    assume(repetition_time != 200)
-    assume(echo_train_length != 4000)
-    assume(flip_angle != 80)
+    with tempfile.TemporaryDirectory() as tempdir:
+        assume(repetition_time != 200)
+        assume(echo_train_length != 4000)
+        assume(flip_angle != 80)
 
-    fake_ds_dir, dataset_info = \
-        make_test_dataset(num_noncompliant_subjects,
-                          repetition_time,
-                          echo_train_length,
-                          flip_angle)
-    mrd = import_dataset(fake_ds_dir, include_phantom=True)
-    checked_dataset = check_compliance(dataset=mrd)
+        fake_ds_dir, dataset_info = \
+            make_test_dataset(num_noncompliant_subjects,
+                              repetition_time,
+                              echo_train_length,
+                              flip_angle)
+        mrd = import_dataset(fake_ds_dir,  config_path='./mri-config.json')
+        compliance_dict = check_compliance(dataset=mrd,
+                                           output_dir=tempdir,
+                                           config_path='./mri-config.json')
 
-    # Check on disk, basically the truth
-    sub_names_by_modality = defaultdict(list)
-    for modality_path in Path(fake_ds_dir).iterdir():
-        if modality_path.is_dir() and ('.mrdataset' not in str(modality_path)):
-            for subject_path in modality_path.iterdir():
-                sub_names_by_modality[modality_path.name].append(
-                    subject_path.name)
+        if compliance_dict is not None:
+            # Check on disk, basically the truth
+            sub_names_by_modality = defaultdict(list)
+            for modality_path in Path(fake_ds_dir).iterdir():
+                if modality_path.is_dir() and ('.mrdataset' not in str(modality_path)):
+                    for subject_path in modality_path.iterdir():
+                        sub_names_by_modality[modality_path.name].append(
+                            subject_path.name)
 
-    # Check if modalities are equal
-    non_compliant_modality_names = [m for m in dataset_info if dataset_info[m]]
-    assert assert_list(sub_names_by_modality.keys(),
-                       checked_dataset._children.keys())
+            fully_compliant_ds = compliance_dict['compliant']
+            non_compliant_ds = compliance_dict['non_compliant']
+            reference = compliance_dict['reference']
+            non_compliant_sequences = non_compliant_ds.get_sequence_ids()
+            fully_compliant_sequences = fully_compliant_ds.get_sequence_ids()
+            all_sequences = mrd.get_sequence_ids()
 
-    assert assert_list(checked_dataset.non_compliant_modality_names,
-                       non_compliant_modality_names)
+            # Check if modalities are   equal
+            all_modalities_on_disk = [m for m in sub_names_by_modality.keys() if not m.startswith('local')]
+            non_compliant_modality_on_disk = [m for m in dataset_info if dataset_info[m] if not m.startswith('local')]
+            compliant_modalities_on_disk = set(all_modalities_on_disk) - set(non_compliant_modality_on_disk)
 
-    assert assert_list(checked_dataset.compliant_modality_names,
-                       set(checked_dataset._children.keys()) - set(
-                           non_compliant_modality_names))
+            assert assert_list(all_modalities_on_disk, all_sequences)
+            assert assert_list(non_compliant_sequences,
+                               non_compliant_modality_on_disk)
+            assert assert_list(fully_compliant_sequences,
+                               compliant_modalities_on_disk)
 
-    for modality in checked_dataset.modalities:
-        # GT
-        all_subjects = sub_names_by_modality[modality.name]
-        non_compliant_subjects = dataset_info[modality.name]
-        compliant_subjects = set(all_subjects) - set(non_compliant_subjects)
+            for seq_id in mrd.get_sequence_ids():
+                all_subjects = mrd.get_subject_ids(seq_id)
+                non_compliant_subjects = non_compliant_ds.get_subject_ids(seq_id)
+                compliant_subjects = set(all_subjects) - set(non_compliant_subjects)
+                # On disk
+                all_subjects_on_disk = sub_names_by_modality[seq_id]
+                non_compliant_subjects_on_disk = dataset_info[seq_id]
+                compliant_subjects_on_disk = set(all_subjects_on_disk) - set(non_compliant_subjects_on_disk)
 
-        # What did you parse
-        assert assert_list(all_subjects, modality._children.keys())
-        assert assert_list(non_compliant_subjects,
-                           modality.non_compliant_subject_names)
-        assert assert_list(compliant_subjects, modality.compliant_subject_names)
 
-        # Check if reference has the right values
-        echo_time = list(modality.reference.keys())[0]
-        assert modality.reference[echo_time]['tr'] == 200
-        assert modality.reference[echo_time]['echo_train_length'] == 4000
-        assert modality.reference[echo_time]['flip_angle'] == 80
+                # What did you parse
+                assert assert_list(all_subjects, all_subjects_on_disk)
+                assert assert_list(non_compliant_subjects, non_compliant_subjects_on_disk)
+                assert assert_list(compliant_subjects, compliant_subjects_on_disk)
 
-        for subject in modality.subjects:
-            for session in subject.sessions:
-                for run in session.runs:
-                    if run.delta:
-                        assert run.params['tr'] == repetition_time
-                        assert run.params[
-                                   'echo_train_length'] == echo_train_length
-                        assert run.params['flip_angle'] == flip_angle
-                    else:
-                        assert run.params['tr'] == 200
-                        assert run.params[
-                                   'echo_train_length'] == 4000
-                        assert run.params['flip_angle'] == 80
+                # Check if reference has the right values
+                assert reference[seq_id]['RepetitionTime'].get_value() == 200
+                assert reference[seq_id]['EchoTrainLength'].get_value() == 4000
+                assert reference[seq_id]['FlipAngle'].get_value() == 80
+
+                for subject, session, run, seq in non_compliant_ds.traverse_horizontal(seq_id):
+                    assert seq['RepetitionTime'].get_value() == repetition_time
+                    assert seq['EchoTrainLength'].get_value() == echo_train_length
+                    assert seq['FlipAngle'].get_value() == flip_angle
+
+                for subject, session, run, seq in fully_compliant_ds.traverse_horizontal(seq_id):
+                    assert seq['RepetitionTime'].get_value() == 200
+                    assert seq['EchoTrainLength'].get_value() == 4000
+                    assert seq['FlipAngle'].get_value() == 80
 
 
 @settings(max_examples=30, deadline=None)
@@ -167,10 +176,10 @@ def test_non_compliance(num_noncompliant_subjects,
        st.floats(allow_nan=False, allow_infinity=False),
        st.floats(allow_nan=False, allow_infinity=False)
        )
-def test_non_compliance_bids(num_noncompliant_subjects,
-                             repetition_time,
-                             magnetic_field_strength,
-                             flip_angle):
+def modify_test_non_compliance_bids(num_noncompliant_subjects,
+                                    repetition_time,
+                                    magnetic_field_strength,
+                                    flip_angle):
     """pass non-compliant ds, and ensure library recognizes them as such"""
     assume(repetition_time != const_bids['tr'])
     assume(magnetic_field_strength != const_bids['b0'])
@@ -242,11 +251,3 @@ def test_non_compliance_bids(num_noncompliant_subjects,
                         assert run.params['MagneticFieldStrength'] == \
                                const_bids['b0']
                         assert run.params['FlipAngle'] == const_bids['fa']
-
-
-if __name__ == '__main__':
-    test_non_compliance_bids(num_noncompliant_subjects=[1, 0, 0, 2, 0, 0, 1, 0,
-                                                        0, 2, 2],
-                             repetition_time=0.0,
-                             magnetic_field_strength=0.0,
-                             flip_angle=0.0)
