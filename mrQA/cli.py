@@ -57,12 +57,6 @@ def get_parser():
     optional.add_argument('-pkl', '--mrds-pkl-path', type=str,
                           help='.mrds.pkl file can be provided to facilitate '
                                'faster re-runs.')
-    # Experimental features, not implemented yet.
-    optional.add_argument('-l', '--logging', type=int, default=40,
-                          help='set logging to appropriate level')
-    optional.add_argument('--skip', nargs='+',
-                          help='skip these parameters')
-
     if len(sys.argv) < 2:
         logger.critical('Too few arguments!')
         parser.print_help()
