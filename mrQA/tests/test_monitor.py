@@ -15,7 +15,7 @@ from mrQA import check_compliance
 from mrQA.config import mrds_fpath
 from mrQA.monitor import monitor
 from mrQA.tests.config import DATASET_PATHS, ABCD_DATASET_PATHS
-from mrQA.tests.utils import test_modified_files, test_output_files_created, \
+from mrQA.tests.test_utils import test_modified_folders, test_output_files_created, \
     test_same_dataset, get_temp_input_folder, get_temp_output_folder, \
     create_random_file_sets, copy2dest, pick_random_sets
 from mrQA.utils import get_timestamps, txt2list
@@ -51,8 +51,8 @@ def test_monitor_local(data_source, n, max_files, seed) -> None:
             # On subsequent iterations, we want to check
             # that the files modified since the last report
             # are the same as the files we copied.
-            test_modified_files(time_dict['utc'], temp_input_src,
-                                temp_output_dest, data_source, file_set)
+            test_modified_folders(time_dict['utc'], temp_input_src,
+                                  temp_output_dest, data_source, file_set)
 
         time_dict = get_timestamps()
 
@@ -89,8 +89,8 @@ def test_monitor_abcd(data_source, n, seed) -> None:
             # On subsequent iterations, we want to check
             # that the files modified since the last report
             # are the same as the files we copied.
-            test_modified_files(time_dict['utc'], temp_input_src,
-                                temp_output_dest, data_source_path, file_set)
+            test_modified_folders(time_dict['utc'], temp_input_src,
+                                  temp_output_dest, data_source_path, file_set)
 
         time_dict = get_timestamps()
 

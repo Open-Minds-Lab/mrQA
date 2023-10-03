@@ -3,7 +3,7 @@ from mrQA import monitor
 import tempfile
 import shutil
 
-from mrQA.tests.utils import copy2dest
+from mrQA.tests.test_utils import copy2dest
 
 
 def run(folder_path):
