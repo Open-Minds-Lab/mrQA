@@ -1,5 +1,8 @@
+import re
+import tempfile
 import time
 import typing
+import unicodedata
 import warnings
 from collections import Counter
 from datetime import datetime, timezone
@@ -518,11 +521,29 @@ def subject_list2txt(dataset: BaseDataset,
     output_dir.mkdir(exist_ok=True, parents=True)
     filepaths = {}
     for seq_name in dataset.get_sequence_ids():
-        filepath = output_dir / f'{slugify(seq_name)}.txt'
+        filepath = output_dir / f'{convert2ascii(seq_name)}.txt'
         subj_with_sequence = dataset.get_subject_ids(seq_name)
         list2txt(filepath, subj_with_sequence)
         filepaths[seq_name] = filepath
     return filepaths
+
+
+def convert2ascii(value, allow_unicode=False):
+    """
+    Taken from https://github.com/django/django/blob/master/django/utils/text.py
+    Convert to ASCII if 'allow_unicode' is False. Convert spaces or repeated
+    dashes to single dashes. Remove characters that aren't alphanumerics,
+    underscores, or hyphens. Convert to lowercase. Also strip leading and
+    trailing whitespace, dashes, and underscores.
+    """
+    value = str(value)
+    if allow_unicode:
+        value = unicodedata.normalize('NFKC', value)
+    else:
+        value = unicodedata.normalize(
+            'NFKD', value).encode('ascii', 'ignore').decode('ascii')
+    value = re.sub(r'[^\w\s-]', '', value)
+    return re.sub(r'[-\s]+', '-', value).strip('-_')
 
 
 # def _get_runs_by_echo(modality: Modality, decimals: int = 3):
