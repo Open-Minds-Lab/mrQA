@@ -6,8 +6,7 @@ import MRdataset.config
 import hypothesis.strategies as st
 from MRdataset import import_dataset
 from MRdataset.tests.simulate import make_compliant_test_dataset, \
-    make_test_dataset, make_bids_test_dataset
-from bids import BIDSLayout
+    make_test_dataset
 from hypothesis import given, settings, assume
 
 from mrQA import check_compliance
@@ -142,7 +141,7 @@ def test_non_compliance(num_noncompliant_subjects,
                 all_subjects = mrd.get_subject_ids(seq_id)
                 non_compliant_subjects = non_compliant_ds.get_subject_ids(seq_id)
                 compliant_subjects = set(all_subjects) - set(non_compliant_subjects)
-                # On disk
+                # On diskplu
                 all_subjects_on_disk = sub_names_by_modality[seq_id]
                 non_compliant_subjects_on_disk = dataset_info[seq_id]
                 compliant_subjects_on_disk = set(all_subjects_on_disk) - set(non_compliant_subjects_on_disk)
@@ -168,34 +167,33 @@ def test_non_compliance(num_noncompliant_subjects,
                     assert seq['EchoTrainLength'].get_value() == 4000
                     assert seq['FlipAngle'].get_value() == 80
 
-
-@settings(max_examples=30, deadline=None)
-@given(st.lists(st.integers(min_value=0, max_value=2), min_size=11,
-                max_size=11),
-       st.floats(allow_nan=False, allow_infinity=False),
-       st.floats(allow_nan=False, allow_infinity=False),
-       st.floats(allow_nan=False, allow_infinity=False)
-       )
-def modify_test_non_compliance_bids(num_noncompliant_subjects,
-                                    repetition_time,
-                                    magnetic_field_strength,
-                                    flip_angle):
-    """pass non-compliant ds, and ensure library recognizes them as such"""
-    assume(repetition_time != const_bids['tr'])
-    assume(magnetic_field_strength != const_bids['b0'])
-    assume(flip_angle != const_bids['fa'])
-
-    fake_dir, dataset_info = make_bids_test_dataset(num_noncompliant_subjects,
-                                                    repetition_time,
-                                                    magnetic_field_strength,
-                                                    flip_angle)
-    mrd = import_dataset(fake_dir, include_phantom=True, ds_format='bids')
-    checked_dataset = check_compliance(dataset=mrd, output_dir=mrd.data_source)
-
-    # Check on disk, basically the truth
-    layout = BIDSLayout(fake_dir)
-    sub_names_by_modality = defaultdict(set)
-    subjects = layout.get_subjects()
+    # @settings(max_examples=30, deadline=None)
+    # @given(st.lists(st.integers(min_value=0, max_value=2), min_size=11,
+    #                 max_size=11),
+    #        st.floats(allow_nan=False, allow_infinity=False),
+    #        st.floats(allow_nan=False, allow_infinity=False),
+    #        st.floats(allow_nan=False, allow_infinity=False)
+    #        )
+    # def modify_test_non_compliance_bids(num_noncompliant_subjects,
+    #                                     repetition_time,
+    #                                     magnetic_field_strength,
+    #                                     flip_angle):
+    #     """pass non-compliant ds, and ensure library recognizes them as such"""
+    #     assume(repetition_time != const_bids['tr'])
+    #     assume(magnetic_field_strength != const_bids['b0'])
+    #     assume(flip_angle != const_bids['fa'])
+    #
+    #     fake_dir, dataset_info = make_bids_test_dataset(num_noncompliant_subjects,
+    #                                                     repetition_time,
+    #                                                     magnetic_field_strength,
+    #                                                     flip_angle)
+    #     mrd = import_dataset(fake_dir, include_phantom=True, ds_format='bids')
+    #     checked_dataset = check_compliance(dataset=mrd, output_dir=mrd.data_source)
+    #
+    #     # Check on disk, basically the truth
+    #     layout = BIDSLayout(fake_dir)
+    #     sub_names_by_modality = defaultdict(set)
+    #     subjects = layout.get_subjects()
 
     for modality in MRdataset.config.datatypes:
         for sub in subjects:
