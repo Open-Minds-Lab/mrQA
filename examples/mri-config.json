@@ -10,7 +10,6 @@
     },
     "use_echonumbers": true,
     "include_parameters": [
-        "BodyPartExamined",
         "EchoTrainLength",
         "ParallelAcquisitionTechnique",
         "MagneticFieldStrength",
@@ -24,7 +23,8 @@
         "RepetitionTime",
         "EchoTime",
         "FlipAngle",
-        "PhaseEncodingDirection"
+        "PhaseEncodingDirection",
+        "ShimMode"
     ],
     "exclude_subects": [
         "210098",

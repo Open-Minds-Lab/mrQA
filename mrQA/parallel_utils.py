@@ -1,13 +1,11 @@
-import math
 import os
 import subprocess
 from pathlib import Path
 from typing import Union, Iterable
 
-from MRdataset.log import logger
-from MRdataset.utils import valid_dirs
-
-from mrQA.utils import is_integer_number, execute_local, list2txt
+from MRdataset import valid_dirs
+from mrQA import logger
+from mrQA.utils import is_integer_number, execute_local, list2txt, folders_with_min_files
 
 
 def _check_args(data_source: Union[str, Path, Iterable] = None,
@@ -17,7 +15,8 @@ def _check_args(data_source: Union[str, Path, Iterable] = None,
                 subjects_per_job: int = None,
                 hpc: bool = False,
                 conda_dist: str = None,
-                conda_env: str = None):
+                conda_env: str = None,
+                config_path: Union[str, Path] = None):
     # It is not possible to submit jobs while debugging, why would you submit
     # a job, if code is still being debugged
     if debug and hpc:
@@ -64,6 +63,8 @@ def _check_args(data_source: Union[str, Path, Iterable] = None,
         conda_env = 'mrqa' if hpc else 'mrcheck'
     if not conda_dist:
         conda_dist = 'miniconda3' if hpc else 'anaconda3'
+    if not Path(config_path).exists():
+        raise FileNotFoundError(f'Config file not found at {config_path}')
     return data_source, output_dir, conda_env, conda_dist
 
 
@@ -76,12 +77,12 @@ def _make_file_folders(output_dir):
     # created by the corresponding bash script
 
     folder_paths = {
-        'ids': output_dir / 'id_lists',
+        'fnames': output_dir / 'fname_lists',
         'scripts': output_dir / 'bash_scripts',
         'mrds': output_dir / 'partial_mrds'
     }
     files_per_batch = {
-        'ids': output_dir / 'per_batch_id_list.txt',
+        'fnames': output_dir / 'per_batch_folders_list.txt',
         'scripts': output_dir / 'per_batch_script_list.txt',
         'mrds': output_dir / 'per_batch_partial_mrds_list.txt'
     }
@@ -91,7 +92,7 @@ def _make_file_folders(output_dir):
 
     # And store the original complete list (contains all
     # subject ids) in "complete_id_list.txt"
-    all_ids_path = output_dir / 'complete_id_list.txt'
+    all_ids_path = output_dir / 'complete_fname_list.txt'
     return folder_paths, files_per_batch, all_ids_path
 
 
@@ -134,13 +135,14 @@ def _run_single_batch(script_path: Union[str, Path],
 
 
 def _create_slurm_script(output_script_path: Union[str, Path],
-                         ids_filepath: Union[str, Path],
+                         fnames_filepath: Union[str, Path],
                          env: str = 'mrqa',
                          conda_dist: str = 'anaconda3',
-                         num_subj_per_job: int = 50,
+                         folders_per_job: int = 50,
                          verbose: bool = False,
-                         include_phantom: bool = False,
-                         output_mrds_path: bool = None) -> None:
+                         config_path: Union[str, Path] = None,
+                         output_mrds_path: bool = None,
+                         email='mail.sinha.harsh@gmail.com') -> None:
     """
     Creates a slurm script file which can be submitted to a hpc.
 
@@ -148,13 +150,13 @@ def _create_slurm_script(output_script_path: Union[str, Path],
     ----------
     output_script_path : str
         Path to slurm script file
-    ids_filepath : str
+    fnames_filepath : str
         Path to text file containing list of subject ids
     env : str
         Conda environment name
     conda_dist : str
         Conda distribution
-    num_subj_per_job : int
+    folders_per_job : int
         Number of subjects to process in each slurm job
     verbose : bool
         If True, prints the output of the script
@@ -172,18 +174,15 @@ def _create_slurm_script(output_script_path: Union[str, Path],
 
     # Set the memory and cpu time limits
     mem_reqd = 2000  # MB;
-    num_mins_per_subject = 1  # minutes
-    num_hours = int(math.ceil(num_subj_per_job * num_mins_per_subject / 60))
+    # num_mins_per_subject = 1  # minutes
     # Set the number of hours to 3 if less than 3
-    time_limit = 3 if num_hours < 3 else num_hours
+    time_limit = 24
     # Setup python command to run
-    python_cmd = f'mrpc_subset -o {output_mrds_path} -b {ids_filepath}'
+    python_cmd = f'mrqa_subset -o {output_mrds_path} -b {fnames_filepath} --config {config_path}'
 
     # Add flags to python command
     if verbose:
         python_cmd += ' --verbose'
-    if include_phantom:
-        python_cmd += ' --include_phantom'
     python_cmd += ' --is_partial'
 
     # Create the slurm script file
@@ -196,11 +195,11 @@ def _create_slurm_script(output_script_path: Union[str, Path],
             f'#SBATCH --mem-per-cpu={mem_reqd}M #memory per cpu-core',
             f'#SBATCH --time={time_limit}:00:00',
             '#SBATCH --ntasks-per-node=1',
-            f'#SBATCH --error={ids_filepath.stem}.%J.err',
-            f'#SBATCH --output={ids_filepath.stem}.%J.out',
+            f'#SBATCH --error={fnames_filepath.stem}.%J.err',
+            f'#SBATCH --output={fnames_filepath.stem}.%J.out',
             '#SBATCH --mail-type=end          # send email when job ends',
             '#SBATCH --mail-type=fail         # send email if job fails',
-            '#SBATCH --mail-user=mail.sinha.harsh@gmail.com',
+            f'#SBATCH --mail-user={email}',
             '#Clear the environment from any previously loaded modules',
             'module purge > /dev/null 2>&1',
             f'source  ${{HOME}}/{conda_dist}/etc/profile.d/conda.sh',
@@ -211,25 +210,27 @@ def _create_slurm_script(output_script_path: Union[str, Path],
         )
 
 
-def _get_num_workers(subjects_per_job, subject_list):
-    if subjects_per_job > len(subject_list):
+def _get_num_workers(folders_per_job, folder_list):
+    if folders_per_job > len(folder_list):
         # If subjects_per_job is greater than the number of subjects,
         # process all subjects in a single job. Stop execution.
         raise RuntimeError('Trying to create more jobs than total number of '
-                           'subjects in the directory. Why?')
+                           'folders in the directory. Why?')
 
     # Get the number of jobs
-    workers = len(subject_list) // subjects_per_job
+    workers = len(folder_list) // folders_per_job
     if workers == 1:
         # If there is only one job, process all subjects in a single job
-        raise RuntimeError('Decrease number of subjects per job. Expected'
+        raise RuntimeError('Decrease number of folders per job. Expected'
                            'workers > 1 for parallel processing. Got 1')
 
     return workers
 
 
-def _get_subject_ids(data_source: Union[str, Path],
-                     all_ids_path: Union[str, Path]) -> list:
+def _get_terminal_folders(data_source: Union[str, Path],
+                          all_ids_path: Union[str, Path],
+                          pattern='*',
+                          min_count=1) -> list:
     """
     Get the list of subject ids from the data source folder
 
@@ -245,15 +246,13 @@ def _get_subject_ids(data_source: Union[str, Path],
     subject_list : list
         List of subject ids
     """
-    subject_list = []
+    terminal_folder_list = []
     # Get the list of subject ids
-    for root, _, _ in os.walk(data_source):
-        if 'sub-' in Path(root).name:
-            # Get the subject id
-            num_files_in_root = len(list(Path(root).rglob('*/*')))
-            if num_files_in_root > 0:
-                subject_list.append(root)
+    for directory in data_source:
+        sub_folders = folders_with_min_files(directory, pattern,
+                                             min_count)
+        terminal_folder_list.extend(sub_folders)
     # Store the list of unique subject ids to a text file given by
     # output_path
-    list2txt(all_ids_path, list(set(subject_list)))
-    return subject_list
+    list2txt(all_ids_path, list(set(terminal_folder_list)))
+    return terminal_folder_list

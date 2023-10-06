@@ -29,9 +29,14 @@ def main():
 
     # Required arguments
     required.add_argument('-t', '--task', type=str, required=False,
-                          help='[submit_job|merge|report]',
-                          default='submit_job')
-
+                          help='[create_script|submit_job|merge|report]',
+                          default='report')
+    optional.add_argument('-ref', '--ref-protocol-path', type=str,
+                          help='XML file containing desired protocol. If not '
+                               'provided, the protocol will be inferred from '
+                               'the dataset.')
+    required.add_argument('--config', type=str,
+                          help='path to config file', default='./mri-config.json')
     # Parse arguments
     args = parser.parse_args()
     # Set constants
@@ -44,10 +49,12 @@ def main():
     if args.task == 'create_script':
         # note that it will generate scripts only
         create_script(data_source=DATA_ROOT,
-                      subjects_per_job=50,
+                      folders_per_job=50,
                       conda_env='mrcheck',
                       conda_dist='anaconda3',
                       hpc=False,
+                      config_path='./mri-config.json',
+                      output_dir=OUTPUT_DIR,
                       )
     elif args.task == 'submit_job':
         # Generate slurm scripts and submit jobs, for local parallel processing
@@ -68,10 +75,13 @@ def main():
         )
     elif args.task == 'report':
         # Generate a report for the merged dataset
-        dataset = load_mr_dataset(OUTPUT_DIR / (name + MRDS_EXT), ds_format='dicom')
+        dataset = load_mr_dataset(OUTPUT_DIR / (name + MRDS_EXT))
         check_compliance(dataset=dataset,
-                         output_dir=OUTPUT_DIR/'reports',
-                         decimals=1)
+                         output_dir=OUTPUT_DIR,
+                         decimals=2,
+                         tolerance=0,
+                         config_path=args.config,
+                         reference_path=args.ref_protocol_path,)
     else:
         # Invalid task
         raise NotImplementedError(f"Expected one of [submit_job|merge|report], "

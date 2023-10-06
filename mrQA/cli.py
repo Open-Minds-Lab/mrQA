@@ -46,7 +46,7 @@ def get_parser():
                                'of the decimal point.')
     optional.add_argument('-t', '--tolerance', type=float, default=0,
                           help='tolerance for checking against reference '
-                               'protocol. Default is 0.1')
+                               'protocol. Default is 0')
     # TODO: use this flag to store cache
     optional.add_argument('-v', '--verbose', action='store_true',
                           help='allow verbose output on console')

@@ -4,10 +4,9 @@ import argparse
 import sys
 from pathlib import Path
 
-from MRdataset import import_dataset, save_mr_dataset
-from MRdataset.base import BaseDataset
-from MRdataset.log import logger
+from MRdataset import import_dataset, save_mr_dataset, BaseDataset
 
+from mrQA import logger
 from mrQA.utils import txt2list
 
 
@@ -34,9 +33,8 @@ def main():
     # TODO: use this flag to store cache
     optional.add_argument('-v', '--verbose', action='store_true',
                           help='allow verbose output on console')
-    optional.add_argument('--include_phantom', action='store_true',
-                          help='whether to include phantom, localizer, '
-                               'aahead_scout')
+    required.add_argument('--config', type=str,
+                          help='path to config file')
 
     if len(sys.argv) < 2:
         logger.critical('Too few arguments!')
@@ -47,16 +45,16 @@ def main():
     output_path = Path(args.output_path).resolve()
 
     if args.verbose:
-        logger.setLevel('INFO')
-    else:
         logger.setLevel('WARNING')
+    else:
+        logger.setLevel('ERROR')
 
     if not output_path.exists():
         partial_dataset = read_subset(output_path=args.output_path,
                                       batch_ids_file=args.batch_ids_file,
                                       ds_format='dicom',
                                       verbose=args.verbose,
-                                      include_phantom=args.include_phantom,
+                                      config_path=args.config,
                                       is_complete=not args.is_partial)
 
         partial_dataset.is_complete = False
@@ -66,7 +64,7 @@ def main():
 def read_subset(batch_ids_file: str,
                 ds_format: str,
                 verbose: bool,
-                include_phantom: bool,
+                config_path: str = None,
                 **kwargs) -> BaseDataset:
     """
     Given a list of folder paths, reads all dicom files in those folders
@@ -81,8 +79,6 @@ def read_subset(batch_ids_file: str,
         what kind of MRdataset to create, dicom, bids etc.
     verbose : bool
         print more while doing the job
-    include_phantom : bool
-        whether to include phantom files in processing
     **kwargs: dict
         additional arguments to pass to import_dataset
 
@@ -105,9 +101,9 @@ def read_subset(batch_ids_file: str,
                                      ds_format=ds_format,
                                      name=identifier,
                                      verbose=verbose,
-                                     include_phantom=include_phantom,
+                                     config_path=config_path,
                                      **kwargs)
-    # partial_dataset.walk(), import_dataset already does this
+    # partial_dataset.load(), import_dataset already does this
     return partial_dataset
 
 

@@ -5,18 +5,15 @@ import time
 from pathlib import Path
 from typing import Iterable, Union
 
-from MRdataset import load_mr_dataset
-from MRdataset.config import MRDS_EXT
-from MRdataset.log import logger
-from MRdataset.utils import valid_paths, is_writable
-
+from MRdataset import load_mr_dataset, MRDS_EXT
+from mrQA import check_compliance
 from mrQA.config import PATH_CONFIG
 from mrQA.parallel_utils import _check_args, _make_file_folders, \
-    _run_single_batch, _create_slurm_script, _get_num_workers, _get_subject_ids
+    _run_single_batch, _create_slurm_script, _get_num_workers, _get_terminal_folders
 from mrQA.run_merge import check_and_merge
 from mrQA.utils import list2txt, split_list, \
     txt2list
-from mrQA import check_compliance
+from mrQA.utils import valid_paths, is_writable
 
 
 def get_parser():
@@ -52,6 +49,18 @@ def get_parser():
                           help='flag to run on HPC')
     optional.add_argument('-v', '--verbose', action='store_true',
                           help='allow verbose output on console')
+    optional.add_argument('-ref', '--ref-protocol-path', type=str,
+                          help='XML file containing desired protocol. If not '
+                               'provided, the protocol will be inferred from '
+                               'the dataset.')
+    optional.add_argument('--decimals', type=int, default=3,
+                          help='number of decimal places to round to '
+                               '(default:0). If decimals are negative it '
+                               'specifies the number of positions to the left'
+                               'of the decimal point.')
+    optional.add_argument('-t', '--tolerance', type=float, default=0,
+                          help='tolerance for checking against reference '
+                               'protocol. Default is 0')
     if len(sys.argv) < 2:
         logger.critical('Too few arguments!')
         parser.print_help()
@@ -72,7 +81,12 @@ def main():
                      hpc=args.hpc)
     dataset = load_mr_dataset(args.out_mrds_path)
     check_compliance(dataset=dataset,
-                     output_dir=args.output_dir)
+                     output_dir=args.output_dir,
+                     decimals=args.decimals,
+                     verbose=args.verbose,
+                     tolerance=args.tolerance,
+                     config_path=args.config,
+                     reference_path=args.ref_protocol_path, )
 
 
 def parse_args():
@@ -94,6 +108,11 @@ def parse_args():
                 Path(args.output_dir).mkdir(parents=True, exist_ok=True)
             except OSError as exc:
                 raise exc
+
+    if args.ref_protocol_path is not None:
+        if not Path(args.ref_protocol_path).is_file():
+            raise OSError(f'Expected valid file for --ref-protocol-path argument, '
+                          'Got {0}'.format(args.ref_protocol_path))
 
     if not is_writable(args.output_dir):
         raise OSError(f'Output Folder {args.output_dir} is not writable')
@@ -136,7 +155,7 @@ def process_parallel(data_source: Union[str, Path],
     # note that it will generate scripts only
     script_list_filepath, mrds_list_filepath = create_script(
         data_source=data_source,
-        subjects_per_job=subjects_per_job,
+        folders_per_job=subjects_per_job,
         conda_env=conda_env,
         conda_dist=conda_dist,
         output_dir=output_dir,
@@ -192,14 +211,14 @@ def submit_job(scripts_list_filepath: Union[str, Path],
 
 def create_script(data_source: Union[str, Path, Iterable] = None,
                   ds_format: str = 'dicom',
-                  include_phantom: bool = False,
                   verbose: bool = False,
                   output_dir: Union[str, Path] = None,
                   debug: bool = False,
-                  subjects_per_job: int = None,
+                  folders_per_job: int = None,
                   hpc: bool = False,
                   conda_dist: str = None,
-                  conda_env: str = None):
+                  conda_env: str = None,
+                  config_path: Union[str, Path] = None):
     """
     Given a folder(or List[folder]) it will divide the work into smaller
     jobs. Each job will contain a fixed number of subjects. These jobs can be
@@ -219,7 +238,7 @@ def create_script(data_source: Union[str, Path, Iterable] = None,
         Path to save the output dataset
     debug: bool
         If True, the dataset will be created locally. This is useful for testing
-    subjects_per_job: int
+    folders_per_job: int
         Number of subjects per job. Recommended value is 50 or 100
     hpc: bool
         If True, the scripts will be generated for HPC, not for local execution
@@ -231,28 +250,29 @@ def create_script(data_source: Union[str, Path, Iterable] = None,
 
     data_src, output_dir, env, dist = _check_args(data_source, ds_format,
                                                   output_dir, debug,
-                                                  subjects_per_job, hpc,
-                                                  conda_dist, conda_env)
-    folder_paths, files_per_batch, all_ids_path = _make_file_folders(output_dir)
-    ids_path_list = split_ids_list(
+                                                  folders_per_job, hpc,
+                                                  conda_dist, conda_env,
+                                                  config_path)
+    folder_paths, files_per_batch, all_fnames_path = _make_file_folders(output_dir)
+    fnames_path_list = split_folders_list(
         data_src,
-        all_ids_path=all_ids_path,
-        per_batch_ids=files_per_batch['ids'],
-        output_dir=folder_paths['ids'],
-        subjects_per_job=subjects_per_job
+        all_fnames_path=all_fnames_path,
+        per_batch_ids=files_per_batch['fnames'],
+        output_dir=folder_paths['fnames'],
+        folders_per_job=folders_per_job
     )
 
     scripts_path_list = []
     mrds_path_list = []
     # create a slurm job script for each sub_group of subject ids
-    for ids_filepath in ids_path_list:
+    for fnames_filepath in fnames_path_list:
         # Filename of the bash script should be same as text file.
         # Say batch0000.txt points to set of 10 subjects. Then create a
         # slurm script file batch0000.sh which will run for these 10 subjects,
         # and the final partial mrds pickle file will have the name
         # batch0000.mrds.pkl
-        script_filename = ids_filepath.stem + '.sh'
-        partial_mrds_filename = ids_filepath.stem + MRDS_EXT
+        script_filename = fnames_filepath.stem + '.sh'
+        partial_mrds_filename = fnames_filepath.stem + MRDS_EXT
         script_filepath = folder_paths['scripts'] / script_filename
         partial_mrds_filepath = folder_paths['mrds'] / partial_mrds_filename
 
@@ -262,12 +282,12 @@ def create_script(data_source: Union[str, Path, Iterable] = None,
 
         # Finally create the slurm script and save to disk
         _create_slurm_script(output_script_path=script_filepath,
-                             ids_filepath=ids_filepath,
+                             fnames_filepath=fnames_filepath,
                              env=conda_env,
                              conda_dist=conda_dist,
-                             num_subj_per_job=subjects_per_job,
+                             folders_per_job=folders_per_job,
                              verbose=verbose,
-                             include_phantom=include_phantom,
+                             config_path=config_path,
                              output_mrds_path=partial_mrds_filepath)
 
     # Finally, save the all the paths to create mrds pickle files and all the
@@ -277,11 +297,11 @@ def create_script(data_source: Union[str, Path, Iterable] = None,
     return files_per_batch['scripts'], files_per_batch['mrds']
 
 
-def split_ids_list(data_source: Union[str, Path],
-                   all_ids_path: Union[str, Path],
-                   per_batch_ids: Union[str, Path],
-                   output_dir: Union[str, Path],
-                   subjects_per_job: int = 50):
+def split_folders_list(data_source: Union[str, Path],
+                       all_fnames_path: Union[str, Path],
+                       per_batch_ids: Union[str, Path],
+                       output_dir: Union[str, Path],
+                       folders_per_job: int = 50):
     """
     Splits a given set of subjects into multiple jobs and creates separate
     text files containing the list of subjects. Each text file
@@ -291,7 +311,7 @@ def split_ids_list(data_source: Union[str, Path],
     ----------
     data_source : Union[str, Path]
         Path to the root directory of the data
-    all_ids_path : Union[str, Path]
+    all_fnames_path : Union[str, Path]
         Path to the output directory
     per_batch_ids : Union[str, Path]
         filepath to a file which has paths to all txt files for all jobs.
@@ -299,7 +319,7 @@ def split_ids_list(data_source: Union[str, Path],
         corresponding job.
     output_dir : Union[str, Path]
         Name of the output directory
-    subjects_per_job : int
+    folders_per_job : int
         Number of subjects to process in each job
 
     Returns
@@ -308,24 +328,24 @@ def split_ids_list(data_source: Union[str, Path],
         Paths to the text files, each containing a list of subjects
     """
 
-    all_ids_path = Path(all_ids_path)
+    all_fnames_path = Path(all_fnames_path)
     # List of paths to the txt files,
     # each containing the list of subjects per job
-    batch_ids_path_list = []
+    batch_fnames_path_list = []
 
-    subject_list = _get_subject_ids(data_source, all_ids_path)
+    folder_list = _get_terminal_folders(data_source, all_fnames_path)
     # Get the list of subjects for each job
-    workers = _get_num_workers(subjects_per_job, subject_list)
-    subject_subsets = split_list(subject_list, num_chunks=workers)
+    workers = _get_num_workers(folders_per_job, folder_list)
+    folder_subsets = split_list(folder_list, num_chunks=workers)
 
     # Create a text file for each job
-    for i, subset in enumerate(subject_subsets):
+    for i, subset in enumerate(folder_subsets):
         # Create a text file containing the list of subjects for each job
         batch_filepath = output_dir / f'batch{i:04}.txt'
         # Store to the path given to the text file
         list2txt(batch_filepath, subset)
         # Add the path to the text file ( containing the
         # list of subjects for each job) to a list, return the list
-        batch_ids_path_list.append(batch_filepath)
-    list2txt(fpath=per_batch_ids, list_=batch_ids_path_list)
-    return batch_ids_path_list
+        batch_fnames_path_list.append(batch_filepath)
+    list2txt(fpath=per_batch_ids, list_=batch_fnames_path_list)
+    return batch_fnames_path_list
