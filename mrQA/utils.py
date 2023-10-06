@@ -1054,6 +1054,77 @@ def export_subject_lists(output_dir: Union[Path, str],
     return noncompliant_sub_by_seq
 
 
+def folders_with_min_files(root: Union[Path, str],
+                           pattern: Optional[str] = "*.dcm",
+                           min_count=3) -> List[Path]:
+    """
+    Returns all the folders with at least min_count of files matching the pattern
+    One at time via generator.
+
+    Parameters
+    ----------
+    root : List[Path]
+        List of folder paths
+    pattern : str
+        pattern to filter files
+
+    min_count : int
+        size representing the number of files in folder matching the input pattern
+
+    Returns
+    -------
+    List of folders
+    """
+
+    if not isinstance(root, (Path, str)):
+        raise ValueError('root must be a Path-like object (str or Path)')
+
+    root = Path(root).resolve()
+    if not root.exists():
+        raise ValueError('Root folder does not exist')
+
+    terminals = find_terminal_folders(root)
+
+    for folder in terminals:
+        if len([file_ for file_ in folder.rglob(pattern)]) >= min_count:
+            yield folder
+
+    return
+
+
+def is_folder_with_no_subfolders(fpath):
+    """"""
+    if isinstance(fpath, str):
+        fpath = Path(fpath)
+    if not fpath.is_dir():
+        raise FileNotFoundError(f'Folder not found: {fpath}')
+
+    sub_dirs = [file_ for file_ in fpath.iterdir() if file_.is_dir()]
+
+    return len(sub_dirs) < 1, sub_dirs
+
+
+def find_terminal_folders(root):
+    try:
+        no_more_subdirs, sub_dirs = is_folder_with_no_subfolders(root)
+    except FileNotFoundError:
+        return []
+
+    if no_more_subdirs:
+        return [root, ]
+
+    terminal = list()
+    for sd1 in sub_dirs:
+        no_more_subdirs2, level2_subdirs = is_folder_with_no_subfolders(sd1)
+        if no_more_subdirs2:
+            terminal.append(sd1)
+        else:
+            for sd2 in level2_subdirs:
+                terminal.extend(find_terminal_folders(sd2))
+
+    return terminal
+
+
 def log_latest_non_compliance(ncomp_data, latest_data, output_dir):
     """
     Log the latest non-compliance data from recent sessions to a file
@@ -1103,3 +1174,34 @@ def tuples2dict(mylist):
         key = i[0]
         result.setdefault(key, []).extend(i[1:])
     return result
+
+
+def valid_paths(files: Union[List, str]) -> Union[List[Path], Path]:
+    """
+    If given a single path, the function will just check if it's valid.
+    If given a list of paths, the function validates if all the paths exist or
+    not. The paths can either be an instance of string or POSIX path.
+
+    Parameters
+    ----------
+    files : str or List[str]
+        The path or list of paths that must be validated
+
+    Returns
+    -------
+    List of POSIX Paths that exist on disk
+    """
+    if files is None:
+        raise ValueError('Expected a valid path or Iterable, Got NoneType')
+    if isinstance(files, str) or isinstance(files, Path):
+        if not Path(files).is_file():
+            raise OSError('Invalid File {0}'.format(files))
+        return Path(files).resolve()
+    elif isinstance(files, Iterable):
+        for file in files:
+            if not Path(file).is_file():
+                raise OSError('Invalid File {0}'.format(file))
+        return [Path(f).resolve() for f in files]
+    else:
+        raise NotImplementedError('Expected str or Path or Iterable, '
+                                  f'Got {type(files)}')
