@@ -5,7 +5,6 @@ import sys
 from pathlib import Path
 
 from MRdataset import import_dataset, save_mr_dataset, BaseDataset
-
 from mrQA import logger
 from mrQA.utils import txt2list
 
@@ -50,7 +49,7 @@ def main():
         logger.setLevel('ERROR')
 
     if not output_path.exists():
-        partial_dataset = read_subset(output_path=args.output_path,
+        partial_dataset = read_subset(output_dir=Path(args.output_path).parent,
                                       batch_ids_file=args.batch_ids_file,
                                       ds_format='dicom',
                                       verbose=args.verbose,
@@ -61,7 +60,8 @@ def main():
         save_mr_dataset(args.output_path, partial_dataset)
 
 
-def read_subset(batch_ids_file: str,
+def read_subset(output_dir: Union[str, Path],
+                batch_ids_file: str,
                 ds_format: str,
                 verbose: bool,
                 config_path: str = None,
@@ -102,7 +102,8 @@ def read_subset(batch_ids_file: str,
                                      name=identifier,
                                      verbose=verbose,
                                      config_path=config_path,
-                                     **kwargs)
+                                     output_dir=output_dir
+                                                ** kwargs)
     # partial_dataset.load(), import_dataset already does this
     return partial_dataset
 

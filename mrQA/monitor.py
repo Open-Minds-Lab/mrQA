@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Union, List
 
 from MRdataset import import_dataset, load_mr_dataset
-
 from mrQA import logger
 from mrQA.config import PATH_CONFIG
 from mrQA.project import check_compliance
@@ -186,7 +185,8 @@ def monitor(name: str,
                                          ds_format='dicom',
                                          name=name,
                                          verbose=verbose,
-                                         config_path=config_path, )
+                                         config_path=config_path,
+                                         output_dir=output_dir)
             # prev_status = get_status(dataset)
             dataset.merge(new_dataset)
         else:
@@ -200,7 +200,8 @@ def monitor(name: str,
                                  ds_format=ds_format,
                                  name=name,
                                  verbose=verbose,
-                                 config_path=config_path, )
+                                 config_path=config_path,
+                                 output_dir=output_dir)
         new_dataset = None
 
     compliance_summary_dict = check_compliance(dataset=dataset,

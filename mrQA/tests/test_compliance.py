@@ -8,7 +8,6 @@ from MRdataset import import_dataset
 from MRdataset.tests.simulate import make_compliant_test_dataset, \
     make_test_dataset
 from hypothesis import given, settings, assume
-
 from mrQA import check_compliance
 from mrQA.tests.config import const_bids
 
@@ -29,7 +28,7 @@ def test_compliance_all_clean(num_subjects,
                                            repetition_time,
                                            echo_train_length,
                                            flip_angle)
-    fake_mrd_dataset = import_dataset(dest_dir, include_phantom=True)
+    fake_mrd_dataset = import_dataset(dest_dir, output_dir=tempdir)
     checked_dataset = check_compliance(dataset=fake_mrd_dataset)
 
     sub_names_by_modality = defaultdict(list)
@@ -105,7 +104,8 @@ def test_non_compliance(num_noncompliant_subjects,
                               repetition_time,
                               echo_train_length,
                               flip_angle)
-        mrd = import_dataset(fake_ds_dir,  config_path='./mri-config.json')
+        mrd = import_dataset(fake_ds_dir, config_path='./mri-config.json',
+                             output_dir=tempdir)
         compliance_dict = check_compliance(dataset=mrd,
                                            output_dir=tempdir,
                                            config_path='./mri-config.json')
@@ -145,7 +145,6 @@ def test_non_compliance(num_noncompliant_subjects,
                 all_subjects_on_disk = sub_names_by_modality[seq_id]
                 non_compliant_subjects_on_disk = dataset_info[seq_id]
                 compliant_subjects_on_disk = set(all_subjects_on_disk) - set(non_compliant_subjects_on_disk)
-
 
                 # What did you parse
                 assert assert_list(all_subjects, all_subjects_on_disk)

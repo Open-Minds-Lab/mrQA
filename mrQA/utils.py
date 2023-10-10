@@ -15,7 +15,6 @@ import numpy as np
 from MRdataset import BaseDataset, is_dicom_file
 from MRdataset.utils import convert2ascii
 from dateutil import parser
-
 from mrQA import logger
 from mrQA.config import past_records_fpath, report_fpath, mrds_fpath, \
     subject_list_dir, DATE_SEPARATOR, CannotComputeMajority, \

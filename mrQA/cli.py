@@ -4,11 +4,9 @@ import sys
 from pathlib import Path
 
 from MRdataset import import_dataset, load_mr_dataset, valid_dirs
-
 from mrQA import check_compliance
-from mrQA.config import PATH_CONFIG
 from mrQA import logger
-from mrQA.logger import init_log_files
+from mrQA.config import PATH_CONFIG
 from mrQA.utils import is_writable
 
 
@@ -74,7 +72,8 @@ def main():
                                  ds_format=args.format,
                                  name=args.name,
                                  verbose=args.verbose,
-                                 config_path=args.config)
+                                 config_path=args.config,
+                                 output_dir=args.output_dir)
 
     check_compliance(dataset=dataset,
                      output_dir=args.output_dir,
