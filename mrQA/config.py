@@ -1,7 +1,7 @@
 from pathlib import Path
+
 from MRdataset import MRDS_EXT
 from MRdataset.config import MRException
-from numpy import nan
 from protocol.config import UnspecifiedType
 
 STRATEGIES_ALLOWED = ['majority', ]
@@ -24,6 +24,7 @@ PATH_CONFIG = {
 }
 
 DATE_SEPARATOR = '_DATE_'
+ATTRIBUTE_SEPARATOR = '_ATTR_'
 
 Unspecified = UnspecifiedType()
 

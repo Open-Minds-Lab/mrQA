@@ -7,6 +7,7 @@ from protocol import MRImagingProtocol, SiemensMRImagingProtocol
 
 from mrQA import logger
 from mrQA.base import CompliantDataset, NonCompliantDataset, UndeterminedDataset
+from mrQA.config import ATTRIBUTE_SEPARATOR
 from mrQA.formatter import HtmlFormatter
 from mrQA.utils import _cli_report, \
     export_subject_lists, make_output_paths, \
@@ -165,7 +166,6 @@ def infer_protocol(dataset: BaseDataset,
     # TODO: Check for subset, if incomplete dataset throw error and stop
     ref_protocol = MRImagingProtocol(f'reference_for_{dataset.name}')
     # create reference protocol for each sequence
-    reference_by_seq = {}
     for seq_name in dataset.get_sequence_ids():
         num_subjects = dataset.get_subject_ids(seq_name)
         # If subjects are less than 3, then we can't infer a reference
@@ -173,9 +173,14 @@ def infer_protocol(dataset: BaseDataset,
             reference = compute_majority(dataset=dataset,
                                          seq_name=seq_name,
                                          config_dict=config_dict)
-            reference_by_seq[seq_name] = reference
+            for key, param_dict in reference.items():
+                if key != 'NA':
+                    seq_name_with_stratify = ATTRIBUTE_SEPARATOR.join([seq_name, key])
+                    ref_protocol.add_sequence(seq_name_with_stratify, param_dict)
+                else:
+                    ref_protocol.add_sequence(seq_name, param_dict)
     # update the reference protocol with dictonary
-    ref_protocol.add_sequences_from_dict(reference_by_seq)
+    # ref_protocol.add_sequences_from_dict(reference_by_seq)
     return ref_protocol
 
 
@@ -207,6 +212,7 @@ def compare_with_reference(dataset: BaseDataset,
     """
     config_dict = get_config_from_file(config_path)
     include_params = config_dict['include_parameters']
+    stratify_by = config_dict.get('stratify_by', None)
 
     if not reference_protocol:
         logger.error('Reference protocol is empty')
@@ -228,32 +234,42 @@ def compare_with_reference(dataset: BaseDataset,
         temp_dataset = CompliantDataset(name=dataset.name,
                                         data_source=dataset.data_source,
                                         ds_format=dataset.format)
-        try:
-            ref_sequence = reference_protocol[seq_name]
-        except KeyError:
-            logger.info(f'No reference protocol for {seq_name} sequence.')
-            continue
-
         compliant_flag = True
+        undetermined_flag = False
         for subj, sess, run, seq in dataset.traverse_horizontal(seq_name):
+            if stratify_by:
+                stratify_value = getattr(seq, stratify_by)
+                seq_name_with_stratify = ATTRIBUTE_SEPARATOR.join([seq_name, stratify_value])
+            else:
+                seq_name_with_stratify = seq_name
+
+            try:
+                ref_sequence = reference_protocol[seq_name_with_stratify]
+            except KeyError:
+                logger.info(f'No reference protocol for {seq_name} sequence.')
+                undetermined_dataset.add(subject_id=subj, session_id=sess,
+                                         run_id=run, seq_id=seq_name_with_stratify, seq=seq)
+                undetermined_flag = True
+                continue
+
             compliant, non_compliant_tuples = ref_sequence.compliant(seq, rtol=tolerance,
                                                                      decimals=decimals,
                                                                      include_params=include_params)
 
             if compliant:
                 temp_dataset.add(subject_id=subj, session_id=sess,
-                                 run_id=run, seq_id=seq_name, seq=seq)
+                                 run_id=run, seq_id=seq_name_with_stratify, seq=seq)
             else:
                 compliant_flag = False
                 non_compliant_params = [x[1] for x in non_compliant_tuples]
                 non_compliant_dataset.add(subject_id=subj, session_id=sess,
-                                          run_id=run, seq_id=seq_name, seq=seq)
+                                          run_id=run, seq_id=seq_name_with_stratify, seq=seq)
                 non_compliant_dataset.add_non_compliant_params(
                     subject_id=subj, session_id=sess, run_id=run,
-                    seq_id=seq_name, non_compliant_params=non_compliant_params
+                    seq_id=seq_name_with_stratify, non_compliant_params=non_compliant_params
                 )
         # only add the sequence if all the subjects, sessions are compliant
-        if compliant_flag:
+        if compliant_flag and not undetermined_flag:
             compliant_dataset.merge(temp_dataset)
 
     return {

@@ -86,7 +86,8 @@
     <tbody>
     {% for seq_id in non_compliant_ds.get_sequence_ids()|sort %}
         {% set ncomp_sub_ids = non_compliant_ds.get_subject_ids(seq_id) %}
-        {% set total_subjects = complete_ds.get_subject_ids(seq_id) | length %}
+    {% set seq_name_wo_tag = seq_id.split('_ATTR_')%}
+    {% set total_subjects = complete_ds.get_subject_ids(seq_name_wo_tag[0]) | length %}
         {% set comp_subject_count = total_subjects - ncomp_sub_ids|length %}
         {% set non_compliant_params = non_compliant_ds.get_non_compliant_param_ids(seq_id) %}
             {% if non_compliant_ds.get_subject_ids(seq_id) %}{# |length > 2 #}
