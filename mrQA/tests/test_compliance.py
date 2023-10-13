@@ -8,6 +8,9 @@ from MRdataset.tests.simulate import make_test_dataset
 from hypothesis import given, settings, assume
 
 from mrQA import check_compliance
+from mrQA.project import get_config_from_file
+
+THIS_DIR = Path(__file__).parent.resolve()
 
 
 # @settings(max_examples=50, deadline=None)
@@ -102,11 +105,14 @@ def test_non_compliance(num_noncompliant_subjects,
                               repetition_time,
                               echo_train_length,
                               flip_angle)
-        mrd = import_dataset(fake_ds_dir, config_path='./mri-config.json',
+        mrd = import_dataset(fake_ds_dir, config_path=THIS_DIR / 'mri-config.json',
                              output_dir=tempdir)
         compliance_dict = check_compliance(dataset=mrd,
                                            output_dir=tempdir,
-                                           config_path='./mri-config.json')
+                                           config_path=THIS_DIR / 'mri-config.json')
+        config_dict = get_config_from_file(THIS_DIR / 'mri-config.json')
+        # include_params = config_dict['include_parameters']
+        stratify_by = config_dict.get('stratify_by', None)
 
         if compliance_dict is not None:
             # Check on disk, basically the truth
@@ -121,7 +127,9 @@ def test_non_compliance(num_noncompliant_subjects,
             non_compliant_ds = compliance_dict['non_compliant']
             reference = compliance_dict['reference']
             non_compliant_sequences = non_compliant_ds.get_sequence_ids()
+            # non_compliant_sequences = [f.split(ATTRIBUTE_SEPARATOR)[0] for f in non_compliant_sequences]
             fully_compliant_sequences = fully_compliant_ds.get_sequence_ids()
+            # fully_compliant_sequences = [f.split(ATTRIBUTE_SEPARATOR)[0] for f in fully_compliant_sequences]
             all_sequences = mrd.get_sequence_ids()
 
             # Check if modalities are   equal

@@ -9,7 +9,6 @@
         "derived": false
     },
     "use_echonumbers": true,
-    "stratify_by": "series_number",
     "include_parameters": [
         "EchoTrainLength",
         "ParallelAcquisitionTechnique",

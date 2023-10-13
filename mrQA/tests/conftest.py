@@ -1,16 +1,11 @@
 import typing as tp
-from typing import Tuple
-
-import pytest
-import pydicom
 from pathlib import Path
-import zipfile
-
-from hypothesis import strategies as st
-from hypothesis.strategies import SearchStrategy
+from typing import Tuple
 
 from MRdataset.dicom import DicomDataset
 from MRdataset.tests.simulate import make_compliant_test_dataset
+from hypothesis import strategies as st
+from hypothesis.strategies import SearchStrategy
 
 param_strategy: tp.Final[SearchStrategy[Tuple]] = st.tuples(
     st.text(min_size=1, max_size=10),
@@ -22,6 +17,9 @@ param_strategy: tp.Final[SearchStrategy[Tuple]] = st.tuples(
               allow_infinity=False)
 )
 
+THIS_DIR = Path(__file__).parent.resolve()
+
+
 @st.composite
 def create_dataset(draw_from: st.DrawFn) -> Tuple:
     name, num_subjects, repetition_time, echo_train_length, flip_angle = draw_from(param_strategy)
@@ -31,7 +29,7 @@ def create_dataset(draw_from: st.DrawFn) -> Tuple:
                                               flip_angle)
     ds = DicomDataset(name=name,
                       data_source=fake_ds_dir,
-                      config_path='./mri-config.json')
+                      config_path=THIS_DIR / 'mri-config.json')
     attributes = {
         'name': name,
         'num_subjects': num_subjects,
@@ -39,7 +37,7 @@ def create_dataset(draw_from: st.DrawFn) -> Tuple:
         'echo_train_length': echo_train_length,
         'flip_angle': flip_angle,
         'fake_ds_dir': fake_ds_dir,
-        'config_path': './mri-config.json'
+        'config_path': THIS_DIR / 'mri-config.json'
     }
     return ds, attributes
 

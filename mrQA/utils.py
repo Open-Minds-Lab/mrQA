@@ -15,6 +15,7 @@ import numpy as np
 from MRdataset import BaseDataset, is_dicom_file
 from MRdataset.utils import convert2ascii
 from dateutil import parser
+
 from mrQA import logger
 from mrQA.config import past_records_fpath, report_fpath, mrds_fpath, \
     subject_list_dir, DATE_SEPARATOR, CannotComputeMajority, \
@@ -690,12 +691,24 @@ def compute_majority(dataset: BaseDataset, seq_name, config_dict=None):
     # TODO: parse begin and end times
     # TODO: add option to exclude subjects
     include_parameters = config_dict.get('include_parameters', None)
-    seq_list = []
+    stratify_by = config_dict.get('stratify_by', None)
+    seq_dict = {}
+    most_frequent_param_values = {}
     for subj, sess, runs, seq in dataset.traverse_horizontal(seq_name):
-        seq_list.append(seq)
+        if stratify_by is None:
+            key = 'NA'
+        else:
+            key = getattr(seq, stratify_by)
 
-    dict_ = majority_values(seq_list, default=Unspecified, include_keys=include_parameters)
-    return dict_
+        if key not in seq_dict:
+            seq_dict[key] = []
+        seq_dict[key].append(seq)
+
+    for key in seq_dict:
+        most_frequent_param_values[key] = majority_values(seq_dict[key],
+                                                          default=Unspecified,
+                                                          include_keys=include_parameters)
+    return most_frequent_param_values
 
 
 def _check_against_reference(modality, decimals, tolerance):
