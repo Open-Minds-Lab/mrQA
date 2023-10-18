@@ -373,14 +373,14 @@ def vertical_audit(dataset: BaseDataset,
                 non_compliant_params = [x[0] for x in non_compliant_tuples]
                 non_compliant_ds.add_non_compliant_params(
                     subject_id=subject, session_id=session, run_id=run1,
-                    seq_id=seq1_name,
+                    seq_id=seq1_name, seq=seq1, ref_seq=seq2_name,
                     non_compliant_params=non_compliant_params
                 )
 
                 non_compliant_params = [x[1] for x in non_compliant_tuples]
                 non_compliant_ds.add_non_compliant_params(
                     subject_id=subject, session_id=session, run_id=run2,
-                    seq_id=seq2_name,
+                    seq_id=seq2_name, seq=seq2, ref_seq=seq1_name,
                     non_compliant_params=non_compliant_params
                 )
     # TODO: add option for num_sequences > 2
