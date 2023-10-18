@@ -121,20 +121,28 @@ def get_protocol_from_file(reference_path: Path,
         Reference protocol extracted from the file
     """
     # Extract reference protocol from file
-    if isinstance(reference_path, str):
-        reference_path = Path(reference_path)
     if not isinstance(reference_path, Path):
-        raise TypeError(f'Expected Path or str, got {type(reference_path)}')
+        try:
+            reference_path = Path(reference_path)
+        except TypeError as e:
+            logger.error(f'Expected Path or str for reference protocol path, '
+                         f'got {type(reference_path)}')
+            raise e
 
     if not reference_path.is_file():
-        raise FileNotFoundError(f'{reference_path} does not exist')
+        raise FileNotFoundError(f'Unable to access {reference_path}. Maybe it'
+                                f'does not exist or is not a file')
+
     # TODO: Add support for other file formats, like json and dcm
     if reference_path.suffix != '.xml':
-        raise ValueError(f'Expected xml file, got {reference_path.suffix}')
+        raise ValueError(f'Expected xml file, got {reference_path.suffix} file')
+
     # TODO: Add support for other vendors, like GE and Philips
-    if vendor != 'siemens':
+    if vendor == 'siemens':
+        ref_protocol = SiemensMRImagingProtocol(filepath=reference_path)
+    else:
         raise NotImplementedError(f'Only Siemens protocols are supported')
-    ref_protocol = SiemensMRImagingProtocol(filepath=reference_path)
+
     return ref_protocol
 
 
