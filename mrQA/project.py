@@ -281,21 +281,9 @@ def compare_with_reference(dataset: BaseDataset,
     }
 
 
-def get_config_from_file(config_path: Union[Path, str]) -> dict:
-    if isinstance(config_path, str):
-        config_path = Path(config_path)
-    if not isinstance(config_path, Path):
-        raise TypeError(f'Expected Path or str, got {type(config_path)}')
-    if not config_path.is_file():
-        raise FileNotFoundError(f'{config_path} does not exist')
 
-    # read json file
-    with open(config_path, 'r') as f:
-        config = json.load(f)
-    return config
-
-
-def generate_report(compliance_summary_dict: dict,
+def generate_report(hz_audit: dict,
+                    vt_audit: dict,
                     report_path: str or Path,
                     sub_lists_dir_path: str,
                     output_dir: Union[Path, str]) -> Path:
