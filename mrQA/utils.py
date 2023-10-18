@@ -692,26 +692,23 @@ def compute_majority(dataset: BaseDataset, seq_name, config_dict=None):
     # if config_dict is not None:
     # TODO: parse begin and end times
     # TODO: add option to exclude subjects
-    include_parameters = config_dict.get('include_parameters', None)
-    stratify_by = config_dict.get('stratify_by', None)
+    hz_audit_config = config_dict["horizontal_audit"]
+    include_parameters = hz_audit_config.get('include_parameters', None)
+    stratify_by = hz_audit_config.get('stratify_by', None)
+
     seq_dict = {}
-    most_frequent_param_values = {}
+    most_freq_vals = {}
     for subj, sess, runs, seq in dataset.traverse_horizontal(seq_name):
-        if stratify_by is None:
-            key = 'NA'
-        else:
-            key = getattr(seq, stratify_by)
+        sequence_id = modify_sequence_name(seq, stratify_by)
+        if sequence_id not in seq_dict:
+            seq_dict[sequence_id] = []
+        seq_dict[sequence_id].append(seq)
 
-        if key not in seq_dict:
-            seq_dict[key] = []
-        seq_dict[key].append(seq)
-
-    for key in seq_dict:
-        most_frequent_param_values[key] = majority_values(seq_dict[key],
-                                                          default=Unspecified,
-                                                          include_keys=include_parameters)
-    return most_frequent_param_values
-
+    for seq_id in seq_dict:
+        most_freq_vals[seq_id] = majority_values(seq_dict[seq_id],
+                                                 default=Unspecified,
+                                                 include_keys=include_parameters)
+    return most_freq_vals
 
 
 # def _check_against_reference(modality, decimals, tolerance):
@@ -1158,7 +1155,8 @@ def log_latest_non_compliance(ncomp_data, latest_data, output_dir):
         return
     full_status = []
     for seq_id in latest_data.get_sequence_ids():
-        for subj_id, sess_id, run_id, seq in latest_data.traverse_horizontal(seq_id):
+        for subj_id, sess_id, run_id, seq in latest_data.traverse_horizontal(
+            seq_id):
             try:
                 nc_param_dict = ncomp_data.get_non_compliant_params(
                     subject_id=subj_id, session_id=sess_id,
