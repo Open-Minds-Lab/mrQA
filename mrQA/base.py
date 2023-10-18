@@ -1,10 +1,10 @@
 from MRdataset.base import BaseDataset
-from mrQA import logger
 
 
 class CompliantDataset(BaseDataset):
     def __init__(self, name=None, data_source=None, ds_format=None):
-        super().__init__(name=name, data_source=data_source, ds_format=ds_format)
+        super().__init__(name=name, data_source=data_source,
+                         ds_format=ds_format)
 
     def load(self):
         pass
@@ -20,7 +20,9 @@ class UndeterminedDataset(BaseDataset):
     """
 
     def __init__(self, name=None, data_source=None, ds_format=None):
-        super().__init__(name=name, data_source=data_source, ds_format=ds_format)
+        super().__init__(name=name,
+                         data_source=data_source,
+                         ds_format=ds_format)
 
     def load(self):
         pass
@@ -28,7 +30,9 @@ class UndeterminedDataset(BaseDataset):
 
 class NonCompliantDataset(BaseDataset):
     def __init__(self, name=None, data_source=None, ds_format=None):
-        super().__init__(name=name, data_source=data_source, ds_format=ds_format)
+        super().__init__(name=name,
+                         data_source=data_source,
+                         ds_format=ds_format)
         self._nc_flat_map = {}
         self._nc_tree_map = {}
         self._nc_params_map = {}
@@ -63,7 +67,8 @@ class NonCompliantDataset(BaseDataset):
             self._nc_params_map[seq_id].add(param.name)
 
             # if (subject_id, session_id, run_id, seq_id, param.name) not in self._nc_flat_map:
-            self._nc_flat_map[(subject_id, session_id, seq_id, run_id, param.name)] = param
+            self._nc_flat_map[
+                (subject_id, session_id, seq_id, run_id, param.name)] = param
             self._nc_tree_add_node(subject_id=subject_id, session_id=session_id,
                                    seq_id=seq_id, run_id=run_id, param=param)
 
@@ -88,7 +93,8 @@ class NonCompliantDataset(BaseDataset):
             self._nc_tree_map[subject_id][session_id][seq_id][run_id] = dict()
 
         # if param.name not in self._nc_tree_map[subject_id][session_id][seq_id][run_id]:
-        self._nc_tree_map[subject_id][session_id][seq_id][run_id][param.name] = param
+        self._nc_tree_map[subject_id][session_id][seq_id][run_id][
+            param.name] = param
 
     def load(self):
         pass
