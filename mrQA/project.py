@@ -394,10 +394,26 @@ def generate_report(hz_audit: dict,
     output_dir = Path(output_dir).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
     sub_lists_by_seq = export_subject_lists(output_dir,
-                                            compliance_summary_dict,
+                                            hz_audit['non_compliant'],
                                             sub_lists_dir_path)
 
+    report_formatter = HtmlFormatter(filepath=report_path)
+    report_formatter.collect_hz_audit_results(
+        complete_ds=hz_audit['complete_ds'],
+        compliant_ds=hz_audit['compliant'],
+        non_compliant_ds=hz_audit['non_compliant'],
+        undetermined_ds=hz_audit['undetermined'],
+        subject_lists_by_seq=sub_lists_by_seq,
+        ref_protocol=hz_audit['reference']
+    )
+
+    report_formatter.collect_vt_audit_results(
+        compliant_ds=vt_audit['compliant'],
+        non_compliant_ds=vt_audit['non_compliant'],
+        complete_ds=vt_audit['complete_ds'],
+        sequence_pairs=vt_audit['sequence_pairs'],
+        parameters=vt_audit['parameters']
+    )
+    report_formatter.render()
     # Generate the HTML report and save it to the output_path
-    compliance_summary_dict['sub_lists_by_seq'] = sub_lists_by_seq
-    HtmlFormatter(filepath=report_path, params=compliance_summary_dict)
     return Path(report_path)

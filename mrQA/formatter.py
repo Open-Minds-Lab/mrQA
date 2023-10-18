@@ -1,10 +1,11 @@
+import importlib
 import smtplib
 import ssl
 from abc import ABC, abstractmethod
 from email import encoders
 from email.mime import base, multipart, text
 from pathlib import Path
-import importlib
+
 import jinja2
 
 
@@ -94,12 +95,64 @@ class BaseFormatter(Formatter):
 
 
 class HtmlFormatter(BaseFormatter):
-    def __init__(self, filepath, params, render=True):
+    def __init__(self, filepath, render=False):
         super(HtmlFormatter, self).__init__(filepath)
         self.template_folder = Path(__file__).resolve().parent
-        self.params = params
+        self.hz_audit = None
+        self.vt_audit = None
+        self.complete_ds = None
         if render:
             self.render()
+
+    def collect_hz_audit_results(self,
+                                 compliant_ds,
+                                 non_compliant_ds,
+                                 undetermined_ds,
+                                 subject_lists_by_seq,
+                                 complete_ds,
+                                 ref_protocol):
+        if not complete_ds.get_sequence_ids():
+            raise ValueError('No sequences found in dataset. Cannot generate'
+                             'report')
+        if not ref_protocol:
+            raise ValueError('Reference protocol is empty. Cannot generate'
+                             'report')
+        if not (compliant_ds.get_sequence_ids() or
+                non_compliant_ds.get_sequence_ids() or
+                undetermined_ds.get_sequence_ids()):
+            raise ValueError('It seems the dataset has not been checked for '
+                             'compliance. Cannot generate report')
+
+        self.hz_audit = {
+            'protocol'        : ref_protocol,
+            'compliant_ds'    : compliant_ds,
+            'non_compliant_ds': non_compliant_ds,
+            'undetermined_ds' : undetermined_ds,
+            'sub_lists_by_seq': subject_lists_by_seq,
+        }
+        self.complete_ds = complete_ds
+
+    def collect_vt_audit_results(self,
+                                 compliant_ds,
+                                 non_compliant_ds,
+                                 sequence_pairs,
+                                 complete_ds,
+                                 parameters):
+        if not complete_ds.get_sequence_ids():
+            raise ValueError('No sequences found in dataset. Cannot generate'
+                             'report')
+        if not (compliant_ds.get_sequence_ids() or
+                non_compliant_ds.get_sequence_ids()):
+            raise ValueError('It seems the dataset has not been checked for '
+                             'compliance. Cannot generate report')
+
+        self.vt_audit = {
+            'compliant_ds'    : compliant_ds,
+            'non_compliant_ds': non_compliant_ds,
+            'sequence_pairs'  : sequence_pairs,
+            'parameters'      : parameters
+        }
+        self.complete_ds = complete_ds
 
     def render(self):
         """
@@ -115,12 +168,9 @@ class HtmlFormatter(BaseFormatter):
         template = template_env.get_template(template_file)
 
         output_text = template.render(
-            protocol=self.params['reference'],
-            compliant_ds=self.params['compliant'],
-            undetermined_ds=self.params['undetermined'],
-            non_compliant_ds= self.params['non_compliant'],
-            sub_lists_by_seq=self.params['sub_lists_by_seq'],
-            complete_ds=self.params['complete_ds'],
+            hz=self.hz_audit,
+            vt=self.vt_audit,
+            complete_ds=self.complete_ds,
             # time=self.params['time'],
             imp0rt=importlib.import_module
         )
