@@ -692,12 +692,16 @@ def compute_majority(dataset: BaseDataset, seq_name, config_dict=None):
     # if config_dict is not None:
     # TODO: parse begin and end times
     # TODO: add option to exclude subjects
-    hz_audit_config = config_dict["horizontal_audit"]
+    hz_audit_config = config_dict.get("horizontal_audit", None)
+    seq_dict = {}
+    most_freq_vals = {}
+
+    if hz_audit_config is None:
+        return most_freq_vals
+
     include_parameters = hz_audit_config.get('include_parameters', None)
     stratify_by = hz_audit_config.get('stratify_by', None)
 
-    seq_dict = {}
-    most_freq_vals = {}
     for subj, sess, runs, seq in dataset.traverse_horizontal(seq_name):
         sequence_id = modify_sequence_name(seq, stratify_by)
         if sequence_id not in seq_dict:

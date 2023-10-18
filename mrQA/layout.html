@@ -86,17 +86,15 @@
 {% set utils = imp0rt('mrQA.utils') %}
 
 <h2>Summary of non-compliance: {{ hz['compliant_ds'].name }}</h2>
+{% if not skip_vt_report %}
 <h3>Vertical Audit</h3>
-{#Using ._sub_ids() is deprecated. Switch to .subjects()#}
-{#{% set sub_ids = vt['non_compliant_ds']._subj_ids %}#}
-{#{% for subj in sub_ids %}#}
-{#    <h4>{{ subj }}</h4>#}
 <table class="tg" id="with_margin">
     <thead>
     <tr>
         <th class="tg-0pky" colspan="1">Parameters</th>
         {% for pair in vt['sequence_pairs'] %}
-            <th class="tg-0pky" colspan="1">{{ pair[0] }}, {{ pair[1] }}</th>
+            <th class="tg-0pky" colspan="1">{{ pair[0] }}, <br>{{ pair[1] }}
+            </th>
         {% endfor %}
     </tr>
     </thead>
@@ -107,11 +105,11 @@
         {% for pair in vt['sequence_pairs'] %}
             <td class="tg-0pky" colspan="1">
             {% set val = vt['non_compliant_ds']
-                .get_non_compliant_param_values(pair[0], param) %}
+                .get_non_compliant_param_values(pair[0], param, pair[1]) %}
             {% set val_dict = utils.tuples2dict(val) %}
             {% for param, tuples in val_dict.items() %}
                 {% for sub, path in tuples %}
-                    <a href="{{ path }}">{{ sub }}</a>
+                    <a href="{{ path }}">{{ sub }}</a>, <br>
                 {% endfor %}
             {% endfor %}
         {% endfor %}
@@ -119,8 +117,9 @@
     {% endfor %}
     </tbody>
 </table>
-{#{% endfor %}#}
+{% endif %}
 
+{% if not skip_hz_report %}
 <hr>
 <h3>Horizontal Audit</h3>
 Reference Protocol Type : {{ hz['protocol'].type.name }}
@@ -339,6 +338,7 @@ hz['non_compliant_ds'].get_non_compliant_param_ids(seq_id) %}
         </tbody>
     </table>
 {% endfor %}
+{% endif %}
 
 
 </body>
