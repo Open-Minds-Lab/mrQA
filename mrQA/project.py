@@ -202,8 +202,8 @@ def horizontal_audit(dataset: BaseDataset,
     ----------
     dataset: BaseDataset
         Dataset to be checked for compliance
-    reference_protocol: MRImagingProtocol
-        Reference protocol to be compared with
+    reference_path: Path | str
+        Path to the reference protocol file.
     decimals: int
         Number of decimal places to round to (default:3).
     tolerance: float
@@ -373,9 +373,10 @@ def generate_report(hz_audit: dict,
 
     Parameters
     ----------
-    compliance_summary_dict : dict
-        Dictionary containing the reference protocol, compliant and
-        non-compliant datasets
+    hz_audit : dict
+        Dictionary containing the results of the horizontal audit
+    vt_audit : dict
+        Dictionary containing the results of the vertical audit
     report_path : str
         Name of the file to be generated, without extension. Ensures that
         naming is consistent across the report, dataset and record files
@@ -387,12 +388,11 @@ def generate_report(hz_audit: dict,
     Returns
     -------
     output_path : Path
-        Path to the generated report
+        Complete path to the generated report
 
     """
     output_dir = Path(output_dir).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
-
     sub_lists_by_seq = export_subject_lists(output_dir,
                                             compliance_summary_dict,
                                             sub_lists_dir_path)
