@@ -5,11 +5,12 @@ import sys
 from pathlib import Path
 
 from MRdataset import import_dataset, save_mr_dataset, BaseDataset
+
 from mrQA import logger
 from mrQA.utils import txt2list
 
 
-def main():
+def cli():
     """Console script for mrQA."""
     parser = argparse.ArgumentParser(
         description='Protocol Compliance of MRI scans',
@@ -109,4 +110,4 @@ def read_subset(output_dir: Union[str, Path],
 
 
 if __name__ == '__main__':
-    sys.exit(main())  # pragma: no cover
+    sys.exit(cli())  # pragma: no cover

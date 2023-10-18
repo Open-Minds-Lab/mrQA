@@ -38,10 +38,10 @@ setup(
                 "protocol compliance",
     entry_points={
         'console_scripts': [
-            'mrqa=mrQA.cli:main',
-            'mrqa_monitor=mrQA.monitor:main',
-            'mrqa_parallel=mrQA.run_parallel:main',
-            'mrqa_subset=mrQA.run_subset:main'
+            'mrqa=mrQA.cli:cli',
+            'mrqa_monitor=mrQA.monitor:cli',
+            'mrqa_parallel=mrQA.run_parallel:cli',
+            'mrqa_subset=mrQA.run_subset:cli'
         ],
     },
     install_requires=requirements,

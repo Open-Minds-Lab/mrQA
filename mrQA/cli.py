@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 from MRdataset import import_dataset, load_mr_dataset, valid_dirs
+
 from mrQA import check_compliance
 from mrQA import logger
 from mrQA.config import PATH_CONFIG
@@ -63,7 +64,7 @@ def get_parser():
     return parser
 
 
-def main():
+def cli():
     args = parse_args()
     if args.mrds_pkl_path:
         dataset = load_mr_dataset(args.mrds_pkl_path)
@@ -129,4 +130,4 @@ def parse_args():
 
 
 if __name__ == "__main__":
-    sys.exit(main())  # pragma: no cover
+    cli()

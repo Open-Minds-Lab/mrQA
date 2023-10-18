@@ -6,10 +6,12 @@ from pathlib import Path
 from typing import Iterable, Union
 
 from MRdataset import load_mr_dataset, MRDS_EXT
+
 from mrQA import check_compliance
 from mrQA.config import PATH_CONFIG
 from mrQA.parallel_utils import _check_args, _make_file_folders, \
-    _run_single_batch, _create_slurm_script, _get_num_workers, _get_terminal_folders
+    _run_single_batch, _create_slurm_script, _get_num_workers, \
+    _get_terminal_folders
 from mrQA.run_merge import check_and_merge
 from mrQA.utils import list2txt, split_list, \
     txt2list
@@ -69,7 +71,7 @@ def get_parser():
     return parser
 
 
-def main():
+def cli():
     args = parse_args()
     process_parallel(data_source=args.data_source,
                      output_dir=args.output_dir,
