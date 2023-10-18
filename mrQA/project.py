@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 from typing import Union, Dict, Optional
 
@@ -7,11 +6,10 @@ from protocol import MRImagingProtocol, SiemensMRImagingProtocol
 
 from mrQA import logger
 from mrQA.base import CompliantDataset, NonCompliantDataset, UndeterminedDataset
-from mrQA.config import ATTRIBUTE_SEPARATOR
 from mrQA.formatter import HtmlFormatter
 from mrQA.utils import _cli_report, \
     export_subject_lists, make_output_paths, \
-    compute_majority
+    compute_majority, modify_sequence_name, get_config_from_file
 
 
 def check_compliance(dataset: BaseDataset,
@@ -20,7 +18,7 @@ def check_compliance(dataset: BaseDataset,
                      verbose: bool = False,
                      tolerance: float = 0.1,
                      config_path: Union[Path, str] = None,
-                     reference_path: Union[Path, str] = None) -> Optional[Dict]:
+                     reference_path: Union[Path, str] = None):
     """
     Main function for checking compliance. Infers the reference protocol
     according to the user chosen strategy, and then generates a compliance
@@ -79,32 +77,29 @@ def check_compliance(dataset: BaseDataset,
     # Save the dataset to a pickle file
     save_mr_dataset(mrds_path, dataset)
 
-    # Infer reference protocol if not provided
-    if reference_path is None:
-        ref_protocol = infer_protocol(dataset, config_path=config_path)
-    else:
-        ref_protocol = get_protocol_from_file(reference_path)
+    # Get results of horizontal audit
+    hz_audit_results = horizontal_audit(dataset=dataset,
+                                        reference_path=reference_path,
+                                        decimals=decimals,
+                                        tolerance=tolerance,
+                                        config_path=config_path)
 
-    # Compare the dataset with reference protocol (inferred or user-defined)
-    compliance_summary_dict = compare_with_reference(dataset=dataset,
-                                                     reference_protocol=ref_protocol,
-                                                     decimals=decimals,
-                                                     tolerance=tolerance,
-                                                     config_path=config_path)
+    # Get results of vertical audit
+    vt_audit_results = vertical_audit(dataset=dataset,
+                                      decimals=decimals,
+                                      tolerance=tolerance,
+                                      config_path=config_path)
 
     # Generate the report if checking compliance was successful
-    if compliance_summary_dict:
-        generate_report(compliance_summary_dict,
-                        report_path,
-                        sub_lists_dir_path,
-                        output_dir)
+    generate_report(hz_audit=hz_audit_results,
+                    vt_audit=vt_audit_results,
+                    report_path=report_path,
+                    sub_lists_dir_path=sub_lists_dir_path,
+                    output_dir=output_dir)
 
-        # Print a small message on the console, about non-compliance of dataset
-        print(_cli_report(compliance_summary_dict, str(report_path)))
-        return compliance_summary_dict
-    else:
-        logger.error('Could not generate report')
-        return None
+    # Print a small message on the console, about non-compliance of dataset
+    print(_cli_report(hz_audit_results, str(report_path)))
+    return hz_audit_results, vt_audit_results
 
 
 def get_protocol_from_file(reference_path: Path,
@@ -184,11 +179,11 @@ def infer_protocol(dataset: BaseDataset,
     return ref_protocol
 
 
-def compare_with_reference(dataset: BaseDataset,
-                           reference_protocol: MRImagingProtocol,
-                           decimals: int = 3,
-                           tolerance: float = 0.1,
-                           config_path: Union[Path, str] = None) -> Optional[Dict]:
+def horizontal_audit(dataset: BaseDataset,
+                     reference_path: Union[Path, str],
+                     decimals: int = 3,
+                     tolerance: float = 0.1,
+                     config_path: Union[Path, str] = None) -> Optional[Dict]:
     """
     Compares the dataset with the reference protocol (either inferred or
     user-defined). Returns a dictionary containing the reference protocol,
@@ -210,23 +205,38 @@ def compare_with_reference(dataset: BaseDataset,
     -------
 
     """
+    # Infer reference protocol if not provided
+    if reference_path is None:
+        ref_protocol = infer_protocol(dataset, config_path=config_path)
+    else:
+        ref_protocol = get_protocol_from_file(reference_path)
+
     config_dict = get_config_from_file(config_path)
-    include_params = config_dict['include_parameters']
-    stratify_by = config_dict.get('stratify_by', None)
+    hz_audit_config = config_dict["horizontal_audit"]
+    include_params = hz_audit_config.get('include_parameters', None)
+    stratify_by = hz_audit_config.get('stratify_by', None)
 
-    if not reference_protocol:
+    compliant_ds = CompliantDataset(name=dataset.name,
+                                    data_source=dataset.data_source,
+                                    ds_format=dataset.format)
+    non_compliant_ds = NonCompliantDataset(name=dataset.name,
+                                           data_source=dataset.data_source,
+                                           ds_format=dataset.format)
+    undetermined_ds = UndeterminedDataset(name=dataset.name,
+                                          data_source=dataset.data_source,
+                                          ds_format=dataset.format)
+
+    eval_dict = {
+        'complete_ds'  : dataset,
+        'reference'    : ref_protocol,
+        'compliant'    : compliant_ds,
+        'non_compliant': non_compliant_ds,
+        'undetermined' : undetermined_ds,
+    }
+
+    if not ref_protocol:
         logger.error('Reference protocol is empty')
-        return None
-
-    compliant_dataset = CompliantDataset(name=dataset.name,
-                                         data_source=dataset.data_source,
-                                         ds_format=dataset.format)
-    non_compliant_dataset = NonCompliantDataset(name=dataset.name,
-                                                data_source=dataset.data_source,
-                                                ds_format=dataset.format)
-    undetermined_dataset = UndeterminedDataset(name=dataset.name,
-                                               data_source=dataset.data_source,
-                                               ds_format=dataset.format)
+        return eval_dict
 
     for seq_name in dataset.get_sequence_ids():
         # a temporary placeholder for compliant sequences. It will be
@@ -237,49 +247,110 @@ def compare_with_reference(dataset: BaseDataset,
         compliant_flag = True
         undetermined_flag = False
         for subj, sess, run, seq in dataset.traverse_horizontal(seq_name):
-            if stratify_by:
-                stratify_value = getattr(seq, stratify_by)
-                seq_name_with_stratify = ATTRIBUTE_SEPARATOR.join([seq_name, stratify_value])
-            else:
-                seq_name_with_stratify = seq_name
+            sequence_name = modify_sequence_name(seq, stratify_by)
 
             try:
-                ref_sequence = reference_protocol[seq_name_with_stratify]
+                ref_sequence = ref_protocol[sequence_name]
             except KeyError:
                 logger.info(f'No reference protocol for {seq_name} sequence.')
-                undetermined_dataset.add(subject_id=subj, session_id=sess,
-                                         run_id=run, seq_id=seq_name_with_stratify, seq=seq)
+                undetermined_ds.add(subject_id=subj, session_id=sess,
+                                    run_id=run, seq_id=sequence_name, seq=seq)
                 undetermined_flag = True
                 continue
 
-            compliant, non_compliant_tuples = ref_sequence.compliant(seq, rtol=tolerance,
-                                                                     decimals=decimals,
-                                                                     include_params=include_params)
+            is_compliant, non_compliant_tuples = ref_sequence.compliant(
+                seq,
+                rtol=tolerance,
+                decimals=decimals,
+                include_params=include_params
+            )
 
-            if compliant:
+            if is_compliant:
                 temp_dataset.add(subject_id=subj, session_id=sess,
-                                 run_id=run, seq_id=seq_name_with_stratify, seq=seq)
+                                 run_id=run, seq_id=sequence_name, seq=seq)
             else:
                 compliant_flag = False
                 non_compliant_params = [x[1] for x in non_compliant_tuples]
-                non_compliant_dataset.add(subject_id=subj, session_id=sess,
-                                          run_id=run, seq_id=seq_name_with_stratify, seq=seq)
-                non_compliant_dataset.add_non_compliant_params(
+                non_compliant_ds.add(subject_id=subj, session_id=sess,
+                                     run_id=run, seq_id=sequence_name, seq=seq)
+                non_compliant_ds.add_non_compliant_params(
                     subject_id=subj, session_id=sess, run_id=run,
-                    seq_id=seq_name_with_stratify, non_compliant_params=non_compliant_params
+                    seq_id=sequence_name,
+                    non_compliant_params=non_compliant_params
                 )
         # only add the sequence if all the subjects, sessions are compliant
         if compliant_flag and not undetermined_flag:
-            compliant_dataset.merge(temp_dataset)
+            compliant_ds.merge(temp_dataset)
 
-    return {
-        'complete_ds': dataset,
-        'reference': reference_protocol,
-        'compliant': compliant_dataset,
-        'non_compliant': non_compliant_dataset,
-        'undetermined': undetermined_dataset,
+    eval_dict['compliant'] = compliant_ds
+    eval_dict['non_compliant'] = non_compliant_ds
+    eval_dict['undetermined'] = undetermined_ds
+    return eval_dict
+
+
+def vertical_audit(dataset: BaseDataset,
+                   decimals: int = 3,
+                   tolerance: float = 0.1,
+                   config_path: Union[Path, str] = None) -> Optional[Dict]:
+    """
+
+    """
+    config_dict = get_config_from_file(config_path)
+    vt_audit_config = config_dict["vertical_audit"]
+    include_params = vt_audit_config.get('include_parameters', None)
+    chosen_pairs = vt_audit_config.get('sequences', None)
+
+    compliant_ds = CompliantDataset(name=dataset.name,
+                                    data_source=dataset.data_source,
+                                    ds_format=dataset.format)
+    non_compliant_ds = NonCompliantDataset(name=dataset.name,
+                                           data_source=dataset.data_source,
+                                           ds_format=dataset.format)
+
+    # TODO: Add option to specify in the config file
+    # assuming that sequence_ids are list of 2
+    for seq1_name, seq2_name in chosen_pairs:
+        for items in dataset.traverse_vertical2(seq1_name, seq2_name):
+            subject, session, run1, run2, seq1, seq2 = items
+            is_compliant, non_compliant_tuples = seq1.compliant(
+                seq2,
+                rtol=tolerance,
+                decimals=decimals,
+                include_params=include_params
+            )
+            if is_compliant:
+                compliant_ds.add(subject_id=subject, session_id=session,
+                                 seq_id=seq1_name, seq=seq1)
+            else:
+                non_compliant_ds.add(subject_id=subject, session_id=session,
+                                     run_id=run1, seq_id=seq1_name,
+                                     seq=seq1)
+                non_compliant_ds.add(subject_id=subject, session_id=session,
+                                     run_id=run2, seq_id=seq2_name,
+                                     seq=seq2)
+
+                non_compliant_params = [x[0] for x in non_compliant_tuples]
+                non_compliant_ds.add_non_compliant_params(
+                    subject_id=subject, session_id=session, run_id=run1,
+                    seq_id=seq1_name,
+                    non_compliant_params=non_compliant_params
+                )
+
+                non_compliant_params = [x[1] for x in non_compliant_tuples]
+                non_compliant_ds.add_non_compliant_params(
+                    subject_id=subject, session_id=session, run_id=run2,
+                    seq_id=seq2_name,
+                    non_compliant_params=non_compliant_params
+                )
+    # TODO: add option for num_sequences > 2
+    eval_dict = {
+        'complete_ds'   : dataset,
+        'compliant'     : compliant_ds,
+        'non_compliant' : non_compliant_ds,
+        'sequence_pairs': chosen_pairs,
+        'parameters'    : include_params
     }
-
+    return eval_dict
 
 
 def generate_report(hz_audit: dict,
