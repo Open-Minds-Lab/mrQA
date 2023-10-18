@@ -38,19 +38,19 @@ class NonCompliantDataset(BaseDataset):
         self._nc_params_map = {}
 
     def get_non_compliant_param_ids(self, seq_id):
-        return list(self._nc_params_map[seq_id])
+        return [i['parameter'].name for i in self._nc_params_map[seq_id]]
+        # return list(self._nc_params_map[seq_id])
 
-    def get_non_compliant_param_values(self, seq_id, param_name):
-        for subj in self._subj_ids:
-            for sess in self._nc_tree_map[subj]:
-                if seq_id in self._nc_tree_map[subj][sess]:
-                    for run in self._nc_tree_map[subj][sess][seq_id]:
-                        nc_params = self._nc_tree_map[subj][sess][seq_id][run]
-                        if param_name in nc_params.keys():
-                            param_value = nc_params[param_name]
-                            path = self.get_path(subject_id=subj, session_id=sess, run_id=run,
-                                                 seq_id=seq_id)
-                            yield param_value, (subj, path)
+    def get_non_compliant_param_values(self, seq_id, param_name, ref_seq=None):
+        for entry in self._nc_params_map[seq_id]:
+            if entry['parameter'].name == param_name:
+                if ref_seq is None:
+                    yield (entry['parameter'],
+                           (entry['subject_id'], entry['path']))
+                elif ref_seq == entry['ref_sequence']:
+                    yield (entry['parameter'],
+                           (entry['subject_id'], entry['path']))
+
 
     def get_non_compliant_params(self, subject_id, session_id, seq_id, run_id):
         return self._nc_tree_map[subject_id][session_id][seq_id][run_id]
@@ -59,14 +59,26 @@ class NonCompliantDataset(BaseDataset):
         return str(self._tree_map[subject_id][session_id][seq_id][run_id].path)
 
     def add_non_compliant_params(self, subject_id, session_id, seq_id, run_id,
-                                 non_compliant_params):
+                                 seq, non_compliant_params, ref_seq=None):
         """adds a given subject, session or run to the dataset"""
+        if ref_seq and (seq_id == ref_seq):
+            raise ValueError('Both seq and ref_seq cannot be the same, '
+                             'and still be non-compliant')
+
         for param in non_compliant_params:
             if seq_id not in self._nc_params_map:
-                self._nc_params_map[seq_id] = set()
-            self._nc_params_map[seq_id].add(param.name)
+                self._nc_params_map[seq_id] = []
 
-            # if (subject_id, session_id, run_id, seq_id, param.name) not in self._nc_flat_map:
+            self._nc_params_map[seq_id].append({
+                'ref_sequence': ref_seq,
+                'parameter'   : param,
+                'subject_id'  : subject_id,
+                'session_id'  : session_id,
+                'run_id'      : run_id,
+                'seq'         : seq,
+                'path'        : seq.path}
+            )
+
             self._nc_flat_map[
                 (subject_id, session_id, seq_id, run_id, param.name)] = param
             self._nc_tree_add_node(subject_id=subject_id, session_id=session_id,
