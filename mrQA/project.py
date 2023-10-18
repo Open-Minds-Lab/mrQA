@@ -180,7 +180,8 @@ def infer_protocol(dataset: BaseDataset,
         reference = compute_majority(dataset=dataset,
                                      seq_name=seq_name,
                                      config_dict=config_dict)
-
+        if not reference:
+            continue
         # Add the inferred reference to the reference protocol
         for seq_id, param_dict in reference.items():
             ref_protocol.add_sequence_from_dict(seq_id, param_dict)
@@ -221,9 +222,7 @@ def horizontal_audit(dataset: BaseDataset,
         ref_protocol = get_protocol_from_file(reference_path)
 
     config_dict = get_config_from_file(config_path)
-    hz_audit_config = config_dict["horizontal_audit"]
-    include_params = hz_audit_config.get('include_parameters', None)
-    stratify_by = hz_audit_config.get('stratify_by', None)
+    hz_audit_config = config_dict.get("horizontal_audit", None)
 
     compliant_ds = CompliantDataset(name=dataset.name,
                                     data_source=dataset.data_source,
@@ -244,8 +243,16 @@ def horizontal_audit(dataset: BaseDataset,
     }
 
     if not ref_protocol:
-        logger.error('Reference protocol is empty')
+        logger.error('Reference protocol for horizontal audit is empty')
         return eval_dict
+
+    if hz_audit_config is None:
+        logger.error(f'No horizontal audit config found for '
+                     f'dataset {dataset.name}')
+        return eval_dict
+
+    include_params = hz_audit_config.get('include_parameters', None)
+    stratify_by = hz_audit_config.get('stratify_by', None)
 
     for seq_name in dataset.get_sequence_ids():
         # a temporary placeholder for compliant sequences. It will be
@@ -305,9 +312,7 @@ def vertical_audit(dataset: BaseDataset,
 
     """
     config_dict = get_config_from_file(config_path)
-    vt_audit_config = config_dict["vertical_audit"]
-    include_params = vt_audit_config.get('include_parameters', None)
-    chosen_pairs = vt_audit_config.get('sequences', None)
+    vt_audit_config = config_dict.get("vertical_audit", None)
 
     compliant_ds = CompliantDataset(name=dataset.name,
                                     data_source=dataset.data_source,
@@ -317,6 +322,23 @@ def vertical_audit(dataset: BaseDataset,
                                            ds_format=dataset.format)
 
     # TODO: Add option to specify in the config file
+    eval_dict = {
+        'complete_ds'   : dataset,
+        'compliant'     : compliant_ds,
+        'non_compliant' : non_compliant_ds,
+        'sequence_pairs': [],
+        'parameters'    : []
+    }
+
+    if vt_audit_config is None:
+        logger.error(f'No vertical audit config found for '
+                     f'dataset {dataset.name}')
+        return eval_dict
+
+    # If include_parameters is not provided, then it will compare all parameters
+    include_params = vt_audit_config.get('include_parameters', None)
+    chosen_pairs = vt_audit_config.get('sequences', None)
+    stratify_by = vt_audit_config.get('stratify_by', None)
     # assuming that sequence_ids are list of 2
     for seq1_name, seq2_name in chosen_pairs:
         for items in dataset.traverse_vertical2(seq1_name, seq2_name):
