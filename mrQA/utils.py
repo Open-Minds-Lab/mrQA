@@ -1,3 +1,4 @@
+import json
 import re
 import tempfile
 import time
@@ -15,12 +16,13 @@ import numpy as np
 from MRdataset import BaseDataset, is_dicom_file
 from MRdataset.utils import convert2ascii
 from dateutil import parser
+from protocol import BaseSequence
 
 from mrQA import logger
 from mrQA.config import past_records_fpath, report_fpath, mrds_fpath, \
     subject_list_dir, DATE_SEPARATOR, CannotComputeMajority, \
-    ReferenceNotSetForModality, Unspecified, \
-    ReferenceNotSetForEchoTime, EqualCount, status_fpath
+    Unspecified, \
+    EqualCount, status_fpath, ATTRIBUTE_SEPARATOR
 
 
 def is_writable(dir_path):
@@ -32,6 +34,7 @@ def is_writable(dir_path):
         logger.error(e)
         return False
     return True
+
 
 def files_under_folder(fpath: Union[str, Path],
                        ext: str = None) -> typing.Iterable[Path]:
@@ -61,6 +64,7 @@ def files_under_folder(fpath: Union[str, Path],
         if file.is_file():
             # If it is a regular file and not a directory, return filepath
             yield file
+
 
 def files_in_path(fp_list: Union[Iterable, str, Path],
                   ext: Optional[str] = None):
@@ -95,7 +99,6 @@ def files_in_path(fp_list: Union[Iterable, str, Path],
     else:
         raise NotImplementedError("Expected either Iterable or str type. Got"
                                   f"{type(fp_list)}")
-
 
 
 def get_items_upto_count(dict_: Counter, rank: int = 1):
@@ -147,7 +150,7 @@ def make_output_paths(output_dir, dataset):
 
 def majority_values(list_seqs: list,
                     default=None,
-                    include_keys: list = None,):
+                    include_keys: list = None, ):
     """
     Given a list of dictionaries, it generates the most common
     values for each key
@@ -610,7 +613,6 @@ def _valid_reference(dict_, default=None):
     return True
 
 
-
 def round_if_numeric(value: Union[int, float],
                      decimals: int = 3) -> Union[int, float, np.ndarray]:
     """
@@ -711,87 +713,88 @@ def compute_majority(dataset: BaseDataset, seq_name, config_dict=None):
     return most_frequent_param_values
 
 
-def _check_against_reference(modality, decimals, tolerance):
-    """
-    Given a modality, check if the parameters of each run are compliant with
-    the reference protocol. If all the runs of a session are non-compliant,
-    the session is added to the list of non-compliant sessions. If all the
-    sessions of a subject are non-compliant, the subject is added to the list
-    of non-compliant subjects. If all the subjects of a modality are
-    non-compliant, the function returns False.
 
-    The delta between the parameters of a run and the reference protocol is
-    stored in modality.non_compliant_data
-
-    Parameters
-    ----------
-    modality : Modality
-        modality node of a dataset
-    decimals : int
-        number of decimals to round the parameters
-    tolerance : float
-        tolerance to consider a parameter compliant
-
-    Returns
-    -------
-    Modality
-        True if modality is compliant, False otherwise
-    """
-    # Set default flags as True, if there is some non-compliance
-    # flags will be set to false. Default value in modality class is True,
-    # but we cannot rely on that default value.
-    modality.compliant = True
-    for subject in modality.subjects:
-        subject.compliant = True
-        for session in subject.sessions:
-            session.compliant = True
-            for i_run in session.runs:
-                try:
-                    i_run.delta, te_ref = _check_single_run(modality,
-                                                            decimals,
-                                                            i_run.echo_time,
-                                                            i_run.params,
-                                                            tolerance=tolerance)
-                    if i_run.delta:
-                        modality.add_non_compliant_subject_name(subject.name)
-                        _store_non_compliance(modality, i_run.delta, te_ref,
-                                              subject.name, session.name)
-                        # NC = non_compliant
-                        # If any run is NC, then session is NC.
-                        session.compliant = False
-                        # If any session is NC, then subject is NC.
-                        subject.compliant = False
-                        # If any subject is NC, then modality is NC.
-                        modality.compliant = False
-                except ReferenceNotSetForEchoTime as e:
-                    modality.add_error_subject_names(f'{subject.name}_'
-                                                     f'{session.name}')
-                    modality.add_non_compliant_subject_name(subject.name)
-                    # _store_non_compliance(modality, i_run.delta, 'Various',
-                    #                       subject.name, session.name)
-                    # If any run is NC, then session is NC.
-                    session.compliant = False
-                    # If any session is NC, then subject is NC.
-                    subject.compliant = False
-                    # If any subject is NC, then modality is NC.
-                    modality.compliant = False
-                    logger.info(e)
-                except ReferenceNotSetForModality as e:
-                    modality.add_error_subject_names(f'{subject.name}_'
-                                                     f'{session.name}')
-                    logger.info(e)
-
-            if session.compliant:
-                # If after all runs, session is still compliant, then the
-                # session is added to the list of compliant sessions.
-                subject.add_compliant_session_name(session.name)
-        if subject.compliant:
-            # If after all sessions, subject is still compliant, then the
-            # subject is added to the list of compliant subjects.
-            modality.add_compliant_subject_name(subject.name)
-    # If after all the subjects, modality is compliant, then the
-    # modality should be added to the list of compliant sessions.
-    return modality
+# def _check_against_reference(modality, decimals, tolerance):
+#     """
+#     Given a modality, check if the parameters of each run are compliant with
+#     the reference protocol. If all the runs of a session are non-compliant,
+#     the session is added to the list of non-compliant sessions. If all the
+#     sessions of a subject are non-compliant, the subject is added to the list
+#     of non-compliant subjects. If all the subjects of a modality are
+#     non-compliant, the function returns False.
+#
+#     The delta between the parameters of a run and the reference protocol is
+#     stored in modality.non_compliant_data
+#
+#     Parameters
+#     ----------
+#     modality : Modality
+#         modality node of a dataset
+#     decimals : int
+#         number of decimals to round the parameters
+#     tolerance : float
+#         tolerance to consider a parameter compliant
+#
+#     Returns
+#     -------
+#     Modality
+#         True if modality is compliant, False otherwise
+#     """
+#     # Set default flags as True, if there is some non-compliance
+#     # flags will be set to false. Default value in modality class is True,
+#     # but we cannot rely on that default value.
+#     modality.compliant = True
+#     for subject in modality.subjects:
+#         subject.compliant = True
+#         for session in subject.sessions:
+#             session.compliant = True
+#             for i_run in session.runs:
+#                 try:
+#                     i_run.delta, te_ref = _check_single_run(modality,
+#                                                             decimals,
+#                                                             i_run.echo_time,
+#                                                             i_run.params,
+#                                                             tolerance=tolerance)
+#                     if i_run.delta:
+#                         modality.add_non_compliant_subject_name(subject.name)
+#                         _store_non_compliance(modality, i_run.delta, te_ref,
+#                                               subject.name, session.name)
+#                         # NC = non_compliant
+#                         # If any run is NC, then session is NC.
+#                         session.compliant = False
+#                         # If any session is NC, then subject is NC.
+#                         subject.compliant = False
+#                         # If any subject is NC, then modality is NC.
+#                         modality.compliant = False
+#                 except ReferenceNotSetForEchoTime as e:
+#                     modality.add_error_subject_names(f'{subject.name}_'
+#                                                      f'{session.name}')
+#                     modality.add_non_compliant_subject_name(subject.name)
+#                     # _store_non_compliance(modality, i_run.delta, 'Various',
+#                     #                       subject.name, session.name)
+#                     # If any run is NC, then session is NC.
+#                     session.compliant = False
+#                     # If any session is NC, then subject is NC.
+#                     subject.compliant = False
+#                     # If any subject is NC, then modality is NC.
+#                     modality.compliant = False
+#                     logger.info(e)
+#                 except ReferenceNotSetForModality as e:
+#                     modality.add_error_subject_names(f'{subject.name}_'
+#                                                      f'{session.name}')
+#                     logger.info(e)
+#
+#             if session.compliant:
+#                 # If after all runs, session is still compliant, then the
+#                 # session is added to the list of compliant sessions.
+#                 subject.add_compliant_session_name(session.name)
+#         if subject.compliant:
+#             # If after all sessions, subject is still compliant, then the
+#             # subject is added to the list of compliant subjects.
+#             modality.add_compliant_subject_name(subject.name)
+#     # If after all the subjects, modality is compliant, then the
+#     # modality should be added to the list of compliant sessions.
+#     return modality
 
 
 def _cli_report(compliance_dict: dict, report_name):
@@ -1059,9 +1062,9 @@ def get_timestamps():
 
 
 def export_subject_lists(output_dir: Union[Path, str],
-                         compliance_dict: dict,
+                         non_compliant_ds: BaseDataset,
                          folder_name: str) -> dict:
-    noncompliant_sub_by_seq = subject_list2txt(compliance_dict['non_compliant'],
+    noncompliant_sub_by_seq = subject_list2txt(non_compliant_ds,
                                                output_dir / folder_name)
     return noncompliant_sub_by_seq
 
@@ -1161,10 +1164,10 @@ def log_latest_non_compliance(ncomp_data, latest_data, output_dir):
                     subject_id=subj_id, session_id=sess_id,
                     run_id=run_id, seq_id=seq_id)
                 status = {
-                    'ts' : seq.timestamp,
-                    'subject': subj_id,
+                    'ts'      : seq.timestamp,
+                    'subject' : subj_id,
                     'sequence': seq_id,
-                    'ds_name': latest_data.name,
+                    'ds_name' : latest_data.name,
                     'nc_params': ';'.join(nc_param_dict.keys())
                 }
                 full_status.append(status)
@@ -1176,7 +1179,8 @@ def log_latest_non_compliance(ncomp_data, latest_data, output_dir):
 
     with open(status_filepath, 'a', encoding='utf-8') as fp:
         for i in full_status:
-            fp.write(f" {i['ts']}, {i['ds_name']}, {i['sequence']}, {i['subject']}, {i['nc_params']} \n")
+            fp.write(
+                f" {i['ts']}, {i['ds_name']}, {i['sequence']}, {i['subject']}, {i['nc_params']} \n")
     return None  # status_filepath
 
 
@@ -1217,3 +1221,39 @@ def valid_paths(files: Union[List, str]) -> Union[List[Path], Path]:
     else:
         raise NotImplementedError('Expected str or Path or Iterable, '
                                   f'Got {type(files)}')
+
+
+def modify_sequence_name(seq: "BaseSequence", stratify_by: str) -> str:
+    """
+    Modifies the sequence name to include the stratification value, if it
+    exists.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    seq_name_with_stratify : str
+        Modified sequence name
+    """
+    if stratify_by:
+        stratify_value = getattr(seq, stratify_by)
+        seq_name_with_stratify = ATTRIBUTE_SEPARATOR.join(
+            [seq.name, stratify_value])
+    else:
+        seq_name_with_stratify = seq.name
+    return seq_name_with_stratify
+
+
+def get_config_from_file(config_path: Union[Path, str]) -> dict:
+    if isinstance(config_path, str):
+        config_path = Path(config_path)
+    if not isinstance(config_path, Path):
+        raise TypeError(f'Expected Path or str, got {type(config_path)}')
+    if not config_path.is_file():
+        raise FileNotFoundError(f'{config_path} does not exist')
+
+    # read json file
+    with open(config_path, 'r') as f:
+        config = json.load(f)
+    return config
