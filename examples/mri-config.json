@@ -33,6 +33,7 @@
         ]
     },
     "vertical_audit": {
+        "stratify_by": "series_number",
         "sequences": [
             [
                 "ncanda-rsfmri-v1",
