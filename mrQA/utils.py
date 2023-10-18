@@ -16,13 +16,12 @@ import numpy as np
 from MRdataset import BaseDataset, is_dicom_file
 from MRdataset.utils import convert2ascii
 from dateutil import parser
-from protocol import BaseSequence
-
 from mrQA import logger
 from mrQA.config import past_records_fpath, report_fpath, mrds_fpath, \
     subject_list_dir, DATE_SEPARATOR, CannotComputeMajority, \
     Unspecified, \
     EqualCount, status_fpath, ATTRIBUTE_SEPARATOR
+from protocol import BaseSequence
 
 
 def is_writable(dir_path):
@@ -798,7 +797,7 @@ def compute_majority(dataset: BaseDataset, seq_name, config_dict=None):
 #     return modality
 
 
-def _cli_report(compliance_dict: dict, report_name):
+def _cli_report(hz_audit: dict, report_name):
     """
     CLI report generator.
     Generate a single line report for the dataset
@@ -814,10 +813,18 @@ def _cli_report(compliance_dict: dict, report_name):
     -------
 
     """
+
     result = {}
     # For all the modalities calculate the percent of non-compliance
-    non_compliant_ds = compliance_dict['non_compliant']
-    compliant_ds = compliance_dict['compliant']
+    non_compliant_ds = hz_audit['non_compliant']
+    compliant_ds = hz_audit['compliant']
+    undetermined_ds = hz_audit['undetermined']
+    if not (compliant_ds.get_sequence_ids() or
+            non_compliant_ds.get_sequence_ids() or
+            undetermined_ds.get_sequence_ids()):
+        logger.error('No report generated for horizontal audit.')
+        return
+
     for seq_id in non_compliant_ds.get_sequence_ids():
         ncomp_sub_ids = len(non_compliant_ds.get_subject_ids(seq_id))
         comp_sub_ids = len(compliant_ds.get_subject_ids(seq_id))
