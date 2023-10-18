@@ -171,19 +171,20 @@ def infer_protocol(dataset: BaseDataset,
     # create reference protocol for each sequence
     for seq_name in dataset.get_sequence_ids():
         num_subjects = dataset.get_subject_ids(seq_name)
-        # If subjects are less than 3, then we can't infer a reference
-        if len(num_subjects) > 2:
-            reference = compute_majority(dataset=dataset,
-                                         seq_name=seq_name,
-                                         config_dict=config_dict)
-            for key, param_dict in reference.items():
-                if key != 'NA':
-                    seq_name_with_stratify = ATTRIBUTE_SEPARATOR.join([seq_name, key])
-                    ref_protocol.add_sequence_from_dict(seq_name_with_stratify, param_dict)
-                else:
-                    ref_protocol.add_sequence_from_dict(seq_name, param_dict)
-    # update the reference protocol with dictonary
-    # ref_protocol.add_sequences_from_dict(reference_by_seq)
+
+        # If subjects are less than 3, then we can't infer a reference protocol
+        if len(num_subjects) < 3:
+            continue
+
+        # If subjects are more than 3, then we can infer a reference protocol
+        reference = compute_majority(dataset=dataset,
+                                     seq_name=seq_name,
+                                     config_dict=config_dict)
+
+        # Add the inferred reference to the reference protocol
+        for seq_id, param_dict in reference.items():
+            ref_protocol.add_sequence_from_dict(seq_id, param_dict)
+
     return ref_protocol
 
 
