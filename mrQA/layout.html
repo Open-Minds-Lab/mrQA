@@ -5,6 +5,23 @@
 <head lang="en">
     <meta charset="UTF-8">
     <style>
+        h2 {
+            text-align: center;
+            color: #20283e;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+
+        h3 {
+            color: #20283e;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+
+        h4 {
+            color: #20283e;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+
+
         .tg {
             border-collapse: collapse;
             border-spacing: 0;
@@ -68,10 +85,47 @@
 
 {% set utils = imp0rt('mrQA.utils') %}
 
-<h2>Summary of non-compliance: {{ compliant_ds.name }}</h2>
-<h4>Protocol Type : {{ protocol.type.name }}</h4>
-<h3>List of non-compliant modalities
-    - {{ non_compliant_ds.get_sequence_ids()|length }}</h3>
+<h2>Summary of non-compliance: {{ hz['compliant_ds'].name }}</h2>
+<h3>Vertical Audit</h3>
+{#Using ._sub_ids() is deprecated. Switch to .subjects()#}
+{#{% set sub_ids = vt['non_compliant_ds']._subj_ids %}#}
+{#{% for subj in sub_ids %}#}
+{#    <h4>{{ subj }}</h4>#}
+<table class="tg" id="with_margin">
+    <thead>
+    <tr>
+        <th class="tg-0pky" colspan="1">Parameters</th>
+        {% for pair in vt['sequence_pairs'] %}
+            <th class="tg-0pky" colspan="1">{{ pair[0] }}, {{ pair[1] }}</th>
+        {% endfor %}
+    </tr>
+    </thead>
+    <tbody>
+    {% for param in vt['parameters'] %}
+        <tr>
+        <td class="tg-0pky" colspan="1">{{ param }}</td>
+        {% for pair in vt['sequence_pairs'] %}
+            <td class="tg-0pky" colspan="1">
+            {% set val = vt['non_compliant_ds']
+                .get_non_compliant_param_values(pair[0], param) %}
+            {% set val_dict = utils.tuples2dict(val) %}
+            {% for param, tuples in val_dict.items() %}
+                {% for sub, path in tuples %}
+                    <a href="{{ path }}">{{ sub }}</a>
+                {% endfor %}
+            {% endfor %}
+        {% endfor %}
+    </td>
+    {% endfor %}
+    </tbody>
+</table>
+{#{% endfor %}#}
+
+<hr>
+<h3>Horizontal Audit</h3>
+Reference Protocol Type : {{ hz['protocol'].type.name }}
+<h4>List of non-compliant modalities
+    - {{ hz['non_compliant_ds'].get_sequence_ids()|length }}</h4>
 <table class="tg" id="with_margin">
     <thead>
     <tr>
@@ -84,194 +138,207 @@
     </tr>
     </thead>
     <tbody>
-    {% for seq_id in non_compliant_ds.get_sequence_ids()|sort %}
-        {% set ncomp_sub_ids = non_compliant_ds.get_subject_ids(seq_id) %}
-    {% set seq_name_wo_tag = seq_id.split('_ATTR_')%}
-    {% set total_subjects = complete_ds.get_subject_ids(seq_name_wo_tag[0]) | length %}
+    {% for seq_id in hz['non_compliant_ds'].get_sequence_ids()|sort %}
+        {% set ncomp_sub_ids = hz['non_compliant_ds'].get_subject_ids(seq_id) %}
+        {% set seq_name_wo_tag = seq_id.split('_ATTR_') %}
+        {% set total_subjects = complete_ds.get_subject_ids(seq_name_wo_tag[0]) |
+    length %}
         {% set comp_subject_count = total_subjects - ncomp_sub_ids|length %}
-        {% set non_compliant_params = non_compliant_ds.get_non_compliant_param_ids(seq_id) %}
-            {% if non_compliant_ds.get_subject_ids(seq_id) %}{# |length > 2 #}
-                <tr>
-                    <td class="tg-0pky" colspan="1"><a  href=#{{seq_id}}>{{seq_id}}</a></td>
-                    {% set percent_non_compliant = 100 * ncomp_sub_ids|length|float / total_subjects %}
-                    {% set percent_compliant = 100 * comp_subject_count|float / total_subjects %}
+        {% set non_compliant_params =
+    hz['non_compliant_ds'].get_non_compliant_param_ids(seq_id) %}
+        {% if hz['non_compliant_ds'].get_subject_ids(seq_id) %}{# |length > 2 #}
+            <tr>
+                <td class="tg-0pky" colspan="1"><a
+                    href=#{{ seq_id }}>{{ seq_id }}</a></td>
+                {% set percent_non_compliant = 100 * ncomp_sub_ids|length|float /
+        total_subjects %}
+                {% set percent_compliant = 100 * comp_subject_count|float /
+        total_subjects %}
 
-                    <td class="tg-0pky" colspan="1">
-                        {{  ncomp_sub_ids | length }}
-                        ({{ percent_non_compliant|round(2, 'floor') }} %)
-                    </td>
+                <td class="tg-0pky" colspan="1">
+                    {{ ncomp_sub_ids | length }}
+                    ({{ percent_non_compliant|round(2, 'floor') }} %)
+                </td>
 
-                    <td class="tg-0pky" colspan="3">
-                        {% if ncomp_sub_ids|length < 50 %}
-                            {% for name in ncomp_sub_ids|sort %}
-                                {{ name }},
-                            {% endfor %}
-                        {% else %}
-                            Too many to fit here. Click
-                            <a href={{ sub_lists_by_seq[seq_id] }}>here</a>
-                            for full list.
-                        {% endif %}
-                    </td>
-                    <td class="tg-0pky" colspan="1">
-                        {% for parameter in non_compliant_ds.get_non_compliant_param_ids(seq_id)|sort %}
-                            {{ parameter }},
+                <td class="tg-0pky" colspan="3">
+                    {% if ncomp_sub_ids|length < 50 %}
+                        {% for name in ncomp_sub_ids|sort %}
+                            {{ name }},
                         {% endfor %}
+                    {% else %}
+                        Too many to fit here. Click
+                        <a href={{ hz['sub_lists_by_seq'][seq_id] }}>here</a>
+                        for full list.
+                    {% endif %}
+                </td>
+                <td class="tg-0pky" colspan="1">
+                    {% for parameter in
+            hz['non_compliant_ds'].get_non_compliant_param_ids(seq_id)|sort %}
+                        {{ parameter }},
+                    {% endfor %}
+                </td>
+                <td class="tg-0pky" colspan="1">
+                    {{ comp_subject_count }}
+                    ( {{ percent_compliant|round(2, 'floor') }} %)
+                </td>
+                <td class="tg-0pky" colspan="1">
+                    {{ total_subjects }}
+                </td>
+            </tr>
+        {% endif %}
+    {% endfor %}
+    </tbody>
+</table>
+
+
+{% set comp_sequences = hz['compliant_ds'].get_sequence_ids() %}
+<h4> Fully compliant modalities
+    : {{ comp_sequences | length }}</h4>
+{% if comp_sequences|length > 0 %}
+    <table class="tg" id="with_margin">
+        {% set cols = 4 %}
+        {% set rows = (comp_sequences |length // cols) + 1 %}
+        <tbody>
+        {% for i in range(rows) %}
+            <tr>
+                {% for j in range(cols) %}
+                    {% set index = i * cols + j %}
+                    {% if index < comp_sequences |length %}
+                        <td class="tg-0pky" colspan="1"><a
+                            href=#{{ comp_sequences[index] }}>
+                            {{ comp_sequences[index] }}</a>
+                        </td>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+{% set und_sequences = hz['undetermined_ds'].get_sequence_ids() %}
+{% if und_sequences|length > 0 %}
+    <h4> Modalities for which compliance could not be determined
+        : {{ und_sequences | length }}</h4>
+    <table class="tg" id="with_margin">
+        {% set cols = 4 %}
+        {% set rows = (und_sequences |length // cols) + 1 %}
+        <tbody>
+        {% for i in range(rows) %}
+            <tr>
+                {% for j in range(cols) %}
+                    {% set index = i * cols + j %}
+                    {% if index < und_sequences |length %}
+                        <td class="tg-0pky" colspan="1">
+                            {{ und_sequences[index] }}
+                        </td>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+{% for seq_id in hz['non_compliant_ds'].get_sequence_ids()|sort %}
+    <h4 id="{{ seq_id }}">Sequence : {{ seq_id }}</h4>
+    {% set ref = hz['protocol'][seq_id] %}
+    <h4>Reference</h4>
+    <table class="tg" id="with_margin">
+        <thead>
+        <tr>
+            {% for param in ref|sort %}
+                <th class="tg-0pky" colspan="2">{{ param }}</th>
+            {% endfor %}
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            {% for param in ref|sort %}
+                <td class="tg-0pky"
+                    colspan="2">{{ ref[param].get_value() }}</td>
+            {% endfor %}
+        </tr>
+        </tbody>
+    </table>
+    {% set non_compliant_params =
+hz['non_compliant_ds'].get_non_compliant_param_ids(seq_id) %}
+    {% if non_compliant_params|length %}
+        <table class="tg" id="with_margin">
+            <thead>
+            <tr>
+                <th class="tg-c3ow"
+                    colspan="4">Parameter
+                </th>
+                <th class="tg-c3ow"
+                    colspan="4">Ref. Value
+                </th>
+                <th class="tg-c3ow"
+                    colspan="4">Found
+                </th>
+                <th class="tg-c3ow"
+                    colspan="4">Subject
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for parameter in non_compliant_params|sort %}
+                {% set nc_data = hz['non_compliant_ds'].get_non_compliant_param_values(seq_id,
+    parameter)|list %}
+                {% set nc_dict = utils.tuples2dict(nc_data) %}
+                <tr>
+                    <td class="tg-0pky" colspan="4"
+                        rowspan="{{ nc_dict|length + 1 }}">
+                        {{ parameter }}
                     </td>
-                    <td class="tg-0pky" colspan="1">
-                        {{ comp_subject_count }}
-                        ( {{ percent_compliant|round(2, 'floor') }} %)
-                    </td>
-                    <td class="tg-0pky" colspan="1">
-                        {{ total_subjects }}
+                    <td class="tg-0pky" colspan="4"
+                        rowspan="{{ nc_dict|length + 1 }}">
+                        {{ ref[parameter].get_value() }}
                     </td>
                 </tr>
-            {% endif %}
-    {% endfor %}
-    </tbody>
-</table>
-
-
-{% set comp_sequences = compliant_ds.get_sequence_ids() %}
-<h3> Fully compliant modalities
-    : {{ comp_sequences | length }}</h3>
-{% if comp_sequences|length > 0 %}
-<table class="tg" id="with_margin">
-    {% set cols = 4 %}
-    {% set rows = (comp_sequences |length // cols) + 1 %}
-    <tbody>
-    {% for i in range(rows) %}
-        <tr>
-            {% for j in range(cols) %}
-                {% set index = i * cols + j %}
-                {% if index < comp_sequences |length %}
-                    <td class="tg-0pky" colspan="1"><a href=#{{comp_sequences[index]}}>
-                       {{comp_sequences[index]}}</a>
-                    </td>
-                {% endif %}
+                {% for nc_param, tuples in nc_dict.items() %}
+                    <tr>
+                        <td class="tg-0pky" colspan="4">
+                            {{ nc_param.get_value() }},
+                        </td>
+                        <td class="tg-0pky" colspan="2">
+                            {% for sub, path in tuples %}
+                                <a href="{{ path }}"> {{ sub }}</a>,
+                            {% endfor %}
+                        </td>
+                    </tr>
+                {% endfor %}
             {% endfor %}
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
-{% endif %}
-
-{% set und_sequences = undetermined_ds.get_sequence_ids() %}
-{% if und_sequences|length > 0 %}
-<h4> Modalities for which compliance could not be determined
-    : {{ und_sequences | length }}</h4>
-<table class="tg" id="with_margin">
-    {% set cols = 4 %}
-    {% set rows = (und_sequences |length // cols) + 1 %}
-    <tbody>
-    {% for i in range(rows) %}
-        <tr>
-            {% for j in range(cols) %}
-                {% set index = i * cols + j %}
-                {% if index < und_sequences |length %}
-                    <td class="tg-0pky" colspan="1">
-                       {{ und_sequences[index] }}
-                    </td>
-                {% endif %}
-            {% endfor %}
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
-{% endif %}
-
-{% for seq_id in non_compliant_ds.get_sequence_ids()|sort %}
-<h2 id="{{seq_id}}">Sequence : {{ seq_id }}</h2>
-{% set ref = protocol[seq_id] %}
-<h4>Reference</h4>
-<table class="tg" id="with_margin">
-    <thead>
-    <tr>
-        {% for param in ref|sort %}
-            <th class="tg-0pky" colspan="2">{{ param }}</th>
-        {% endfor %}
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-        {% for param in ref|sort %}
-            <td class="tg-0pky" colspan="2">{{ ref[param].get_value() }}</td>
-        {% endfor %}
-    </tr>
-    </tbody>
-</table>
-{% set non_compliant_params = non_compliant_ds.get_non_compliant_param_ids(seq_id) %}
-{% if non_compliant_params|length %}
-<table class="tg" id="with_margin">
-<thead>
-<tr>
-    <th class="tg-c3ow"
-        colspan="4">Parameter
-    </th>
-    <th class="tg-c3ow"
-        colspan="4">Ref. Value
-    </th>
-    <th class="tg-c3ow"
-        colspan="4">Found
-    </th>
-    <th class="tg-c3ow"
-        colspan="4">Subject
-    </th>
-</tr>
-</thead>
-<tbody>
-{% for parameter in non_compliant_params|sort %}
-{% set nc_data = non_compliant_ds.get_non_compliant_param_values(seq_id, parameter)|list %}
-{% set nc_dict = utils.tuples2dict(nc_data) %}
-    <tr>
-        <td class="tg-0pky" colspan="4" rowspan="{{ nc_dict|length + 1 }}">
-                {{ parameter }}</td>
-        <td class="tg-0pky" colspan="4" rowspan="{{ nc_dict|length + 1 }}">
-                {{ ref[parameter].get_value() }}
-        </td>
-    </tr>
-    {% for nc_param, tuples in nc_dict.items() %}
-        <tr>
-        <td class="tg-0pky" colspan="4">
-               {{ nc_param.get_value() }},
-        </td>
-        <td class="tg-0pky" colspan="2">
-            {% for sub, path in tuples %}
-                <a href="{{ path }}"> {{ sub }}</a>,
-            {% endfor %}
-        </td>
-        </tr>
-    {% endfor %}
-{% endfor %}
-</tbody>
-</table>
-{% endif %}
+            </tbody>
+        </table>
+    {% endif %}
 {% endfor %}
 
-{% for seq_id in compliant_ds.get_sequence_ids()|sort %}
-<h2 id="{{seq_id}}">Sequence : {{ seq_id }}</h2>
-{% set ref = protocol[seq_id] %}
-<h4>Reference</h4>
+{% for seq_id in hz['compliant_ds'].get_sequence_ids()|sort %}
+    <h4 id="{{ seq_id }}">Sequence : {{ seq_id }}</h4>
+    {% set ref = hz['protocol'][seq_id] %}
+    <!--<h4>Reference</h4>-->
 
 
-<table class="tg" id="with_margin">
-    <thead>
-    <tr>
-        {% for param in ref|sort %}
-            <th class="tg-0pky" colspan="2">{{ param }}</th>
-        {% endfor %}
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-        {% for param in ref|sort %}
-            <td class="tg-0pky"
-                colspan="2">{{ ref[param].get_value() }}</td>
-        {% endfor %}
-    </tr>
-    </tbody>
-</table>
+    <table class="tg" id="with_margin">
+        <thead>
+        <tr>
+            {% for param in ref|sort %}
+                <th class="tg-0pky" colspan="2">{{ param }}</th>
+            {% endfor %}
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            {% for param in ref|sort %}
+                <td class="tg-0pky"
+                    colspan="2">{{ ref[param].get_value() }}
+                </td>
+            {% endfor %}
+        </tr>
+        </tbody>
+    </table>
 {% endfor %}
-
 
 
 </body>
