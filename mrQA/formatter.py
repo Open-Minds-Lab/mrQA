@@ -7,6 +7,7 @@ from email.mime import base, multipart, text
 from pathlib import Path
 
 import jinja2
+from mrQA import logger
 
 
 class Formatter(ABC):
@@ -101,6 +102,10 @@ class HtmlFormatter(BaseFormatter):
         self.hz_audit = None
         self.vt_audit = None
         self.complete_ds = None
+
+        self.skip_hz_report = False
+        self.skip_vt_report = False
+
         if render:
             self.render()
 
@@ -112,16 +117,19 @@ class HtmlFormatter(BaseFormatter):
                                  complete_ds,
                                  ref_protocol):
         if not complete_ds.get_sequence_ids():
-            raise ValueError('No sequences found in dataset. Cannot generate'
-                             'report')
+            logger.error('No sequences found in dataset. Cannot generate'
+                         'report')
+            self.skip_hz_report = True
         if not ref_protocol:
-            raise ValueError('Reference protocol is empty. Cannot generate'
-                             'report')
+            logger.error('Reference protocol is empty. Cannot generate'
+                         ' report for horizontal audit.')
+            self.skip_hz_report = True
         if not (compliant_ds.get_sequence_ids() or
                 non_compliant_ds.get_sequence_ids() or
                 undetermined_ds.get_sequence_ids()):
-            raise ValueError('It seems the dataset has not been checked for '
-                             'compliance. Cannot generate report')
+            logger.error('It seems the dataset has not been checked for '
+                         'horizontal audit. Skipping horizontal audit report')
+            self.skip_hz_report = True
 
         self.hz_audit = {
             'protocol'        : ref_protocol,
@@ -139,12 +147,14 @@ class HtmlFormatter(BaseFormatter):
                                  complete_ds,
                                  parameters):
         if not complete_ds.get_sequence_ids():
-            raise ValueError('No sequences found in dataset. Cannot generate'
-                             'report')
+            logger.error('No sequences found in dataset. Cannot generate'
+                         'report')
+            self.skip_vt_report = True
         if not (compliant_ds.get_sequence_ids() or
                 non_compliant_ds.get_sequence_ids()):
-            raise ValueError('It seems the dataset has not been checked for '
-                             'compliance. Cannot generate report')
+            logger.error('It seems the dataset has not been checked for '
+                         'vertical audit. Skipping vertical audit report')
+            self.skip_vt_report = True
 
         self.vt_audit = {
             'compliant_ds'    : compliant_ds,
@@ -160,6 +170,10 @@ class HtmlFormatter(BaseFormatter):
         :param
         :return:
         """
+        if self.skip_hz_report and self.skip_vt_report:
+            logger.error('Cannot generate report. See error log for details')
+            return
+
         fs_loader = jinja2.FileSystemLoader(searchpath=self.template_folder)
         extn = ['jinja2.ext.loopcontrols']
         template_env = jinja2.Environment(loader=fs_loader, extensions=extn)
@@ -170,6 +184,8 @@ class HtmlFormatter(BaseFormatter):
         output_text = template.render(
             hz=self.hz_audit,
             vt=self.vt_audit,
+            skip_hz_report=self.skip_hz_report,
+            skip_vt_report=self.skip_vt_report,
             complete_ds=self.complete_ds,
             # time=self.params['time'],
             imp0rt=importlib.import_module
