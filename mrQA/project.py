@@ -1,15 +1,15 @@
+from itertools import combinations
 from pathlib import Path
 from typing import Union, Dict, Optional
 
 from MRdataset import save_mr_dataset, BaseDataset, DatasetEmptyException
-from protocol import MRImagingProtocol, SiemensMRImagingProtocol
-
 from mrQA import logger
 from mrQA.base import CompliantDataset, NonCompliantDataset, UndeterminedDataset
 from mrQA.formatter import HtmlFormatter
 from mrQA.utils import _cli_report, \
     export_subject_lists, make_output_paths, \
     compute_majority, modify_sequence_name, get_config_from_file
+from protocol import MRImagingProtocol, SiemensMRImagingProtocol
 
 
 def check_compliance(dataset: BaseDataset,
@@ -99,6 +99,7 @@ def check_compliance(dataset: BaseDataset,
 
     # Print a small message on the console, about non-compliance of dataset
     print(_cli_report(hz_audit_results, str(report_path)))
+    # TODO : print(_cli_report(vt_audit_results, str(report_path)))
     return hz_audit_results, vt_audit_results
 
 
@@ -291,7 +292,7 @@ def horizontal_audit(dataset: BaseDataset,
                                      run_id=run, seq_id=sequence_name, seq=seq)
                 non_compliant_ds.add_non_compliant_params(
                     subject_id=subj, session_id=sess, run_id=run,
-                    seq_id=sequence_name,
+                    seq_id=sequence_name, seq=seq,
                     non_compliant_params=non_compliant_params
                 )
         # only add the sequence if all the subjects, sessions are compliant
@@ -321,7 +322,6 @@ def vertical_audit(dataset: BaseDataset,
                                            data_source=dataset.data_source,
                                            ds_format=dataset.format)
 
-    # TODO: Add option to specify in the config file
     eval_dict = {
         'complete_ds'   : dataset,
         'compliant'     : compliant_ds,
@@ -339,6 +339,12 @@ def vertical_audit(dataset: BaseDataset,
     include_params = vt_audit_config.get('include_parameters', None)
     chosen_pairs = vt_audit_config.get('sequences', None)
     stratify_by = vt_audit_config.get('stratify_by', None)
+
+    # If no sequence pairs are provided, then compare all possible pairs
+    if chosen_pairs is None:
+        chosen_pairs = list(combinations(dataset.get_sequence_ids(), 2))
+
+    used_pairs = []
     # assuming that sequence_ids are list of 2
     for seq1_name, seq2_name in chosen_pairs:
         for items in dataset.traverse_vertical2(seq1_name, seq2_name):
@@ -349,9 +355,13 @@ def vertical_audit(dataset: BaseDataset,
                 decimals=decimals,
                 include_params=include_params
             )
+            seq1_name = modify_sequence_name(seq1, stratify_by)
+            seq2_name = modify_sequence_name(seq2, stratify_by)
+            used_pairs.append((seq1_name, seq2_name))
+
             if is_compliant:
                 compliant_ds.add(subject_id=subject, session_id=session,
-                                 seq_id=seq1_name, seq=seq1)
+                                 run_id=run1, seq_id=seq1_name, seq=seq1)
             else:
                 non_compliant_ds.add(subject_id=subject, session_id=session,
                                      run_id=run1, seq_id=seq1_name,
@@ -378,7 +388,7 @@ def vertical_audit(dataset: BaseDataset,
         'complete_ds'   : dataset,
         'compliant'     : compliant_ds,
         'non_compliant' : non_compliant_ds,
-        'sequence_pairs': chosen_pairs,
+        'sequence_pairs': used_pairs,
         'parameters'    : include_params
     }
     return eval_dict
