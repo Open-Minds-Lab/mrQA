@@ -14,14 +14,14 @@ from typing import Union, List, Optional, Any, Iterable
 
 import numpy as np
 from MRdataset import BaseDataset, is_dicom_file
-from MRdataset.utils import convert2ascii
 from dateutil import parser
+from protocol import BaseSequence
+
 from mrQA import logger
 from mrQA.config import past_records_fpath, report_fpath, mrds_fpath, \
     subject_list_dir, DATE_SEPARATOR, CannotComputeMajority, \
     Unspecified, \
     EqualCount, status_fpath, ATTRIBUTE_SEPARATOR
-from protocol import BaseSequence
 
 
 def is_writable(dir_path):
@@ -548,70 +548,6 @@ def convert2ascii(value, allow_unicode=False):
     return re.sub(r'[-\s]+', '-', value).strip('-_')
 
 
-# def _get_runs_by_echo(modality: Modality, decimals: int = 3):
-#     """
-#     Given a modality, return a dictionary with the echo time as key and a list
-#     of run parameters as value. The run parameters are rounded to the given
-#     number of decimals.
-#
-#     Parameters
-#     ----------
-#     modality
-#     decimals
-#
-#     Returns
-#     -------
-#
-#     """
-#     runs_in_modality = []
-#     for subject in modality.subjects:
-#         for session in subject.sessions:
-#             runs_in_modality.extend(session.runs)
-#
-#     def _sort_key(run_):
-#         return run_.echo_time
-#
-#     run_params_by_te = {}
-#     runs_in_modality = sorted(runs_in_modality, key=_sort_key)
-#     for te, group in groupby(runs_in_modality, key=_sort_key):
-#         te_ = round_if_numeric(te, decimals)
-#         for i_run in list(group):
-#             if te_ not in run_params_by_te:
-#                 run_params_by_te[te_] = []
-#             run_params_by_te[te_].append(round_dict_values(i_run.params,
-#                                                            decimals))
-#     return run_params_by_te
-
-
-def _valid_reference(dict_, default=None):
-    """
-    Check if a dictionary is valid. A dictionary is valid if it is not empty
-    and if at least one of its values is different from the default value.
-
-    Parameters
-    ----------
-    dict_: dict
-        dictionary to check
-    default: any
-        default value to compare the values of the dictionary to
-
-    Returns
-    -------
-    bool
-        True if the dictionary is valid, False otherwise
-    """
-    if not dict_:
-        return False
-    # if all(value == default for value in dict_.values()):
-    #     return False
-    # flag = True
-    # for value in dict_.values():
-    #     if value and ('Cannot Compute Majority' in value):
-    #         flag = False
-    #         continue
-    return True
-
-
 def round_if_numeric(value: Union[int, float],
                      decimals: int = 3) -> Union[int, float, np.ndarray]:
     """
@@ -639,54 +575,6 @@ def round_if_numeric(value: Union[int, float],
     return value
 
 
-# def _check_single_run(modality: Modality,
-#                       decimals: int,
-#                       run_te: float,
-#                       run_params: dict,
-#                       tolerance: float = 0.1):
-#     """
-#     Check if a single run is compliant with the reference protocol.
-#
-#     Parameters
-#     ----------
-#     modality : Modality
-#         modality node from BaseDataset
-#     decimals: int
-#         number of decimals to round to
-#     run_te: float
-#         echo time of the run
-#     run_params: dict
-#         parameters of the run
-#     tolerance: float
-#         tolerance for the difference between the parameters of the run and the
-#         reference protocol
-#
-#     Returns
-#     -------
-#     tuple
-#         tuple containing the echo time of reference protocol,
-#         and the delta between the parameters of the run and the reference
-#         protocol
-#     """
-#     te = round_if_numeric(run_te, decimals)
-#     params = round_dict_values(run_params, decimals)
-#     ignore_keys = ['modality', 'BodyPartExamined']
-#     echo_times = modality.get_echo_times()
-#     if not echo_times:
-#         raise ReferenceNotSetForModality(modality.name)
-#
-#     if te in echo_times:
-#         reference = modality.get_reference(te)
-#         te_ref = te
-#     else:
-#         raise ReferenceNotSetForEchoTime(modality.name, run_te)
-#
-#     delta = param_difference(params, reference,
-#                              ignore=ignore_keys,
-#                              tolerance=tolerance)
-#     return delta, te_ref
-
-
 def compute_majority(dataset: BaseDataset, seq_name, config_dict=None):
     # if config_dict is not None:
     # TODO: parse begin and end times
@@ -712,89 +600,6 @@ def compute_majority(dataset: BaseDataset, seq_name, config_dict=None):
                                                  default=Unspecified,
                                                  include_keys=include_parameters)
     return most_freq_vals
-
-
-# def _check_against_reference(modality, decimals, tolerance):
-#     """
-#     Given a modality, check if the parameters of each run are compliant with
-#     the reference protocol. If all the runs of a session are non-compliant,
-#     the session is added to the list of non-compliant sessions. If all the
-#     sessions of a subject are non-compliant, the subject is added to the list
-#     of non-compliant subjects. If all the subjects of a modality are
-#     non-compliant, the function returns False.
-#
-#     The delta between the parameters of a run and the reference protocol is
-#     stored in modality.non_compliant_data
-#
-#     Parameters
-#     ----------
-#     modality : Modality
-#         modality node of a dataset
-#     decimals : int
-#         number of decimals to round the parameters
-#     tolerance : float
-#         tolerance to consider a parameter compliant
-#
-#     Returns
-#     -------
-#     Modality
-#         True if modality is compliant, False otherwise
-#     """
-#     # Set default flags as True, if there is some non-compliance
-#     # flags will be set to false. Default value in modality class is True,
-#     # but we cannot rely on that default value.
-#     modality.compliant = True
-#     for subject in modality.subjects:
-#         subject.compliant = True
-#         for session in subject.sessions:
-#             session.compliant = True
-#             for i_run in session.runs:
-#                 try:
-#                     i_run.delta, te_ref = _check_single_run(modality,
-#                                                             decimals,
-#                                                             i_run.echo_time,
-#                                                             i_run.params,
-#                                                             tolerance=tolerance)
-#                     if i_run.delta:
-#                         modality.add_non_compliant_subject_name(subject.name)
-#                         _store_non_compliance(modality, i_run.delta, te_ref,
-#                                               subject.name, session.name)
-#                         # NC = non_compliant
-#                         # If any run is NC, then session is NC.
-#                         session.compliant = False
-#                         # If any session is NC, then subject is NC.
-#                         subject.compliant = False
-#                         # If any subject is NC, then modality is NC.
-#                         modality.compliant = False
-#                 except ReferenceNotSetForEchoTime as e:
-#                     modality.add_error_subject_names(f'{subject.name}_'
-#                                                      f'{session.name}')
-#                     modality.add_non_compliant_subject_name(subject.name)
-#                     # _store_non_compliance(modality, i_run.delta, 'Various',
-#                     #                       subject.name, session.name)
-#                     # If any run is NC, then session is NC.
-#                     session.compliant = False
-#                     # If any session is NC, then subject is NC.
-#                     subject.compliant = False
-#                     # If any subject is NC, then modality is NC.
-#                     modality.compliant = False
-#                     logger.info(e)
-#                 except ReferenceNotSetForModality as e:
-#                     modality.add_error_subject_names(f'{subject.name}_'
-#                                                      f'{session.name}')
-#                     logger.info(e)
-#
-#             if session.compliant:
-#                 # If after all runs, session is still compliant, then the
-#                 # session is added to the list of compliant sessions.
-#                 subject.add_compliant_session_name(session.name)
-#         if subject.compliant:
-#             # If after all sessions, subject is still compliant, then the
-#             # subject is added to the list of compliant subjects.
-#             modality.add_compliant_subject_name(subject.name)
-#     # If after all the subjects, modality is compliant, then the
-#     # modality should be added to the list of compliant sessions.
-#     return modality
 
 
 def _cli_report(hz_audit: dict, report_name):
@@ -844,49 +649,6 @@ def _cli_report(hz_audit: dict, report_name):
                      f'are compliant. See {report_name} for report.'
 
     return ret_string
-
-
-# def _store_non_compliance(modality: Modality,
-#                           delta: list,
-#                           echo_time: float,
-#                           subject_name: str,
-#                           session_name: str):
-#     """
-#     Store the sources of non-compliance like flip angle, ped, tr, te
-#
-#     Parameters
-#     ----------
-#     modality : MRdataset.base.Modality
-#         The modality node, in which these sources of non-compliance were found
-#         so that these values can be stored
-#     delta : list
-#         A list of differences between the reference and the non-compliant
-#     echo_time: float
-#         Echo time of run
-#     subject_name : str
-#         Non-compliant subject's name
-#     session_name : str
-#         Non-compliant session name
-#     """
-#     for entry in delta:
-#         if entry[0] == 'change':
-#             _, parameter, [new_value, ref_value] = entry
-#             if echo_time is None:
-#                 echo_time = 1.0
-#             ref_value = make_hashable(ref_value)
-#             new_value = make_hashable(new_value)
-#
-#             modality.add_non_compliant_param(
-#                 parameter, echo_time, ref_value, new_value,
-#                 f'{subject_name}_{session_name}'
-#             )
-#         elif entry[0] == 'add':
-#             for key, value in entry[2]:
-#                 if echo_time is None:
-#                     echo_time = 1.0
-#                 modality.add_non_compliant_param(
-#                     key, echo_time, value, None,
-#                     f'{subject_name}_{session_name}')
 
 
 def _datasets_processed(dir_path, ignore_case=True):
@@ -1025,37 +787,7 @@ def get_last_valid_record(folder_path: Path) -> Optional[tuple]:
             i -= 1
 
 
-# def check_valid_files(fname: str, folder_path: Path) -> bool:
-#     """
-#     Check if the expected files are present in the folder
-#
-#     Parameters
-#     ----------
-#     fname: str
-#         Name of the file
-#     folder_path :  Path
-#         Absolute path to the folder where the files are expected to be present
-#
-#     Returns
-#     -------
-#     bool
-#         True if the files are present, False otherwise
-#     """
-#     # report_path = report_fpath(folder_path, fname)
-#     mrds_path = mrds_fpath(folder_path, fname)
-#     # actually we don't need to check if the report is present
-#     # because we just need the mrds file, to update.
-#     return mrds_path.is_file()
 
-
-def export_record(output_dir, filename, time_dict):
-    record_filepath = past_records_fpath(output_dir)
-    if not record_filepath.parent.is_dir():
-        record_filepath.parent.mkdir(parents=True)
-
-    with open(record_filepath, 'a', encoding='utf-8') as fp:
-        fp.write(f"{time_dict['utc']},{filename},"
-                 f"{time_dict['date_time']}\n")
 
 
 def get_timestamps():
