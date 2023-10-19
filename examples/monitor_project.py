@@ -2,8 +2,7 @@ import argparse
 import multiprocessing as mp
 from pathlib import Path
 
-from MRdataset.config import DatasetEmptyException
-from MRdataset.utils import valid_dirs
+from MRdataset import DatasetEmptyException, valid_dirs
 from mrQA import monitor, logger
 from mrQA.utils import txt2list
 

@@ -8,7 +8,8 @@ from MRdataset import import_dataset, load_mr_dataset
 from mrQA import logger
 from mrQA.config import PATH_CONFIG
 from mrQA.project import check_compliance
-from mrQA.utils import is_writable, folders_modified_since, get_last_valid_record, log_latest_non_compliance
+from mrQA.utils import is_writable, folders_modified_since, \
+    get_last_valid_record, log_latest_non_compliance
 
 
 def get_parser():
@@ -209,7 +210,8 @@ def monitor(name: str,
                                                decimals=decimals,
                                                verbose=verbose,
                                                tolerance=tolerance,
-                                               reference_path=reference_path, )
+                                               reference_path=reference_path,
+                                               config_path=config_path)
 
     log_latest_non_compliance(ncomp_data=compliance_summary_dict['non_compliant'],
                               latest_data=new_dataset,
