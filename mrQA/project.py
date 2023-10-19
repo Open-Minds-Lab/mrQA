@@ -3,13 +3,14 @@ from pathlib import Path
 from typing import Union, Dict, Optional
 
 from MRdataset import save_mr_dataset, BaseDataset, DatasetEmptyException
+from protocol import MRImagingProtocol, SiemensMRImagingProtocol
+
 from mrQA import logger
 from mrQA.base import CompliantDataset, NonCompliantDataset, UndeterminedDataset
 from mrQA.formatter import HtmlFormatter
 from mrQA.utils import _cli_report, \
     export_subject_lists, make_output_paths, \
     compute_majority, modify_sequence_name, get_config_from_file
-from protocol import MRImagingProtocol, SiemensMRImagingProtocol
 
 
 def check_compliance(dataset: BaseDataset,
@@ -344,7 +345,7 @@ def vertical_audit(dataset: BaseDataset,
     if chosen_pairs is None:
         chosen_pairs = list(combinations(dataset.get_sequence_ids(), 2))
 
-    used_pairs = []
+    used_pairs = set()
     # assuming that sequence_ids are list of 2
     for seq1_name, seq2_name in chosen_pairs:
         for items in dataset.traverse_vertical2(seq1_name, seq2_name):
@@ -357,7 +358,7 @@ def vertical_audit(dataset: BaseDataset,
             )
             seq1_name = modify_sequence_name(seq1, stratify_by)
             seq2_name = modify_sequence_name(seq2, stratify_by)
-            used_pairs.append((seq1_name, seq2_name))
+            used_pairs.add((seq1_name, seq2_name))
 
             if is_compliant:
                 compliant_ds.add(subject_id=subject, session_id=session,
