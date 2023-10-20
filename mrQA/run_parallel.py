@@ -35,6 +35,8 @@ def get_parser():
     required.add_argument('-d', '--data-source', type=str, required=True,
                           help='directory containing downloaded dataset with '
                                'dicom files, supports nested hierarchies')
+    required.add_argument('--config', type=str,
+                          help='path to config file')
     optional.add_argument('-o', '--output-dir', type=str,
                           help='specify the directory where the report'
                                ' would be saved. By default, the --data_source '
@@ -86,13 +88,20 @@ def cli():
                      conda_dist=args.conda_dist,
                      hpc=args.hpc)
     dataset = load_mr_dataset(args.out_mrds_path)
-    check_compliance(dataset=dataset,
-                     output_dir=args.output_dir,
-                     decimals=args.decimals,
-                     verbose=args.verbose,
-                     tolerance=args.tolerance,
-                     config_path=args.config,
-                     reference_path=args.ref_protocol_path, )
+    try:
+        check_compliance(dataset=dataset,
+                         output_dir=args.output_dir,
+                         decimals=args.decimals,
+                         verbose=args.verbose,
+                         tolerance=args.tolerance,
+                         config_path=args.config,
+                         reference_path=args.ref_protocol_path, )
+    except DatasetEmptyException:
+        logger.error("Cannot check compliance if the dataset doesn't have "
+                     "any scans. Please check the dataset.")
+    except NotADirectoryError:
+        logger.error('Provided output directory for saving reports is invalid.'
+                     'Either it is not a directory or it does not exist. ')
 
 
 def parse_args():
@@ -118,11 +127,16 @@ def parse_args():
 
     if args.ref_protocol_path is not None:
         if not Path(args.ref_protocol_path).is_file():
-            raise OSError(f'Expected valid file for --ref-protocol-path argument, '
-                          'Got {0}'.format(args.ref_protocol_path))
+            raise OSError(
+                'Expected valid file for --ref-protocol-path argument, '
+                'Got {0}'.format(args.ref_protocol_path))
 
     if not is_writable(args.output_dir):
         raise OSError(f'Output Folder {args.output_dir} is not writable')
+
+    if not Path(args.config).is_file():
+        raise FileNotFoundError(f'Expected valid config file, '
+                                f'Got {args.config}')
     return args
 
 
@@ -133,6 +147,7 @@ def process_parallel(data_source: Union[str, Path],
                      subjects_per_job: int = 5,
                      conda_env: str = 'mrcheck',
                      conda_dist: str = 'anaconda3',
+                     config_path: Union[str, Path] = None,
                      hpc: bool = False):
     """
     Given a folder(or List[folder]) it will divide the work into smaller
@@ -157,10 +172,16 @@ def process_parallel(data_source: Union[str, Path],
         Name of the conda distribution to be used
     hpc: bool
         Whether to use HPC or not
+    config_path: str
+        Path to the config file
     """
     # One function to process them all!
     # note that it will generate scripts only
     script_list_filepath, mrds_list_filepath = create_script(
+        ds_format='dicom',
+        verbose=False,
+        debug=False,
+        config_path=config_path,
         data_source=data_source,
         folders_per_job=subjects_per_job,
         conda_env=conda_env,
@@ -237,8 +258,6 @@ def create_script(data_source: Union[str, Path, Iterable] = None,
         /path/to/my/dataset containing files
     ds_format: str
         Specify dataset type. Use one of [dicom]
-    include_phantom: bool
-        Include phantom scans in the dataset
     verbose: bool
         Print progress
     output_dir: str
@@ -262,7 +281,8 @@ def create_script(data_source: Union[str, Path, Iterable] = None,
                                                   folders_per_job, hpc,
                                                   conda_dist, conda_env,
                                                   config_path)
-    folder_paths, files_per_batch, all_fnames_path = _make_file_folders(output_dir)
+    folder_paths, files_per_batch, all_fnames_path = _make_file_folders(
+        output_dir)
     fnames_path_list = split_folders_list(
         data_src,
         all_fnames_path=all_fnames_path,

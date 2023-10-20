@@ -212,27 +212,67 @@ def timestamp():
 
 
 def make_output_paths(output_dir, dataset):
+    """
+    Generate output paths for the report, mrdataset pickle
+    file, and subject lists
+
+    Parameters
+    ----------
+    output_dir : Path
+        output directory
+    dataset : BaseDataset
+        dataset object
+
+    Returns
+    -------
+    report_path : Path
+        Full path to the report file
+    mrds_path : Path
+        Full path to the mrdataset pickle file
+    sub_lists_dir_path : Path
+        Full path to the directory containing compliant/non-compliant
+        subject lists for each modality
+    """
     ts = timestamp()
     utc = datetime.strptime(ts, '%m_%d_%Y_%H_%M_%S').timestamp()
     filename = f'{dataset.name}{DATE_SEPARATOR}{ts}'
     report_path = report_fpath(output_dir, filename)
     mrds_path = mrds_fpath(output_dir, filename)
     sub_lists_dir_path = subject_list_dir(output_dir, filename)
+    log_report_history(output_dir, mrds_path, report_path, ts, utc)
+    return report_path, mrds_path, sub_lists_dir_path
 
+
+def log_report_history(output_dir, mrds_path, report_path, ts, utc):
+    """
+    Log the report generation history to a text file
+
+    Parameters
+    ----------
+    output_dir : Path
+        fullpath to the output directory
+    mrds_path : Path
+        fullpath to the mrdataset pickle file
+    report_path : Path
+        fullpath to the report file
+    ts : str
+        timestamp
+    utc : float
+        timestamp in UTC zone
+    """
     records_filepath = past_records_fpath(output_dir)
     if not records_filepath.parent.is_dir():
         records_filepath.parent.mkdir(parents=True)
     with open(records_filepath, 'a', encoding='utf-8') as fp:
         fp.write(f'{utc},{report_path},'
                  f'{mrds_path},{ts}\n')
-    return report_path, mrds_path, sub_lists_dir_path
 
 
 def majority_values(list_seqs: list,
                     default=None,
-                    include_keys: list = None, ):
+                    include_params: list = None, ):
     """
-    Given a list of dictionaries, it generates the most common
+    Given a list of dictionaries, it generates the most frequent
     values for each key
 
     Parameters
@@ -241,11 +281,14 @@ def majority_values(list_seqs: list,
         a list of dictionaries
     default : Any
         a default value if the key is missing in any dictionary
-
+    include_params : list
+        a list of parameters for which the most frequent values
+        is to be computed
     Returns
     -------
     dict
-        Key-value pairs specifying the most common values for each key
+        Key-value pairs specifying the most frequent values for each
+        parameter
     """
     args_valid = False
     maj_value = default
@@ -254,21 +297,21 @@ def majority_values(list_seqs: list,
         args_valid = _check_args_validity(list_seqs)
     except CannotComputeMajority as e:
         maj_value = None  # 'Cannot Compute Majority:\n Count < 3'
-        logger.info(f'Cannot compute majority: {e}')
+        logger.error(f'Cannot compute majority: {e}')
     except ValueError as e:
         maj_value = None
-        logger.info(f'Cannot compute majority: {e}')
+        logger.error(f'Cannot compute majority: {e}')
 
     if not args_valid:
         return maj_value
 
     counters_dict = {}
     categories = set()
-    if not include_keys:
+    if not include_params:
         raise ValueError('Expected a list of keys to include. Got None')
     for seq in list_seqs:
-        categories.update(include_keys)
-        for param in include_keys:
+        categories.update(include_params)
+        for param in include_params:
             counter = counters_dict.get(param, Counter({default: 0}))
             value = seq.get(param, default)
             counter[value] += 1
@@ -280,22 +323,22 @@ def majority_values(list_seqs: list,
     return majority_dict
 
 
-def extract_reasons(data: list):
-    """
-    Given a list of tuples, extract all the elements at index 1, and return
-    as a list
-
-    Parameters
-    ----------
-    data : List
-        A list of tuples
-
-    Returns
-    -------
-    list
-        List of values at index 1
-    """
-    return list(zip(*data))[1]
+# def extract_reasons(data: list):
+#     """
+#     Given a list of tuples, extract all the elements at index 1, and return
+#     as a list
+#
+#     Parameters
+#     ----------
+#     data : List
+#         A list of tuples
+#
+#     Returns
+#     -------
+#     list
+#         List of values at index 1
+#     """
+#     return list(zip(*data))[1]
 
 
 def pick_majority(counter_: Counter, parameter: str, default: Any = None):
@@ -350,8 +393,6 @@ def _check_args_validity(list_: List) -> bool:
     ----------
     list_ : list
         a list of dictionaries
-    echo_time : float
-         Echo time of run
 
     Returns
     -------
@@ -492,12 +533,12 @@ def execute_local(script_path: str) -> None:
     if not Path(script_path).is_file():
         raise FileNotFoundError(f'Could not find {script_path}')
 
-    format_params = '\n'.join(['File system outputs: %O',
-                               'Maximum RSS size: %M',
-                               'CPU percentage used: %P',
-                               'Real Time: %E',
-                               'User Time: %U',
-                               'Sys Time: %S'])
+    # format_params = '\n'.join(['File system outputs: %O',
+    #                            'Maximum RSS size: %M',
+    #                            'CPU percentage used: %P',
+    #                            'Real Time: %E',
+    #                            'User Time: %U',
+    #                            'Sys Time: %S'])
     # cmd = ['/usr/bin/time', '-f', format_params, 'bash', str(script_path)]
     cmd = f'bash {str(script_path)}'
 
@@ -516,47 +557,47 @@ def execute_local(script_path: str) -> None:
     # TODO : check if file was created successfully
 
 
-def get_outliers(data: list, m=25.0) -> Union[list, None]:
-    """
-    Check for outliers. Adapted from
-    https://stackoverflow.com/a/16562028/3140172
-    Parameters
-    ----------
-    data : list
-        list of values
-    m : float
-        number of standard deviations to use as threshold
-    """
-    d = np.abs(data - np.median(data))
-    mdev = np.median(d)
-    s = d / mdev if mdev else 0.
-    if np.any(s > m):
-        indices = np.argwhere(s > m).flatten()
-        return indices
-    return None
+# def get_outliers(data: list, m=25.0) -> Union[list, None]:
+#     """
+#     Check for outliers. Adapted from
+#     https://stackoverflow.com/a/16562028/3140172
+#     Parameters
+#     ----------
+#     data : list
+#         list of values
+#     m : float
+#         number of standard deviations to use as threshold
+#     """
+#     d = np.abs(data - np.median(data))
+#     mdev = np.median(d)
+#     s = d / mdev if mdev else 0.
+#     if np.any(s > m):
+#         indices = np.argwhere(s > m).flatten()
+#         return indices
+#     return None
 
 
-def round_dict_values(dict_: dict, decimals: int) -> dict:
-    """
-    Round all the values in a dictionary to a given number of decimals.
-
-    Parameters
-    ----------
-    dict_ : dict
-        dictionary of key, value pairs. Values can be numbers or strings.
-        The function will only round the values that are numbers.
-    decimals : int
-        number of decimals to round to
-
-    Returns
-    -------
-    dict
-        dictionary with all the values rounded to the given number of decimals
-    """
-    new_dict = dict_.copy()
-    for key, value in new_dict.items():
-        new_dict[key] = round_if_numeric(value, decimals)
-    return new_dict
+# def round_dict_values(dict_: dict, decimals: int) -> dict:
+#     """
+#     Round all the values in a dictionary to a given number of decimals.
+#
+#     Parameters
+#     ----------
+#     dict_ : dict
+#         dictionary of key, value pairs. Values can be numbers or strings.
+#         The function will only round the values that are numbers.
+#     decimals : int
+#         number of decimals to round to
+#
+#     Returns
+#     -------
+#     dict
+#         dictionary with all the values rounded to the given number of decimals
+#     """
+#     new_dict = dict_.copy()
+#     for key, value in new_dict.items():
+#         new_dict[key] = round_if_numeric(value, decimals)
+#     return new_dict
 
 
 def is_integer_number(n: Union[int, float]) -> bool:
@@ -629,34 +670,44 @@ def convert2ascii(value, allow_unicode=False):
     return re.sub(r'[-\s]+', '-', value).strip('-_')
 
 
-def round_if_numeric(value: Union[int, float],
-                     decimals: int = 3) -> Union[int, float, np.ndarray]:
-    """
-    Round a number to a given number of decimals.
-
-    Parameters
-    ----------
-    value: int or float
-        number to round
-    decimals :  int
-        number of decimals to round to
-
-    Returns
-    -------
-    int or float
-        rounded number
-    """
-    # For historical reasons, bool is a type of int, but we cannot
-    # apply np.round on bool
-    if isinstance(value, bool):
-        return value
-    elif isinstance(value, (int, float)):
-        # round using numpy and then convert to native python type
-        return np.around(value, decimals=decimals).item()
-    return value
+# def round_if_numeric(value: Union[int, float],
+#                      decimals: int = 3) -> Union[int, float, np.ndarray]:
+#     """
+#     Round a number to a given number of decimals.
+#
+#     Parameters
+#     ----------
+#     value: int or float
+#         number to round
+#     decimals :  int
+#         number of decimals to round to
+#
+#     Returns
+#     -------
+#     int or float
+#         rounded number
+#     """
+#     # For historical reasons, bool is a type of int, but we cannot
+#     # apply np.round on bool
+#     if isinstance(value, bool):
+#         return value
+#     elif isinstance(value, (int, float)):
+#         # round using numpy and then convert to native python type
+#         return np.around(value, decimals=decimals).item()
+#     return value
 
 
 def compute_majority(dataset: BaseDataset, seq_name, config_dict=None):
+    """
+    Compute the most frequent values for each acquisition parameter
+
+    Parameters
+    ----------
+    dataset : BaseDataset
+        dataset should contain multiple sequences. The most frequent values
+        will be computed for each sequence in the dataset
+
+    """
     # if config_dict is not None:
     # TODO: parse begin and end times
     # TODO: add option to exclude subjects
@@ -665,9 +716,16 @@ def compute_majority(dataset: BaseDataset, seq_name, config_dict=None):
     most_freq_vals = {}
 
     if hz_audit_config is None:
+        logger.error('No horizontal audit config found. '
+                     f'Returning empty reference protocol for {seq_name}')
         return most_freq_vals
 
-    include_parameters = hz_audit_config.get('include_parameters', None)
+    include_params = hz_audit_config.get('include_parameters', None)
+    if include_params is None:
+        logger.error('No parameters specified for horizontal audit. '
+                     f'Returning empty reference protocol for {seq_name}')
+        return most_freq_vals
+
     stratify_by = hz_audit_config.get('stratify_by', None)
 
     for subj, sess, runs, seq in dataset.traverse_horizontal(seq_name):
@@ -679,7 +737,7 @@ def compute_majority(dataset: BaseDataset, seq_name, config_dict=None):
     for seq_id in seq_dict:
         most_freq_vals[seq_id] = majority_values(seq_dict[seq_id],
                                                  default=Unspecified,
-                                                 include_keys=include_parameters)
+                                                 include_params=include_params)
     return most_freq_vals
 
 
@@ -690,8 +748,6 @@ def _cli_report(hz_audit: dict, report_name):
 
     Parameters
     ----------
-    dataset : BaseDataset
-        BaseDataset instance for the dataset which is to be checked
     report_name : str
         Filename for the report
 
@@ -756,6 +812,22 @@ def _datasets_processed(dir_path, ignore_case=True):
         return [x.name.lower() for x in dir_path.iterdir() if x.is_dir()]
 
 
+def _get_time(time_format: str, last_reported_on: str):
+    str_format = '%m/%d/%Y %H:%M:%S'
+    if time_format == 'timestamp':
+        mod_time = datetime.fromtimestamp(float(last_reported_on)).strftime(
+            str_format)
+    elif time_format == 'datetime':
+        try:
+            mod_time = parser.parse(last_reported_on, dayfirst=False)
+        except ValueError as exc:
+            raise ValueError(f'Invalid time format. Use {str_format}.') from exc
+    else:
+        raise NotImplementedError("Expected one of ['timestamp', 'datetime']."
+                                  f'Got {time_format}')
+    return mod_time
+
+
 def folders_modified_since(last_reported_on: str,
                            input_dir: Union[str, Path],
                            output_dir: Union[str, Path],
@@ -792,19 +864,7 @@ def folders_modified_since(last_reported_on: str,
     TimeoutExpired
         If the command `find` times out.
     """
-    str_format = '%m/%d/%Y %H:%M:%S'
-    if time_format == 'timestamp':
-        mod_time = datetime.fromtimestamp(float(last_reported_on)).strftime(
-            str_format)
-    elif time_format == 'datetime':
-        try:
-            mod_time = parser.parse(last_reported_on, dayfirst=False)
-        except ValueError as exc:
-            raise ValueError(f'Invalid time format. Use {str_format}.') from exc
-    else:
-        raise NotImplementedError("Expected one of ['timestamp', 'datetime']."
-                                  f'Got {time_format}')
-
+    mod_time = _get_time(time_format, last_reported_on)
     out_path = Path(output_dir) / 'modified_folders_since.txt'
     if out_path.is_file():
         out_path.unlink()
@@ -868,10 +928,10 @@ def get_last_valid_record(folder_path: Path) -> Optional[tuple]:
             i -= 1
 
 
-
-
-
 def get_timestamps():
+    """
+    Get the current timestamp in UTC and local time
+    """
     now = datetime.now(timezone.utc)
     now = now.replace(tzinfo=timezone.utc)
     ts = datetime.timestamp(now)
@@ -885,6 +945,9 @@ def get_timestamps():
 def export_subject_lists(output_dir: Union[Path, str],
                          non_compliant_ds: BaseDataset,
                          folder_name: str) -> dict:
+    """
+    Export subject lists for each sequence to a text file
+    """
     noncompliant_sub_by_seq = subject_list2txt(non_compliant_ds,
                                                output_dir / folder_name)
     return noncompliant_sub_by_seq
@@ -894,8 +957,8 @@ def folders_with_min_files(root: Union[Path, str],
                            pattern: Optional[str] = "*.dcm",
                            min_count=3) -> List[Path]:
     """
-    Returns all the folders with at least min_count of files matching the pattern
-    One at time via generator.
+    Returns all the folders with at least min_count of files
+    matching the pattern, one at time via generator.
 
     Parameters
     ----------
@@ -905,7 +968,8 @@ def folders_with_min_files(root: Union[Path, str],
         pattern to filter files
 
     min_count : int
-        size representing the number of files in folder matching the input pattern
+        size representing the number of files in folder
+        matching the input pattern
 
     Returns
     -------
@@ -929,7 +993,9 @@ def folders_with_min_files(root: Union[Path, str],
 
 
 def is_folder_with_no_subfolders(fpath):
-    """"""
+    """
+    Check if a folder has any subfolders
+    """
     if isinstance(fpath, str):
         fpath = Path(fpath)
     if not fpath.is_dir():
@@ -941,6 +1007,9 @@ def is_folder_with_no_subfolders(fpath):
 
 
 def find_terminal_folders(root):
+    """
+    Find all the terminal folders in a given directory
+    """
     try:
         no_more_subdirs, sub_dirs = is_folder_with_no_subfolders(root)
     except FileNotFoundError:
@@ -979,17 +1048,17 @@ def log_latest_non_compliance(ncomp_data, latest_data, output_dir):
         return
     full_status = []
     for seq_id in latest_data.get_sequence_ids():
-        for subj_id, sess_id, run_id, seq in latest_data.traverse_horizontal(
-            seq_id):
+        # Don't rename run_id as run, it will conflict with subprocess.run
+        for sub, sess, run_id, seq in latest_data.traverse_horizontal(seq_id):
             try:
                 nc_param_dict = ncomp_data.get_non_compliant_params(
-                    subject_id=subj_id, session_id=sess_id,
+                    subject_id=sub, session_id=sess,
                     run_id=run_id, seq_id=seq_id)
                 status = {
-                    'ts'      : seq.timestamp,
-                    'subject' : subj_id,
+                    'ts': seq.timestamp,
+                    'subject': sub,
                     'sequence': seq_id,
-                    'ds_name' : latest_data.name,
+                    'ds_name': latest_data.name,
                     'nc_params': ';'.join(nc_param_dict.keys())
                 }
                 full_status.append(status)
@@ -1002,11 +1071,16 @@ def log_latest_non_compliance(ncomp_data, latest_data, output_dir):
     with open(status_filepath, 'a', encoding='utf-8') as fp:
         for i in full_status:
             fp.write(
-                f" {i['ts']}, {i['ds_name']}, {i['sequence']}, {i['subject']}, {i['nc_params']} \n")
+                f" {i['ts']}, {i['ds_name']}, {i['sequence']}, {i['subject']}, "
+                f"{i['nc_params']} \n")
     return None  # status_filepath
 
 
 def tuples2dict(mylist):
+    """
+    Utility function used in jinja2 template. Not used in
+    the main code. Do not delete.
+    """
     result = {}
     for i in mylist:
         key = i[0]
@@ -1058,6 +1132,7 @@ def modify_sequence_name(seq: "BaseSequence", stratify_by: str) -> str:
     seq_name_with_stratify : str
         Modified sequence name
     """
+    # TODO: change stratify_by from attributes to acquisition parameters
     if stratify_by:
         stratify_value = getattr(seq, stratify_by)
         seq_name_with_stratify = ATTRIBUTE_SEPARATOR.join(
