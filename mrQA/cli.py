@@ -128,16 +128,18 @@ def parse_args():
     if not is_writable(args.output_dir):
         raise OSError(f'Output Folder {args.output_dir} is not writable')
 
-    if args.ref_protocol_path is not None:
-        if not Path(args.ref_protocol_path).is_file():
-            raise OSError(f'Expected valid file for --ref-protocol-path argument, '
-                          'Got {0}'.format(args.ref_protocol_path))
-    if args.mrds_pkl_path is not None:
-        if not Path(args.mrds_pkl_path).is_file():
-            raise OSError(f'Expected valid file for --mrds-pkl-path argument, '
-                          'Got {0}'.format(args.mrds_pkl_path))
-
+    check_path(args.config, '--config')
+    check_path(args.ref_protocol_path, '--ref-protocol-path')
+    check_path(args.mrds_pkl_path, '--mrds-pkl-path')
     return args
+
+
+def check_path(path, arg_name):
+    """Validates if the path is a valid file"""
+    if path is not None:
+        if not Path(path).is_file():
+            raise OSError(
+                f'Expected valid file for {arg_name} argument, Got {path}')
 
 
 if __name__ == "__main__":
