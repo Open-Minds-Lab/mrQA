@@ -4,8 +4,10 @@ from pathlib import Path
 from typing import Union, Iterable
 
 from MRdataset import valid_dirs
+
 from mrQA import logger
-from mrQA.utils import is_integer_number, execute_local, list2txt, folders_with_min_files
+from mrQA.utils import is_integer_number, execute_local, list2txt, \
+    folders_with_min_files
 
 
 def _check_args(data_source: Union[str, Path, Iterable] = None,
@@ -160,8 +162,6 @@ def _create_slurm_script(output_script_path: Union[str, Path],
         Number of subjects to process in each slurm job
     verbose : bool
         If True, prints the output of the script
-    include_phantom : bool
-        If True, includes phantom, localizer and calibration studies
     output_mrds_path : str
         Path to the partial mrds pickle file
     """
@@ -173,12 +173,13 @@ def _create_slurm_script(output_script_path: Union[str, Path],
     # Sys Time (CPU Time) : 10 minutes      20 minutes
 
     # Set the memory and cpu time limits
-    mem_reqd = 2000  # MB;
+    mem_required = 2000  # MB;
     # num_mins_per_subject = 1  # minutes
     # Set the number of hours to 3 if less than 3
     time_limit = 24
     # Setup python command to run
-    python_cmd = f'mrqa_subset -o {output_mrds_path} -b {fnames_filepath} --config {config_path}'
+    python_cmd = (f'mrqa_subset -o {output_mrds_path} -b {fnames_filepath} '
+                  f'--config {config_path}')
 
     # Add flags to python command
     if verbose:
@@ -192,7 +193,7 @@ def _create_slurm_script(output_script_path: Union[str, Path],
             '#SBATCH -A med220005p',
             '#SBATCH -N 1',
             '#SBATCH -p RM-shared',
-            f'#SBATCH --mem-per-cpu={mem_reqd}M #memory per cpu-core',
+            f'#SBATCH --mem-per-cpu={mem_required}M #memory per cpu-core',
             f'#SBATCH --time={time_limit}:00:00',
             '#SBATCH --ntasks-per-node=1',
             f'#SBATCH --error={fnames_filepath.stem}.%J.err',

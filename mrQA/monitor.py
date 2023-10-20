@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Union, List
 
 from MRdataset import import_dataset, load_mr_dataset
+
 from mrQA import logger
 from mrQA.config import PATH_CONFIG
 from mrQA.project import check_compliance
@@ -138,9 +139,9 @@ def monitor(name: str,
             verbose: bool = False,
             decimals: int = 3,
             ds_format: str = 'dicom',
-            config_path: Union[Path,str] = None,
+            config_path: Union[Path, str] = None,
             tolerance=0,
-            reference_path=None) -> Path:
+            reference_path=None):
     """
     Monitor a dataset folder for changes. Read new files and append to
     existing dataset. Run compliance check on the updated dataset.
@@ -166,11 +167,6 @@ def monitor(name: str,
         Tolerance for checking against reference protocol. Default is 0
     reference_path: str
         Path to the reference protocol file.
-
-    Returns
-    -------
-    report_path: Path
-        Posix path to the new generated report.
     """
     output_dir = Path(output_dir)
     last_record = get_last_valid_record(output_dir)
@@ -178,9 +174,11 @@ def monitor(name: str,
         last_reported_on, last_report_path, last_mrds_path = last_record
         # TODO: delete old logs, only keep latest 3-4 reports in the folder
         dataset = load_mr_dataset(last_mrds_path)
-        modified_folders = folders_modified_since(input_dir=data_source,
-                                                  last_reported_on=last_reported_on,
-                                                  output_dir=output_dir)
+        modified_folders = folders_modified_since(
+            input_dir=data_source,
+            last_reported_on=last_reported_on,
+            output_dir=output_dir
+        )
         if modified_folders:
             new_dataset = import_dataset(data_source=modified_folders,
                                          ds_format='dicom',
@@ -213,9 +211,10 @@ def monitor(name: str,
                                                reference_path=reference_path,
                                                config_path=config_path)
 
-    log_latest_non_compliance(ncomp_data=compliance_summary_dict['non_compliant'],
-                              latest_data=new_dataset,
-                              output_dir=output_dir, )
+    log_latest_non_compliance(
+        ncomp_data=compliance_summary_dict['non_compliant'],
+        latest_data=new_dataset,
+        output_dir=output_dir, )
 
     return
 

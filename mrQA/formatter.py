@@ -7,6 +7,7 @@ from email.mime import base, multipart, text
 from pathlib import Path
 
 import jinja2
+
 from mrQA import logger
 
 
@@ -96,6 +97,18 @@ class BaseFormatter(Formatter):
 
 
 class HtmlFormatter(BaseFormatter):
+    """
+    Class to create an HTML report for compliance evaluation.
+
+    Parameters
+    ----------
+    filepath : str
+        Path to the html file to be created
+    render : bool
+        If True, the report is rendered immediately. Otherwise, the render
+        method needs to be called explicitly.
+    """
+
     def __init__(self, filepath, render=False):
         super(HtmlFormatter, self).__init__(filepath)
         self.template_folder = Path(__file__).resolve().parent
@@ -115,7 +128,29 @@ class HtmlFormatter(BaseFormatter):
                                  undetermined_ds,
                                  subject_lists_by_seq,
                                  complete_ds,
-                                 ref_protocol):
+                                 ref_protocol,
+                                 **kwargs):
+        """
+        Collects results from horizontal audit and stores them. The
+        dictionary is then passed to the jinja2 template for rendering.
+
+        Parameters
+        ----------
+        compliant_ds : BaseDataset
+            Dataset containing compliant sequences
+        non_compliant_ds : BaseDataset
+            Dataset containing non-compliant sequences
+        undetermined_ds : BaseDataset
+            Dataset containing sequences that could not be determined
+        subject_lists_by_seq : dict
+            Dictionary containing subject lists for each sequence
+        complete_ds : BaseDataset
+            Dataset containing all sequences
+        ref_protocol : dict
+            Reference protocol
+        kwargs : dict
+            Additional arguments to pass to the jinja2 template
+        """
         if not complete_ds.get_sequence_ids():
             logger.error('No sequences found in dataset. Cannot generate'
                          'report')
@@ -132,12 +167,17 @@ class HtmlFormatter(BaseFormatter):
             self.skip_hz_report = True
 
         self.hz_audit = {
-            'protocol'        : ref_protocol,
-            'compliant_ds'    : compliant_ds,
+            'protocol': ref_protocol,
+            'compliant_ds': compliant_ds,
             'non_compliant_ds': non_compliant_ds,
-            'undetermined_ds' : undetermined_ds,
+            'undetermined_ds': undetermined_ds,
             'sub_lists_by_seq': subject_lists_by_seq,
         }
+
+        # add any additional kwargs to the hz_audit dict
+        for key, value in kwargs.items():
+            self.hz_audit[key] = value
+
         self.complete_ds = complete_ds
 
     def collect_vt_audit_results(self,
@@ -145,7 +185,30 @@ class HtmlFormatter(BaseFormatter):
                                  non_compliant_ds,
                                  sequence_pairs,
                                  complete_ds,
-                                 parameters):
+                                 parameters,
+                                 **kwargs):
+        """
+        Collects results from horizontal audit and stores them. The
+        dictionary is then passed to the jinja2 template for rendering.
+
+        Parameters
+        ----------
+        compliant_ds : BaseDataset
+            Dataset containing compliant sequences
+        non_compliant_ds : BaseDataset
+            Dataset containing non-compliant sequences
+        complete_ds : BaseDataset
+            Dataset containing all sequences
+        sequence_pairs : list
+         Sequence pairs compared for vertical audit. For ex.
+         [('gre-field-mapping', 'rs-fMRI'), ('T1w', 'T2w')]
+        parameters : list
+            Parameters used for vertical audit.
+            For ex. ['ShimSetting, 'FlipAngle']
+        kwargs : dict
+            Additional arguments to pass to the jinja2 template
+        """
+
         if not complete_ds.get_sequence_ids():
             logger.error('No sequences found in dataset. Cannot generate'
                          'report')
@@ -157,18 +220,22 @@ class HtmlFormatter(BaseFormatter):
             self.skip_vt_report = True
 
         self.vt_audit = {
-            'compliant_ds'    : compliant_ds,
+            'compliant_ds': compliant_ds,
             'non_compliant_ds': non_compliant_ds,
-            'sequence_pairs'  : sequence_pairs,
-            'parameters'      : parameters
+            'sequence_pairs': sequence_pairs,
+            'parameters': parameters
         }
+
+        # add any additional kwargs to the vt_audit dict
+        for key, value in kwargs.items():
+            self.vt_audit[key] = value
+
         self.complete_ds = complete_ds
 
     def render(self):
         """
-        Render html page using jinja2
-        :param
-        :return:
+        Renders the html report using jinja2 template. It will skip horizontal
+        or vertical audit report if the corresponding audit was not performed.
         """
         if self.skip_hz_report and self.skip_vt_report:
             logger.error('Cannot generate report. See error log for details')
@@ -187,18 +254,7 @@ class HtmlFormatter(BaseFormatter):
             skip_hz_report=self.skip_hz_report,
             skip_vt_report=self.skip_vt_report,
             complete_ds=self.complete_ds,
-            # time=self.params['time'],
             imp0rt=importlib.import_module
         )
-        # self.output = weasyprint.HTML(string=output_text)
         f = open(self.filepath, 'w')
         f.write(output_text)
-
-
-class PdfFormatter(HtmlFormatter):
-    def __init__(self, filepath, params):
-        super().__init__(filepath, params)
-        # self.output = super(PdfFormatter, self).render(params)
-
-    def render(self):
-        return self.output.write_pdf(self.filepath)

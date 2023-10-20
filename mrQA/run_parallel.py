@@ -5,9 +5,10 @@ import time
 from pathlib import Path
 from typing import Iterable, Union
 
-from MRdataset import load_mr_dataset, MRDS_EXT
+from MRdataset import load_mr_dataset, MRDS_EXT, DatasetEmptyException
 
 from mrQA import check_compliance
+from mrQA import logger
 from mrQA.config import PATH_CONFIG
 from mrQA.parallel_utils import _check_args, _make_file_folders, \
     _run_single_batch, _create_slurm_script, _get_num_workers, \
@@ -19,6 +20,7 @@ from mrQA.utils import valid_paths, is_writable
 
 
 def get_parser():
+    """Parser for the CLI"""
     parser = argparse.ArgumentParser(
         description='Parallelize the mrQA compliance checks',
         add_help=False
@@ -63,6 +65,7 @@ def get_parser():
     optional.add_argument('-t', '--tolerance', type=float, default=0,
                           help='tolerance for checking against reference '
                                'protocol. Default is 0')
+
     if len(sys.argv) < 2:
         logger.critical('Too few arguments!')
         parser.print_help()
@@ -72,6 +75,7 @@ def get_parser():
 
 
 def cli():
+    """Console script for mrQA."""
     args = parse_args()
     process_parallel(data_source=args.data_source,
                      output_dir=args.output_dir,
@@ -92,6 +96,7 @@ def cli():
 
 
 def parse_args():
+    """Argument parser for the CLI"""
     parser = get_parser()
     args = parser.parse_args()
 
@@ -136,12 +141,12 @@ def process_parallel(data_source: Union[str, Path],
 
     Parameters
     ----------
-    data_source: str or Path
-        Path to the folder containing the subject folders
-    output_dir: str or Path
-        Path to the folder where the output will be saved
-    out_mrds_path: str or Path
-        Path to the final output mrds file
+    data_source: str | Path
+        Valid path to the folder containing the subject folders
+    output_dir: str | Path
+        Valid path to the folder where the output will be saved
+    out_mrds_path: str | Path
+        Valid path to the final output .mrds.pkl file
     name: str
         Name of the final output file
     subjects_per_job: int
@@ -248,6 +253,8 @@ def create_script(data_source: Union[str, Path, Iterable] = None,
         Name of conda distribution
     conda_env: str
         Name of conda environment
+    config_path: str
+        Path to the config file
     """
 
     data_src, output_dir, env, dist = _check_args(data_source, ds_format,

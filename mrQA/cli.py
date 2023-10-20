@@ -3,7 +3,8 @@ import argparse
 import sys
 from pathlib import Path
 
-from MRdataset import import_dataset, load_mr_dataset, valid_dirs
+from MRdataset import import_dataset, load_mr_dataset, valid_dirs, \
+    DatasetEmptyException
 
 from mrQA import check_compliance
 from mrQA import logger
@@ -12,7 +13,7 @@ from mrQA.utils import is_writable
 
 
 def get_parser():
-    """Console script for mrQA."""
+    """Parser for command line interface."""
     parser = argparse.ArgumentParser(
         description='Protocol Compliance of MRI scans',
         add_help=False
@@ -65,6 +66,9 @@ def get_parser():
 
 
 def cli():
+    """
+    Console script for mrQA.
+    """
     args = parse_args()
     if args.mrds_pkl_path:
         dataset = load_mr_dataset(args.mrds_pkl_path)
@@ -76,31 +80,36 @@ def cli():
                                  config_path=args.config,
                                  output_dir=args.output_dir)
 
-    check_compliance(dataset=dataset,
-                     output_dir=args.output_dir,
-                     decimals=args.decimals,
-                     verbose=args.verbose,
-                     tolerance=args.tolerance,
-                     config_path=args.config,
-                     reference_path=args.ref_protocol_path, )
+    try:
+        check_compliance(dataset=dataset,
+                         output_dir=args.output_dir,
+                         decimals=args.decimals,
+                         verbose=args.verbose,
+                         tolerance=args.tolerance,
+                         config_path=args.config,
+                         reference_path=args.ref_protocol_path, )
+    except DatasetEmptyException:
+        logger.error("Cannot check compliance if the dataset doesn't have "
+                     "any scans. Please check the dataset.")
+    except NotADirectoryError:
+        logger.error('Provided output directory for saving reports is invalid.'
+                     'Either it is not a directory or it does not exist. ')
     return 0
 
 
 def parse_args():
+    """Validates command line arguments and returns parsed arguments"""
     parser = get_parser()
     args = parser.parse_args()
 
     if args.verbose:
-        logger.setLevel('INFO')
-    else:
         logger.setLevel('WARNING')
+    else:
+        logger.setLevel('ERROR')
 
     if not valid_dirs(args.data_source):
         raise OSError('Expected valid directory for --data_source argument, '
                       'Got {0}'.format(args.data_source))
-    if not args.config:
-        raise ValueError('Expected --config argument, '
-                         'Got {0}'.format(args.config))
 
     if args.output_dir is None:
         logger.info('Use --output-dir to specify dir for final directory. '
@@ -112,6 +121,8 @@ def parse_args():
             try:
                 Path(args.output_dir).mkdir(parents=True, exist_ok=True)
             except OSError as exc:
+                logger.error(f'Unable to create folder {args.output_dir} for '
+                             f'saving reports')
                 raise exc
 
     if not is_writable(args.output_dir):

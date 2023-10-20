@@ -3,6 +3,7 @@ processing"""
 import argparse
 import sys
 from pathlib import Path
+from typing import Union
 
 from MRdataset import import_dataset, save_mr_dataset, BaseDataset
 
@@ -20,10 +21,12 @@ def cli():
     required = parser.add_argument_group('required arguments')
     optional = parser.add_argument_group('optional arguments')
 
-    required.add_argument('-o', '--output_path', type=str, required=True,
+    required.add_argument('-o', '--output_path', type=str,
+                          required=True,
                           help='complete path to pickle file for storing '
                                'partial dataset')
-    required.add_argument('-b', '--batch_ids_file', type=str, required=True,
+    required.add_argument('-b', '--batch_ids_file', type=str,
+                          required=True,
                           help='text file path specifying the folders to read')
     optional.add_argument('-h', '--help', action='help',
                           default=argparse.SUPPRESS,
@@ -66,6 +69,7 @@ def read_subset(output_dir: Union[str, Path],
                 ds_format: str,
                 verbose: bool,
                 config_path: str = None,
+                is_complete: bool = True,
                 **kwargs) -> BaseDataset:
     """
     Given a list of folder paths, reads all dicom files in those folders
@@ -74,14 +78,22 @@ def read_subset(output_dir: Union[str, Path],
 
     Parameters
     ----------
+    output_dir : Path | str
+        path to a folder where the partial dataset will be saved
     batch_ids_file : str
         path to a text file containing a list of paths (to several folders)
     ds_format : str
         what kind of MRdataset to create, dicom, bids etc.
     verbose : bool
         print more while doing the job
+    config_path : str
+        path to config file
+    is_complete : bool
+        whether the dataset is subset of a larger dataset. It is useful for
+        parallel processing of large datasets.
     **kwargs: dict
         additional arguments to pass to import_dataset
+
 
     Returns
     -------
@@ -94,7 +106,8 @@ def read_subset(output_dir: Union[str, Path],
     """
     # Supports only dicom for now
     if ds_format != 'dicom':
-        raise NotImplementedError(f'Expected ds_format as dicom, Got {ds_format}')
+        raise NotImplementedError(
+            f'Expected ds_format as dicom, Got {ds_format}')
 
     subset = txt2list(batch_ids_file)
     identifier = Path(batch_ids_file).stem
@@ -103,8 +116,9 @@ def read_subset(output_dir: Union[str, Path],
                                      name=identifier,
                                      verbose=verbose,
                                      config_path=config_path,
-                                     output_dir=output_dir
-                                                ** kwargs)
+                                     output_dir=output_dir,
+                                     is_complete=is_complete,
+                                     **kwargs)
     # partial_dataset.load(), import_dataset already does this
     return partial_dataset
 

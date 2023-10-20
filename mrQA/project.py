@@ -21,9 +21,9 @@ def check_compliance(dataset: BaseDataset,
                      config_path: Union[Path, str] = None,
                      reference_path: Union[Path, str] = None):
     """
-    Main function for checking compliance. Infers the reference protocol
-    according to the user chosen strategy, and then generates a compliance
-    report
+    Main function for checking compliance. It runs horizontal and vertical
+    audits on the dataset. Generates a report and saves it to the output
+    directory.
 
     Parameters
     ----------
@@ -69,7 +69,6 @@ def check_compliance(dataset: BaseDataset,
     output_dir = Path(output_dir).resolve()
     output_dir.mkdir(exist_ok=True, parents=True)
     if not output_dir.is_dir():
-        logger.error(f'Output directory {output_dir} does not exist')
         raise NotADirectoryError('Provide a valid output directory')
 
     # Create paths for report, mrds pkl file and sub_lists
@@ -311,7 +310,20 @@ def vertical_audit(dataset: BaseDataset,
                    tolerance: float = 0.1,
                    config_path: Union[Path, str] = None) -> Optional[Dict]:
     """
+    Compares all the sequences of a given subject. For ex, you may want to
+    check the field map against the rs-fMRI sequence. Returns a dictionary
+    containing the compliant and non-compliant sequences for each subject.
 
+    Parameters
+    ----------
+    dataset: BaseDataset
+        Dataset to be checked for compliance
+    decimals: int
+        Number of decimal places to round to (default:3).
+    tolerance: float
+        Tolerance for checking against reference protocol. Default is 0
+    config_path: Path | str
+        Path to the config file
     """
     config_dict = get_config_from_file(config_path)
     vt_audit_config = config_dict.get("vertical_audit", None)

@@ -72,8 +72,7 @@ def _merge_and_save(mrds_path_list: List[Path],
     save_mr_dataset(output_path, complete_dataset)
 
 
-def _merge_from_disk(mrds_path_list: Union[List[Path], List[str]]) \
-                    -> BaseDataset:
+def _merge_from_disk(mrds_path_list: List) -> BaseDataset:
     """
     Given a list of paths to partial mrds datasets, read and merge
     Keep aggregating along with the loop.
