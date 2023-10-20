@@ -3,14 +3,13 @@ from pathlib import Path
 from typing import Union, Dict, Optional
 
 from MRdataset import save_mr_dataset, BaseDataset, DatasetEmptyException
-from protocol import MRImagingProtocol, SiemensMRImagingProtocol
 
 from mrQA import logger
-from mrQA.base import CompliantDataset, NonCompliantDataset, UndeterminedDataset
+from mrQA.base import CompliantDataset
 from mrQA.formatter import HtmlFormatter
 from mrQA.utils import _cli_report, \
     export_subject_lists, make_output_paths, \
-    compute_majority, modify_sequence_name, get_config_from_file
+    modify_sequence_name, _init_datasets, get_reference_protocol, get_config
 
 
 def check_compliance(dataset: BaseDataset,
@@ -103,93 +102,6 @@ def check_compliance(dataset: BaseDataset,
     return hz_audit_results, vt_audit_results
 
 
-def get_protocol_from_file(reference_path: Path,
-                           vendor: str = 'siemens') -> MRImagingProtocol:
-    """
-    Extracts the reference protocol from the file. Supports only Siemens
-    protocols in xml format. Raises error otherwise.
-
-    Parameters
-    ----------
-    reference_path : Union[Path, str]
-        Path to the reference protocol file
-    vendor: str
-        Vendor of the scanner. Default is Siemens
-
-    Returns
-    -------
-    ref_protocol : MRImagingProtocol
-        Reference protocol extracted from the file
-    """
-    # Extract reference protocol from file
-    if not isinstance(reference_path, Path):
-        try:
-            reference_path = Path(reference_path)
-        except TypeError as e:
-            logger.error(f'Expected Path or str for reference protocol path, '
-                         f'got {type(reference_path)}')
-            raise e
-
-    if not reference_path.is_file():
-        raise FileNotFoundError(f'Unable to access {reference_path}. Maybe it'
-                                f'does not exist or is not a file')
-
-    # TODO: Add support for other file formats, like json and dcm
-    if reference_path.suffix != '.xml':
-        raise ValueError(f'Expected xml file, got {reference_path.suffix} file')
-
-    # TODO: Add support for other vendors, like GE and Philips
-    if vendor == 'siemens':
-        ref_protocol = SiemensMRImagingProtocol(filepath=reference_path)
-    else:
-        raise NotImplementedError(f'Only Siemens protocols are supported')
-
-    return ref_protocol
-
-
-def infer_protocol(dataset: BaseDataset,
-                   config_path: Union[Path, str]) -> MRImagingProtocol:
-    """
-    Infers the reference protocol from the dataset. The reference protocol
-    is inferred by computing the majority for each of the parameters for each sequence
-    in the dataset.
-
-    Parameters
-    ----------
-    dataset: BaseDataset
-        Dataset to be checked for compliance
-    config_path: Union[Path, str]
-        Path to the config file
-    Returns
-    -------
-    ref_protocol : MRImagingProtocol
-        Reference protocol inferred from the dataset
-    """
-    config_dict = get_config_from_file(config_path)
-
-    # TODO: Check for subset, if incomplete dataset throw error and stop
-    ref_protocol = MRImagingProtocol(f'reference_for_{dataset.name}')
-    # create reference protocol for each sequence
-    for seq_name in dataset.get_sequence_ids():
-        num_subjects = dataset.get_subject_ids(seq_name)
-
-        # If subjects are less than 3, then we can't infer a reference protocol
-        if len(num_subjects) < 3:
-            continue
-
-        # If subjects are more than 3, then we can infer a reference protocol
-        reference = compute_majority(dataset=dataset,
-                                     seq_name=seq_name,
-                                     config_dict=config_dict)
-        if not reference:
-            continue
-        # Add the inferred reference to the reference protocol
-        for seq_id, param_dict in reference.items():
-            ref_protocol.add_sequence_from_dict(seq_id, param_dict)
-
-    return ref_protocol
-
-
 def horizontal_audit(dataset: BaseDataset,
                      reference_path: Union[Path, str],
                      decimals: int = 3,
@@ -216,40 +128,22 @@ def horizontal_audit(dataset: BaseDataset,
     -------
 
     """
-    # Infer reference protocol if not provided
-    if reference_path is None:
-        ref_protocol = infer_protocol(dataset, config_path=config_path)
-    else:
-        ref_protocol = get_protocol_from_file(reference_path)
-
-    config_dict = get_config_from_file(config_path)
-    hz_audit_config = config_dict.get("horizontal_audit", None)
-
-    compliant_ds = CompliantDataset(name=dataset.name,
-                                    data_source=dataset.data_source,
-                                    ds_format=dataset.format)
-    non_compliant_ds = NonCompliantDataset(name=dataset.name,
-                                           data_source=dataset.data_source,
-                                           ds_format=dataset.format)
-    undetermined_ds = UndeterminedDataset(name=dataset.name,
-                                          data_source=dataset.data_source,
-                                          ds_format=dataset.format)
+    hz_audit_config = get_config(config_path=config_path,
+                                 audit='hz')
+    ref_protocol = get_reference_protocol(dataset=dataset,
+                                          reference_path=reference_path,
+                                          config_path=config_path)
+    compliant_ds, non_compliant_ds, undetermined_ds = _init_datasets(dataset)
 
     eval_dict = {
-        'complete_ds'  : dataset,
-        'reference'    : ref_protocol,
-        'compliant'    : compliant_ds,
+        'complete_ds': dataset,
+        'reference': ref_protocol,
+        'compliant': compliant_ds,
         'non_compliant': non_compliant_ds,
-        'undetermined' : undetermined_ds,
+        'undetermined': undetermined_ds,
     }
 
-    if not ref_protocol:
-        logger.error('Reference protocol for horizontal audit is empty')
-        return eval_dict
-
-    if hz_audit_config is None:
-        logger.error(f'No horizontal audit config found for '
-                     f'dataset {dataset.name}')
+    if not (ref_protocol and hz_audit_config):
         return eval_dict
 
     include_params = hz_audit_config.get('include_parameters', None)
@@ -269,7 +163,8 @@ def horizontal_audit(dataset: BaseDataset,
             try:
                 ref_sequence = ref_protocol[sequence_name]
             except KeyError:
-                logger.info(f'No reference protocol for {seq_name} sequence.')
+                logger.warning(f'No reference protocol for {seq_name} '
+                               f'sequence.')
                 undetermined_ds.add(subject_id=subj, session_id=sess,
                                     run_id=run, seq_id=sequence_name, seq=seq)
                 undetermined_flag = True
@@ -283,6 +178,9 @@ def horizontal_audit(dataset: BaseDataset,
             )
 
             if is_compliant:
+                # a temporary placeholder for compliant sequences. It will be
+                # merged to compliant dataset if all the subjects are compliant
+                # for a given sequence
                 temp_dataset.add(subject_id=subj, session_id=sess,
                                  run_id=run, seq_id=sequence_name, seq=seq)
             else:
@@ -292,13 +190,14 @@ def horizontal_audit(dataset: BaseDataset,
                                      run_id=run, seq_id=sequence_name, seq=seq)
                 non_compliant_ds.add_non_compliant_params(
                     subject_id=subj, session_id=sess, run_id=run,
-                    seq_id=sequence_name, seq=seq,
+                    seq_id=sequence_name,
                     non_compliant_params=non_compliant_params
                 )
         # only add the sequence if all the subjects, sessions are compliant
         if compliant_flag and not undetermined_flag:
             compliant_ds.merge(temp_dataset)
 
+    # Update the compliance evaluation dict
     eval_dict['compliant'] = compliant_ds
     eval_dict['non_compliant'] = non_compliant_ds
     eval_dict['undetermined'] = undetermined_ds
@@ -307,7 +206,7 @@ def horizontal_audit(dataset: BaseDataset,
 
 def vertical_audit(dataset: BaseDataset,
                    decimals: int = 3,
-                   tolerance: float = 0.1,
+                   tolerance: float = 0,
                    config_path: Union[Path, str] = None) -> Optional[Dict]:
     """
     Compares all the sequences of a given subject. For ex, you may want to
@@ -325,27 +224,17 @@ def vertical_audit(dataset: BaseDataset,
     config_path: Path | str
         Path to the config file
     """
-    config_dict = get_config_from_file(config_path)
-    vt_audit_config = config_dict.get("vertical_audit", None)
-
-    compliant_ds = CompliantDataset(name=dataset.name,
-                                    data_source=dataset.data_source,
-                                    ds_format=dataset.format)
-    non_compliant_ds = NonCompliantDataset(name=dataset.name,
-                                           data_source=dataset.data_source,
-                                           ds_format=dataset.format)
-
+    vt_audit_config = get_config(config_path=config_path,
+                                 audit='vt')
+    compliant_ds, non_compliant_ds, _ = _init_datasets(dataset)
     eval_dict = {
-        'complete_ds'   : dataset,
-        'compliant'     : compliant_ds,
-        'non_compliant' : non_compliant_ds,
+        'complete_ds': dataset,
+        'compliant': compliant_ds,
+        'non_compliant': non_compliant_ds,
         'sequence_pairs': [],
-        'parameters'    : []
+        'parameters': []
     }
-
-    if vt_audit_config is None:
-        logger.error(f'No vertical audit config found for '
-                     f'dataset {dataset.name}')
+    if not vt_audit_config:
         return eval_dict
 
     # If include_parameters is not provided, then it will compare all parameters
@@ -355,6 +244,8 @@ def vertical_audit(dataset: BaseDataset,
 
     # If no sequence pairs are provided, then compare all possible pairs
     if chosen_pairs is None:
+        logger.warn('No sequence pairs provided. Comparing all possible '
+                    'sequence pairs.')
         chosen_pairs = list(combinations(dataset.get_sequence_ids(), 2))
 
     used_pairs = set()
@@ -386,23 +277,23 @@ def vertical_audit(dataset: BaseDataset,
                 non_compliant_params = [x[0] for x in non_compliant_tuples]
                 non_compliant_ds.add_non_compliant_params(
                     subject_id=subject, session_id=session, run_id=run1,
-                    seq_id=seq1_name, seq=seq1, ref_seq=seq2_name,
+                    seq_id=seq1_name, ref_seq=seq2_name,
                     non_compliant_params=non_compliant_params
                 )
 
                 non_compliant_params = [x[1] for x in non_compliant_tuples]
                 non_compliant_ds.add_non_compliant_params(
                     subject_id=subject, session_id=session, run_id=run2,
-                    seq_id=seq2_name, seq=seq2, ref_seq=seq1_name,
+                    seq_id=seq2_name, ref_seq=seq1_name,
                     non_compliant_params=non_compliant_params
                 )
     # TODO: add option for num_sequences > 2
     eval_dict = {
-        'complete_ds'   : dataset,
-        'compliant'     : compliant_ds,
-        'non_compliant' : non_compliant_ds,
+        'complete_ds': dataset,
+        'compliant': compliant_ds,
+        'non_compliant': non_compliant_ds,
         'sequence_pairs': used_pairs,
-        'parameters'    : include_params
+        'parameters': include_params
     }
     return eval_dict
 

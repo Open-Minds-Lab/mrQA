@@ -12,19 +12,100 @@ from pathlib import Path
 from subprocess import run, CalledProcessError, TimeoutExpired
 from typing import Union, List, Optional, Any, Iterable
 
-import numpy as np
 from MRdataset import BaseDataset, is_dicom_file
 from dateutil import parser
-from protocol import BaseSequence
+from protocol import BaseSequence, MRImagingProtocol, SiemensMRImagingProtocol
 
 from mrQA import logger
+from mrQA.base import CompliantDataset, NonCompliantDataset, UndeterminedDataset
 from mrQA.config import past_records_fpath, report_fpath, mrds_fpath, \
     subject_list_dir, DATE_SEPARATOR, CannotComputeMajority, \
     Unspecified, \
     EqualCount, status_fpath, ATTRIBUTE_SEPARATOR
 
 
+def get_reference_protocol(dataset: BaseDataset,
+                           config_path: Union[str, Path] = None,
+                           reference_path: Union[str, Path] = None):
+    """
+    Given a dataset, it returns the reference protocol that contains
+    reference protcol for each sequence in the dataset.
+    """
+    # Infer reference protocol if not provided
+    if reference_path is None:
+        ref_protocol = infer_protocol(dataset, config_path=config_path)
+    else:
+        try:
+            ref_protocol = get_protocol_from_file(reference_path)
+        except (TypeError, ValueError, FileNotFoundError) as e:
+            logger.error(f'Error while reading reference protocol '
+                         f'from filepath : {e}. Falling back to inferred '
+                         f'reference protocol')
+            ref_protocol = infer_protocol(dataset, config_path=config_path)
+
+    if not ref_protocol:
+        if reference_path:
+            logger.error("Reference protocol is invalid. "
+                         "It doesn't contain any sequences. "
+                         "Cannot generate results for horizontal audit.")
+        else:
+            logger.error("Inferred reference protocol doesn't have any"
+                         "sequences. It seems the dataset is very small. "
+                         ", that is less than 3 subjects for each sequence.")
+    return ref_protocol
+
+
+def get_config(config_path: Union[str, Path], audit='hz') -> dict:
+    try:
+        config_dict = get_config_from_file(config_path)
+    except (ValueError, FileNotFoundError, TypeError) as e:
+        logger.error(f'Error while reading config file: {e}. Please provide'
+                     f'a valid path to the configuration JSON file.')
+        raise e
+
+    if audit == 'hz':
+        key = "horizontal_audit"
+    elif audit == 'vt':
+        key = "vertical_audit"
+    else:
+        raise ValueError(f'Invalid audit type {audit}. Expected "hz" or "vt"')
+
+    audit_config = config_dict.get(key, None)
+    if audit_config is None:
+        logger.error(
+            f'No {key} config found in config file. Note'
+            f'that the config file should have a key named '
+            f'"{key}".')
+    include_params = audit_config.get('include_parameters', None)
+    if include_params is None:
+        logger.warn('Parameters to be included in the compliance check are '
+                    'not provided. All parameters will be included in the '
+                    f'{key}')
+    return audit_config
+
+
+def _init_datasets(dataset: BaseDataset):
+    """
+    Initialize the three dataset objects for compliant, non-compliant
+    and undetermined datasets.
+    """
+    compliant_ds = CompliantDataset(name=dataset.name,
+                                    data_source=dataset.data_source,
+                                    ds_format=dataset.format)
+    non_compliant_ds = NonCompliantDataset(name=dataset.name,
+                                           data_source=dataset.data_source,
+                                           ds_format=dataset.format)
+    undetermined_ds = UndeterminedDataset(name=dataset.name,
+                                          data_source=dataset.data_source,
+                                          ds_format=dataset.format)
+    return compliant_ds, non_compliant_ds, undetermined_ds
+
+
 def is_writable(dir_path):
+    """
+    Check if the directory is writable. For ex. if the directory is
+    mounted on a read-only file system, it will return False.
+    """
     try:
         with tempfile.TemporaryFile(dir=dir_path, mode='w') as testfile:
             testfile.write("OS write to directory test.")
@@ -987,14 +1068,128 @@ def modify_sequence_name(seq: "BaseSequence", stratify_by: str) -> str:
 
 
 def get_config_from_file(config_path: Union[Path, str]) -> dict:
-    if isinstance(config_path, str):
+    """
+    Read the configuration file and return the contents as a dictionary
+
+    Parameters
+    ----------
+    config_path : Path or str
+        path to the configuration file
+
+    Returns
+    -------
+    dict
+        contents of the configuration file
+    """
+    try:
         config_path = Path(config_path)
-    if not isinstance(config_path, Path):
-        raise TypeError(f'Expected Path or str, got {type(config_path)}')
+    except TypeError:
+        raise TypeError('Invalid path to the configuration file.'
+                        f'Expected Path or str, got {type(config_path)}')
     if not config_path.is_file():
-        raise FileNotFoundError(f'{config_path} does not exist')
+        raise FileNotFoundError('Either provided configuration '
+                                'file does not exist or it is not a '
+                                'file.')
 
     # read json file
     with open(config_path, 'r') as f:
-        config = json.load(f)
+        try:
+            config = json.load(f)
+        except ValueError:
+            # json.decoder.JSONDecodeError is a subclass of ValueError
+            raise ValueError('Invalid JSON file provided in config_path '
+                             'Expected a valid JSON file.')
+
     return config
+
+
+def get_protocol_from_file(reference_path: Path,
+                           vendor: str = 'siemens') -> MRImagingProtocol:
+    """
+    Extracts the reference protocol from the file. Supports only Siemens
+    protocols in xml format. Raises error otherwise.
+
+    Parameters
+    ----------
+    reference_path : Union[Path, str]
+        Path to the reference protocol file
+    vendor: str
+        Vendor of the scanner. Default is Siemens
+
+    Returns
+    -------
+    ref_protocol : MRImagingProtocol
+        Reference protocol extracted from the file
+    """
+    # Extract reference protocol from file
+    ref_protocol = None
+
+    if not isinstance(reference_path, Path):
+        reference_path = Path(reference_path)
+
+    if not reference_path.is_file():
+        raise FileNotFoundError(f'Unable to access {reference_path}. Maybe it'
+                                f'does not exist or is not a file')
+
+    # TODO: Add support for other file formats, like json and dcm
+    if reference_path.suffix != '.xml':
+        raise ValueError(f'Expected xml file, got {reference_path.suffix} file')
+
+    # TODO: Add support for other vendors, like GE and Philips
+    if vendor == 'siemens':
+        ref_protocol = SiemensMRImagingProtocol(filepath=reference_path)
+    else:
+        raise NotImplementedError('Only Siemens protocols are supported')
+
+    return ref_protocol
+
+
+def infer_protocol(dataset: BaseDataset,
+                   config_path: Union[Path, str]) -> MRImagingProtocol:
+    """
+    Infers the reference protocol from the dataset. The reference protocol
+    is inferred by computing the majority for each of the
+    parameters for each sequence in the dataset.
+
+    Parameters
+    ----------
+    dataset: BaseDataset
+        Dataset to be checked for compliance
+    config_path: Union[Path, str]
+        Path to the config file
+
+    Returns
+    -------
+    ref_protocol : MRImagingProtocol
+        Reference protocol inferred from the dataset
+    """
+    # TODO: Check for subset, if incomplete dataset throw error and stop
+    ref_protocol = MRImagingProtocol(f'reference_for_{dataset.name}')
+
+    try:
+        config_dict = get_config_from_file(config_path)
+    except (ValueError, FileNotFoundError, TypeError) as e:
+        logger.error(f'Error while reading config file: {e}')
+        return ref_protocol
+
+    # create reference protocol for each sequence
+    for seq_name in dataset.get_sequence_ids():
+        num_subjects = dataset.get_subject_ids(seq_name)
+
+        # If subjects are less than 3, then we can't infer a reference protocol
+        if len(num_subjects) < 3:
+            logger.warning(f'Skipping {seq_name}. Not enough subjects to'
+                           f' infer a reference protocol')
+            continue
+
+        # If subjects are more than 3, then we can infer a reference protocol
+        ref_dict = compute_majority(dataset=dataset,
+                                    seq_name=seq_name,
+                                    config_dict=config_dict)
+        if not ref_dict:
+            continue
+        # Add the inferred reference to the reference protocol
+        for seq_id, param_dict in ref_dict.items():
+            ref_protocol.add_sequence_from_dict(seq_id, param_dict)
+
+    return ref_protocol
