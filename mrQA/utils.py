@@ -25,7 +25,7 @@ from mrQA.config import past_records_fpath, report_fpath, mrds_fpath, \
 
 
 def get_reference_protocol(dataset: BaseDataset,
-                           config_path: Union[str, Path] = None,
+                           config: dict,
                            reference_path: Union[str, Path] = None):
     """
     Given a dataset, it returns the reference protocol that contains
@@ -33,7 +33,7 @@ def get_reference_protocol(dataset: BaseDataset,
     """
     # Infer reference protocol if not provided
     if reference_path is None:
-        ref_protocol = infer_protocol(dataset, config_path=config_path)
+        ref_protocol = infer_protocol(dataset, config=config)
     else:
         try:
             ref_protocol = get_protocol_from_file(reference_path)
@@ -41,7 +41,7 @@ def get_reference_protocol(dataset: BaseDataset,
             logger.error(f'Error while reading reference protocol '
                          f'from filepath : {e}. Falling back to inferred '
                          f'reference protocol')
-            ref_protocol = infer_protocol(dataset, config_path=config_path)
+            ref_protocol = infer_protocol(dataset, config=config)
 
     if not ref_protocol:
         if reference_path:
@@ -711,22 +711,21 @@ def compute_majority(dataset: BaseDataset, seq_name, config_dict=None):
     # if config_dict is not None:
     # TODO: parse begin and end times
     # TODO: add option to exclude subjects
-    hz_audit_config = config_dict.get("horizontal_audit", None)
     seq_dict = {}
     most_freq_vals = {}
 
-    if hz_audit_config is None:
+    if config_dict is None:
         logger.error('No horizontal audit config found. '
                      f'Returning empty reference protocol for {seq_name}')
         return most_freq_vals
 
-    include_params = hz_audit_config.get('include_parameters', None)
+    include_params = config_dict.get('include_parameters', None)
     if include_params is None:
         logger.error('No parameters specified for horizontal audit. '
                      f'Returning empty reference protocol for {seq_name}')
         return most_freq_vals
 
-    stratify_by = hz_audit_config.get('stratify_by', None)
+    stratify_by = config_dict.get('stratify_by', None)
 
     for subj, sess, runs, seq in dataset.traverse_horizontal(seq_name):
         sequence_id = modify_sequence_name(seq, stratify_by)
@@ -1220,7 +1219,7 @@ def get_protocol_from_file(reference_path: Path,
 
 
 def infer_protocol(dataset: BaseDataset,
-                   config_path: Union[Path, str]) -> MRImagingProtocol:
+                   config: dict) -> MRImagingProtocol:
     """
     Infers the reference protocol from the dataset. The reference protocol
     is inferred by computing the majority for each of the
@@ -1230,8 +1229,8 @@ def infer_protocol(dataset: BaseDataset,
     ----------
     dataset: BaseDataset
         Dataset to be checked for compliance
-    config_path: Union[Path, str]
-        Path to the config file
+    config: dict
+        Configuration
 
     Returns
     -------
@@ -1240,12 +1239,6 @@ def infer_protocol(dataset: BaseDataset,
     """
     # TODO: Check for subset, if incomplete dataset throw error and stop
     ref_protocol = MRImagingProtocol(f'reference_for_{dataset.name}')
-
-    try:
-        config_dict = get_config_from_file(config_path)
-    except (ValueError, FileNotFoundError, TypeError) as e:
-        logger.error(f'Error while reading config file: {e}')
-        return ref_protocol
 
     # create reference protocol for each sequence
     for seq_name in dataset.get_sequence_ids():
@@ -1260,7 +1253,7 @@ def infer_protocol(dataset: BaseDataset,
         # If subjects are more than 3, then we can infer a reference protocol
         ref_dict = compute_majority(dataset=dataset,
                                     seq_name=seq_name,
-                                    config_dict=config_dict)
+                                    config_dict=config)
         if not ref_dict:
             continue
         # Add the inferred reference to the reference protocol

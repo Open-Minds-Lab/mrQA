@@ -132,7 +132,7 @@ def horizontal_audit(dataset: BaseDataset,
                                  audit='hz')
     ref_protocol = get_reference_protocol(dataset=dataset,
                                           reference_path=reference_path,
-                                          config_path=config_path)
+                                          config=hz_audit_config)
     compliant_ds, non_compliant_ds, undetermined_ds = _init_datasets(dataset)
 
     eval_dict = {
