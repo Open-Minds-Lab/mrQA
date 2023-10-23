@@ -292,15 +292,7 @@ def majority_values(list_seqs: list,
     """
     args_valid = False
     maj_value = default
-
-    try:
-        args_valid = _check_args_validity(list_seqs)
-    except CannotComputeMajority as e:
-        maj_value = None  # 'Cannot Compute Majority:\n Count < 3'
-        logger.error(f'Cannot compute majority: {e}')
-    except ValueError as e:
-        maj_value = None
-        logger.error(f'Cannot compute majority: {e}')
+    args_valid = _check_args_validity(list_seqs)
 
     if not args_valid:
         return maj_value
@@ -308,7 +300,7 @@ def majority_values(list_seqs: list,
     counters_dict = {}
     categories = set()
     if not include_params:
-        raise ValueError('Expected a list of keys to include. Got None')
+        raise ValueError('Expected a list of parameters to include. Got None')
     for seq in list_seqs:
         categories.update(include_params)
         for param in include_params:
@@ -734,9 +726,14 @@ def compute_majority(dataset: BaseDataset, seq_name, config_dict=None):
         seq_dict[sequence_id].append(seq)
 
     for seq_id in seq_dict:
-        most_freq_vals[seq_id] = majority_values(seq_dict[seq_id],
-                                                 default=Unspecified,
-                                                 include_params=include_params)
+        try:
+            most_freq_vals[seq_id] = majority_values(
+                seq_dict[seq_id],
+                default=Unspecified,
+                include_params=include_params)
+        except (CannotComputeMajority, ValueError) as e:
+            logger.warning(f"Could not compute reference "
+                           f"protocol for {seq_name} : {e}.")
     return most_freq_vals
 
 
