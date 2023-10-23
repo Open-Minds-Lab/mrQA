@@ -1,3 +1,7 @@
+import tempfile
+from pathlib import Path
+
+from MRdataset import valid_dirs
 from MRdataset.base import BaseDataset
 from protocol import BaseParameter, BaseSequence
 
@@ -19,6 +23,18 @@ class CompliantDataset(BaseDataset):
     """
 
     def __init__(self, name=None, data_source=None, ds_format=None):
+        # BaseDataset checks if data_source is valid, and if not,
+        # it raises an error.
+        # It is very likely that data is processed by MRdataset on a
+        # different machine, and the processed data is then transferred to
+        # another machine for audit. In such cases, the data_source of
+        # original dataset will be invalid on the machine where audit is
+        # performed. Hence, we set data_source in super() to None.
+        try:
+            data_source = valid_dirs(data_source)
+        except (OSError, ValueError):
+            data_source = tempfile.gettempdir()
+
         super().__init__(name=name, data_source=data_source,
                          ds_format=ds_format)
 
@@ -45,8 +61,19 @@ class UndeterminedDataset(BaseDataset):
     """
 
     def __init__(self, name=None, data_source=None, ds_format=None):
-        super().__init__(name=name,
-                         data_source=data_source,
+        # BaseDataset checks if data_source is valid, and if not,
+        # it raises an error.
+        # It is very likely that data is processed by MRdataset on a
+        # different machine, and the processed data is then transferred to
+        # another machine for audit. In such cases, the data_source of
+        # original dataset will be invalid on the machine where audit is
+        # performed. Hence, we set data_source in super() to None.
+        try:
+            data_source = valid_dirs(data_source)
+        except (OSError, ValueError):
+            data_source = tempfile.gettempdir()
+
+        super().__init__(name=name, data_source=data_source,
                          ds_format=ds_format)
 
     def load(self):
@@ -70,8 +97,19 @@ class NonCompliantDataset(BaseDataset):
     """
 
     def __init__(self, name=None, data_source=None, ds_format=None):
-        super().__init__(name=name,
-                         data_source=data_source,
+        # BaseDataset checks if data_source is valid, and if not,
+        # it raises an error.
+        # It is very likely that data is processed by MRdataset on a
+        # different machine, and the processed data is then transferred to
+        # another machine for audit. In such cases, the data_source of
+        # original dataset will be invalid on the machine where audit is
+        # performed. Hence, we set data_source in super() to None.
+        try:
+            data_source = valid_dirs(data_source)
+        except (OSError, ValueError):
+            data_source = tempfile.gettempdir()
+
+        super().__init__(name=name, data_source=data_source,
                          ds_format=ds_format)
         self._nc_flat_map = {}
         self._nc_tree_map = {}
