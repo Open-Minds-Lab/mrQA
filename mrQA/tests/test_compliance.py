@@ -4,10 +4,10 @@ from pathlib import Path
 
 import hypothesis.strategies as st
 from MRdataset import import_dataset
-from MRdataset.tests.simulate import make_test_dataset
 from hypothesis import given, settings, assume
 
 from mrQA import check_compliance
+from mrQA.tests.simulate import make_test_dataset
 from mrQA.utils import get_config_from_file
 
 THIS_DIR = Path(__file__).parent.resolve()

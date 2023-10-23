@@ -1,5 +1,4 @@
 import tempfile
-from pathlib import Path
 
 from MRdataset import valid_dirs
 from MRdataset.base import BaseDataset
@@ -174,11 +173,9 @@ class NonCompliantDataset(BaseDataset):
                                 session_id]:
                             for run_id in \
                                 self._nc_tree_map[param_name][seq_id][
-                                    subject_id][
-                                    session_id][ref_seq]:
+                                    subject_id][session_id][ref_seq]:
                                 param = self._nc_tree_map[param_name][seq_id][
-                                    subject_id][session_id][ref_seq][
-                                    run_id]  # noqa
+                                    subject_id][session_id][ref_seq][run_id]  # noqa
                                 path = self.get_path(subject_id, session_id,
                                                      seq_id, run_id)
                                 yield param, (subject_id, path)

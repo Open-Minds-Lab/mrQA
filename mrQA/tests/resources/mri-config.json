@@ -1,6 +1,6 @@
 {
-    "begin": "2014-03-12T13:37:27+00:00",
-    "end": "2017-03-12T13:37:27+00:00",
+    "begin": "03_12_2024",
+    "end": "03_12_2000",
     "include_sequence": {
         "phantom": false,
         "nifti_header": false,
@@ -9,25 +9,52 @@
         "derived": false
     },
     "use_echonumbers": true,
-    "include_parameters": [
-        "EchoTrainLength",
-        "ParallelAcquisitionTechnique",
-        "MagneticFieldStrength",
-        "MRAcquisitionType",
-        "MultiSliceMode",
-        "PhasePolarity",
-        "PhaseEncodingSteps",
-        "PixelBandwidth",
-        "ScanningSequence",
-        "SequenceVariant",
-        "RepetitionTime",
-        "EchoTime",
-        "FlipAngle",
-        "PhaseEncodingDirection",
-        "ShimMode"
-    ],
-    "exclude_subects": [
-        "210098",
-        "210078"
-    ]
+    "vertical_audit": {
+        "stratify_by": null,
+        "include_parameters": [
+            "Rows",
+            "Columns",
+            "AcquisitionMatrix",
+            "PixelSpacing",
+            "PhaseEncodingDirection",
+            "ShimMode",
+            "ShimSetting"
+        ]
+    },
+    "horizontal_audit": {
+        "stratify_by": null,
+        "include_parameters": [
+            "PixelSpacing",
+            "Rows",
+            "Columns",
+            "AcquisitionMatrix",
+            "Manufacturer",
+            "ManufacturersModelName",
+            "SoftwareVersions",
+            "MagneticFieldStrength",
+            "ReceiveCoilActiveElements",
+            "ScanningSequence",
+            "SequenceVariant",
+            "ScanOptions",
+            "NonLinearGradientCorrection",
+            "MRAcquisitionType",
+            "PhaseEncodingDirection",
+            "EchoTime",
+            "InversionTime",
+            "DwellTime",
+            "RepetitionTime",
+            "FlipAngle",
+            "BodyPartExamined",
+            "EchoTrainLength",
+            "PixelBandwidth",
+            "PhaseEncodingSteps",
+            "EchoNumber",
+            "SliceThickness",
+            "PercentPhaseFOV",
+            "PercentSampling",
+            "VariableFlipAngleFlag",
+            "NumberOfAverages",
+            "ShimMode"
+        ]
+    }
 }
