@@ -4,6 +4,13 @@
 <html lang="en">
 <head lang="en">
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bokeh/3.0.1/bokeh.min.js"
+        integrity="sha512-p7EUyPmeDeOwHiu7fIZNboAcQLxei3sWtXoHoShWWiPNUSRng/Xs5JPcaFPRa4dKy9IuHjyIQuLE4caGCwuewA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer">
+    </script>
+
     <style>
         h2 {
             text-align: center;
@@ -86,6 +93,15 @@
 {% set utils = imp0rt('mrQA.utils') %}
 
 <h2>Summary of non-compliance: {{ hz['compliant_ds'].name }}</h2>
+{% if not skip_plots %}
+    {% for key in plots %}
+    <div style="width: 40%; display: block;">
+        {{ plots[key].div | safe }}
+        {{ plots[key].script | safe }}
+    </div>
+    {% endfor %}
+{% endif %}
+
 {% if not skip_vt_report %}
     <h3>Vertical Audit</h3>
     <table class="tg" id="with_margin">

@@ -114,11 +114,12 @@ class HtmlFormatter(BaseFormatter):
         self.template_folder = Path(__file__).resolve().parent
         self.hz_audit = None
         self.vt_audit = None
+        self.plots = {}
         self.complete_ds = None
 
         self.skip_hz_report = False
         self.skip_vt_report = False
-
+        self.skip_plots = False
         if render:
             self.render()
 
@@ -232,6 +233,14 @@ class HtmlFormatter(BaseFormatter):
 
         self.complete_ds = complete_ds
 
+    def collect_plots(self, **kwargs):
+        for key, value in kwargs.items():
+            self.plots[key] = value
+
+        if not self.plots:
+            logger.error('No plots found. Skipping plots section in report')
+            self.skip_plots = True
+
     def render(self):
         """
         Renders the html report using jinja2 template. It will skip horizontal
@@ -251,8 +260,10 @@ class HtmlFormatter(BaseFormatter):
         output_text = template.render(
             hz=self.hz_audit,
             vt=self.vt_audit,
+            plots=self.plots,
             skip_hz_report=self.skip_hz_report,
             skip_vt_report=self.skip_vt_report,
+            skip_plots=self.skip_plots,
             complete_ds=self.complete_ds,
             imp0rt=importlib.import_module
         )

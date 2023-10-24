@@ -1,15 +1,20 @@
+from collections import namedtuple
+from datetime import timedelta
 from itertools import combinations
 from pathlib import Path
 from typing import Union, Dict, Optional
 
 from MRdataset import save_mr_dataset, BaseDataset, DatasetEmptyException
+from bokeh.embed import components
+from bokeh.plotting import figure
 
 from mrQA import logger
 from mrQA.base import CompliantDataset
 from mrQA.formatter import HtmlFormatter
 from mrQA.utils import _cli_report, \
     export_subject_lists, make_output_paths, \
-    modify_sequence_name, _init_datasets, get_reference_protocol, get_config
+    modify_sequence_name, _init_datasets, get_reference_protocol, get_config, \
+    previous_month, next_month
 
 
 def check_compliance(dataset: BaseDataset,
@@ -89,17 +94,107 @@ def check_compliance(dataset: BaseDataset,
                                       tolerance=tolerance,
                                       config_path=config_path)
 
+    # Generate plots/visualization
+    plot_results = plot_patterns(dataset=hz_audit_results['non_compliant'])
+
     # Generate the report if checking compliance was successful
     generate_report(hz_audit=hz_audit_results,
                     vt_audit=vt_audit_results,
                     report_path=report_path,
                     sub_lists_dir_path=sub_lists_dir_path,
-                    output_dir=output_dir)
+                    output_dir=output_dir,
+                    plots=plot_results)
 
     # Print a small message on the console, about non-compliance of dataset
     print(_cli_report(hz_audit_results, str(report_path)))
     # TODO : print(_cli_report(vt_audit_results, str(report_path)))
     return hz_audit_results, vt_audit_results
+
+
+def plot_patterns(dataset):
+    def _update_dict(attr, _dict):
+        if attr not in _dict:
+            _dict[attr] = 0
+        _dict[attr] += 1
+
+    def _plot(_dict, label):
+        y = list(_dict.values())
+        x = list(_dict.keys())
+        if label == 'Sex':
+            x_range = ['M', 'F', 'O']
+        else:
+            x_range = x
+        p = figure(x_range=x_range, x_axis_label=label,
+                   y_axis_label="Number of Deviations",
+                   width=800, height=300)
+        p.vbar(x=x, top=y, width=0.9, fill_color="#b3de69")
+        return components(p)
+
+    Plot = namedtuple('Plot', ['div', 'script'])
+
+    nc_by_time = {}
+    nc_by_sex = {}
+    nc_by_age = {}
+    nc_by_operator = {}
+    nc_by_vendor = {}
+    nc_by_site = {}
+    nc_by_weight = {}
+
+    for seq_name in dataset.get_sequence_ids():
+        for subj, sess, run, seq in dataset.traverse_horizontal(seq_name):
+            _update_dict(seq.timestamp, nc_by_time)
+            _update_dict(seq['PatientSex'], nc_by_sex)
+            _update_dict(seq['PatientAge'], nc_by_age)
+            _update_dict(seq['PatientWeight'], nc_by_weight)
+            _update_dict(seq['OperatorsName'], nc_by_operator)
+            _update_dict(seq['InstitutionName'], nc_by_site)
+            _update_dict(seq['Manufacturer'].get_value(), nc_by_vendor)
+
+    nc_by_time = dict(sorted(nc_by_time.items()))
+    nc_by_sex = dict(sorted(nc_by_sex.items()))
+    nc_by_age = dict(sorted(nc_by_age.items()))
+    nc_by_vendor = dict(sorted(nc_by_vendor.items()))
+    nc_by_site = dict(sorted(nc_by_site.items()))
+    nc_by_weight = dict(sorted(nc_by_weight.items()))
+
+    cumulative_nc_by_time = []
+    nc_counts = list(nc_by_time.values())
+    for i, t in enumerate(nc_counts):
+        cumulative_nc_by_time.append(sum(nc_counts[:i+1]))
+
+    y = list(nc_by_time.values())
+    x = list(nc_by_time.keys())
+    x_range = [previous_month(min(x)), next_month(max(x))]
+    p = figure(x_range=x_range, x_axis_label="Time",
+               y_axis_label="Number of Deviations",
+               width=800, height=300)
+    p.vbar(x=x, top=y, width=timedelta(days=1),  fill_color="#b3de69")
+    p.line(x=x, y=cumulative_nc_by_time,
+           legend_label="Cumulative Deviations over Time",
+           line_width=2, color='red')
+    # map dataframe indices to date strings and use as label overrides
+    p.xaxis.major_label_overrides = {
+        i: date.strftime('%b %d %Y') for i, date in enumerate(x)
+    }
+
+    div, script = components(p)
+    div_sex, script_sex = _plot(nc_by_sex, 'Sex')
+    div_age, script_age = _plot(nc_by_age, 'Age')
+    div_operator, script_operator = _plot(nc_by_operator, 'Operator')
+    div_vendor, script_vendor = _plot(nc_by_vendor, 'Vendor')
+    div_site, script_site = _plot(nc_by_site, 'Site')
+    div_weight, script_weight = _plot(nc_by_weight, 'Weight')
+
+    plots = {
+        'time' : Plot(div=div, script=script),
+        'sex' : Plot(div=div_sex, script=script_sex),
+        'age' : Plot(div=div_age, script=script_age),
+        'operator' : Plot(div=div_operator, script=script_operator),
+        'vendor' : Plot(div=div_vendor, script=script_vendor),
+        'site' : Plot(div=div_site, script=script_site),
+        'weight' : Plot(div=div_weight, script=script_weight),
+    }
+    return plots
 
 
 def horizontal_audit(dataset: BaseDataset,
@@ -302,7 +397,8 @@ def generate_report(hz_audit: dict,
                     vt_audit: dict,
                     report_path: str or Path,
                     sub_lists_dir_path: str,
-                    output_dir: Union[Path, str]) -> Path:
+                    output_dir: Union[Path, str],
+                    plots: None) -> Path:
     """
     Generates an HTML report aggregating and summarizing the non-compliance
     discovered in the dataset.
@@ -350,6 +446,8 @@ def generate_report(hz_audit: dict,
         sequence_pairs=vt_audit['sequence_pairs'],
         parameters=vt_audit['parameters']
     )
+
+    report_formatter.collect_plots(**plots)
     report_formatter.render()
     # Generate the HTML report and save it to the output_path
     return Path(report_path)

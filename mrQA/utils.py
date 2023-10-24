@@ -6,7 +6,7 @@ import typing
 import unicodedata
 import warnings
 from collections import Counter
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from itertools import takewhile
 from pathlib import Path
 from subprocess import run, CalledProcessError, TimeoutExpired
@@ -1258,3 +1258,11 @@ def infer_protocol(dataset: BaseDataset,
             ref_protocol.add_sequence_from_dict(seq_id, param_dict)
 
     return ref_protocol
+
+
+def previous_month(dt):
+    return dt.replace(day=1) - timedelta(days=1)
+
+
+def next_month(dt):
+    return dt.replace(day=28) + timedelta(days=5)
