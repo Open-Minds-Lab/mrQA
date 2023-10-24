@@ -1129,8 +1129,17 @@ def modify_sequence_name(seq: "BaseSequence", stratify_by: str) -> str:
         Modified sequence name
     """
     # TODO: change stratify_by from attributes to acquisition parameters
+    stratify_value = None
     if stratify_by:
-        stratify_value = getattr(seq, stratify_by)
+        try:
+            stratify_value = getattr(seq, stratify_by)
+        except AttributeError:
+            try:
+                stratify_value = seq[stratify_by]
+            except KeyError:
+                logger.warning(f"Attribute {stratify_by} not found in "
+                               f"sequence {seq.name}")
+    if stratify_value:
         seq_name_with_stratify = ATTRIBUTE_SEPARATOR.join(
             [seq.name, stratify_value])
     else:
