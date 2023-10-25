@@ -7,7 +7,6 @@ from typing import Union, Dict, Optional
 from MRdataset import save_mr_dataset, BaseDataset, DatasetEmptyException
 from bokeh.embed import components
 from bokeh.plotting import figure
-
 from mrQA import logger
 from mrQA.base import CompliantDataset
 from mrQA.formatter import HtmlFormatter
@@ -119,86 +118,54 @@ def plot_patterns(dataset, config_path=None):
         if attr not in _dict:
             _dict[attr] = 0
         _dict[attr] += 1
+        return _dict
 
-    def _plot(_dict, label):
-        y = list(_dict.values())
-        x = list(_dict.keys())
-        if label == 'Sex':
-            x_range = ['M', 'F', 'O']
-        else:
-            x_range = x
+    def plot_components(x, y, x_range, label, width):
         p = figure(x_range=x_range, x_axis_label=label,
                    y_axis_label="Number of Deviations",
                    width=800, height=300)
-        p.vbar(x=x, top=y, width=0.9, fill_color="#b3de69")
+        p.vbar(x=x, top=y, width=width, fill_color="#b3de69")
+        if label == 'ContentDate':
+            cumulative_nc_by_time = []
+            for i, t in enumerate(y):
+                cumulative_nc_by_time.append(sum(y[:i + 1]))
+            p.line(x=x, y=cumulative_nc_by_time,
+                   legend_label="Cumulative Deviations over Time",
+                   line_width=2, color='red')
+            # map dataframe indices to date strings and use as label overrides
+            p.xaxis.major_label_overrides = {
+                i: date.strftime('%b %d %Y') for i, date in enumerate(x)
+            }
         return components(p)
 
     plots_config = get_config(config_path=config_path, report_type='plots')
     include_params = plots_config.get("include_parameters", None)
     Plot = namedtuple('Plot', ['div', 'script'])
+    for parameter in include_params:
+        nc_by_param = {}
+        for seq_name in dataset.get_sequence_ids():
+            for subj, sess, run, seq in dataset.traverse_horizontal(seq_name):
+                nc_by_param = _update_dict(seq[parameter].get_value(),
+                                           nc_by_param)
 
-    nc_by_time = {}
-    nc_by_sex = {}
-    nc_by_age = {}
-    nc_by_operator = {}
-    nc_by_vendor = {}
-    nc_by_site = {}
-    nc_by_weight = {}
+        nc_by_param = dict(sorted(nc_by_param.items()))
+        y = list(nc_by_param.values())
+        x = list(nc_by_param.keys())
+        width = 0.9
+        x_range = x
+        if parameter == 'ContentDate':
+            width = timedelta(days=1)
+            x_range = [previous_month(min(x)), next_month(max(x))]
+        elif parameter in ('PatientAge', 'PatientWeight'):
+            x_range = [min(x) - 1, max(x) + 1]
 
-    for seq_name in dataset.get_sequence_ids():
-        for subj, sess, run, seq in dataset.traverse_horizontal(seq_name):
-            _update_dict(seq.timestamp, nc_by_time)
-            _update_dict(seq['PatientSex'], nc_by_sex)
-            _update_dict(seq['PatientAge'], nc_by_age)
-            _update_dict(seq['PatientWeight'], nc_by_weight)
-            _update_dict(seq['OperatorsName'], nc_by_operator)
-            _update_dict(seq['InstitutionName'], nc_by_site)
-            _update_dict(seq['Manufacturer'].get_value(), nc_by_vendor)
-
-    nc_by_time = dict(sorted(nc_by_time.items()))
-    nc_by_sex = dict(sorted(nc_by_sex.items()))
-    nc_by_age = dict(sorted(nc_by_age.items()))
-    nc_by_vendor = dict(sorted(nc_by_vendor.items()))
-    nc_by_site = dict(sorted(nc_by_site.items()))
-    nc_by_weight = dict(sorted(nc_by_weight.items()))
-
-    cumulative_nc_by_time = []
-    nc_counts = list(nc_by_time.values())
-    for i, t in enumerate(nc_counts):
-        cumulative_nc_by_time.append(sum(nc_counts[:i+1]))
-
-    y = list(nc_by_time.values())
-    x = list(nc_by_time.keys())
-    x_range = [previous_month(min(x)), next_month(max(x))]
-    p = figure(x_range=x_range, x_axis_label="Time",
-               y_axis_label="Number of Deviations",
-               width=800, height=300)
-    p.vbar(x=x, top=y, width=timedelta(days=1),  fill_color="#b3de69")
-    p.line(x=x, y=cumulative_nc_by_time,
-           legend_label="Cumulative Deviations over Time",
-           line_width=2, color='red')
-    # map dataframe indices to date strings and use as label overrides
-    p.xaxis.major_label_overrides = {
-        i: date.strftime('%b %d %Y') for i, date in enumerate(x)
-    }
-
-    div, script = components(p)
-    div_sex, script_sex = _plot(nc_by_sex, 'Sex')
-    div_age, script_age = _plot(nc_by_age, 'Age')
-    div_operator, script_operator = _plot(nc_by_operator, 'Operator')
-    div_vendor, script_vendor = _plot(nc_by_vendor, 'Vendor')
-    div_site, script_site = _plot(nc_by_site, 'Site')
-    div_weight, script_weight = _plot(nc_by_weight, 'Weight')
-
-    plots = {
-        'time' : Plot(div=div, script=script),
-        'sex' : Plot(div=div_sex, script=script_sex),
-        'age' : Plot(div=div_age, script=script_age),
-        'operator' : Plot(div=div_operator, script=script_operator),
-        'vendor' : Plot(div=div_vendor, script=script_vendor),
-        'site' : Plot(div=div_site, script=script_site),
-        'weight' : Plot(div=div_weight, script=script_weight),
-    }
+        try:
+            div, script = plot_components(x=x, y=y, width=width,
+                                          x_range=x_range, label=parameter)
+            plots[parameter] = Plot(div=div, script=script)
+        except ValueError as e:
+            logger.error(f"Skipping plot. Unable to plot parameter {parameter}."
+                         f" Got {e}")
     return plots
 
 
