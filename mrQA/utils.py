@@ -14,14 +14,13 @@ from typing import Union, List, Optional, Any, Iterable
 
 from MRdataset import BaseDataset, is_dicom_file
 from dateutil import parser
-from protocol import BaseSequence, MRImagingProtocol, SiemensMRImagingProtocol
-
 from mrQA import logger
 from mrQA.base import CompliantDataset, NonCompliantDataset, UndeterminedDataset
 from mrQA.config import past_records_fpath, report_fpath, mrds_fpath, \
     subject_list_dir, DATE_SEPARATOR, CannotComputeMajority, \
     Unspecified, \
     EqualCount, status_fpath, ATTRIBUTE_SEPARATOR
+from protocol import BaseSequence, MRImagingProtocol, SiemensMRImagingProtocol
 
 
 def get_reference_protocol(dataset: BaseDataset,
@@ -55,7 +54,7 @@ def get_reference_protocol(dataset: BaseDataset,
     return ref_protocol
 
 
-def get_config(config_path: Union[str, Path], audit='hz') -> dict:
+def get_config(config_path: Union[str, Path], report_type='hz') -> dict:
     try:
         config_dict = get_config_from_file(config_path)
     except (ValueError, FileNotFoundError, TypeError) as e:
@@ -63,12 +62,15 @@ def get_config(config_path: Union[str, Path], audit='hz') -> dict:
                      f'a valid path to the configuration JSON file.')
         raise e
 
-    if audit == 'hz':
+    if report_type == 'hz':
         key = "horizontal_audit"
-    elif audit == 'vt':
+    elif report_type == 'vt':
         key = "vertical_audit"
+    elif report_type == 'plots':
+        key = "plots"
     else:
-        raise ValueError(f'Invalid audit type {audit}. Expected "hz" or "vt"')
+        raise ValueError(f'Invalid audit type {report_type}. '
+                         f'Expected "hz" or "vt"')
 
     audit_config = config_dict.get(key, None)
     if audit_config is None:

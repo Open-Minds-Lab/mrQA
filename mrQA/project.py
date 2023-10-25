@@ -196,7 +196,7 @@ def horizontal_audit(dataset: BaseDataset,
 
     """
     hz_audit_config = get_config(config_path=config_path,
-                                 audit='hz')
+                                 report_type='hz')
     ref_protocol = get_reference_protocol(dataset=dataset,
                                           reference_path=reference_path,
                                           config=hz_audit_config)
@@ -292,7 +292,7 @@ def vertical_audit(dataset: BaseDataset,
         Path to the config file
     """
     vt_audit_config = get_config(config_path=config_path,
-                                 audit='vt')
+                                 report_type='vt')
     compliant_ds, non_compliant_ds, _ = _init_datasets(dataset)
     eval_dict = {
         'complete_ds': dataset,
@@ -314,7 +314,8 @@ def vertical_audit(dataset: BaseDataset,
         logger.warn('No sequence pairs provided. Comparing all possible '
                     'sequence pairs.')
         chosen_pairs = list(combinations(dataset.get_sequence_ids(), 2))
-
+    # check pair are queryable, all the pairs are not present
+    # throw an error if any of the pair is not present
     used_pairs = set()
     # assuming that sequence_ids are list of 2
     for seq1_name, seq2_name in chosen_pairs:
@@ -370,7 +371,7 @@ def generate_report(hz_audit: dict,
                     report_path: str or Path,
                     sub_lists_dir_path: str,
                     output_dir: Union[Path, str],
-                    plots: None) -> Path:
+                    plots=None) -> Path:
     """
     Generates an HTML report aggregating and summarizing the non-compliance
     discovered in the dataset.
