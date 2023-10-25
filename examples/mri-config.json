@@ -57,6 +57,17 @@
             "ShimSetting"
         ]
     },
+    "plots": {
+        "include_parameters": [
+            "ContentDate",
+            "PatientSex",
+            "PatientAge",
+            "PatientWeight",
+            "OperatorsName",
+            "InstitutionName",
+            "Manufacturer"
+        ]
+    },
     "exclude_subjects": [
         "210098",
         "210078"

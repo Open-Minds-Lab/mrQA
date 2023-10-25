@@ -95,7 +95,8 @@ def check_compliance(dataset: BaseDataset,
                                       config_path=config_path)
 
     # Generate plots/visualization
-    plot_results = plot_patterns(dataset=hz_audit_results['non_compliant'])
+    plot_results = plot_patterns(dataset=hz_audit_results['non_compliant'],
+                                 config_path=config_path)
 
     # Generate the report if checking compliance was successful
     generate_report(hz_audit=hz_audit_results,
@@ -111,7 +112,9 @@ def check_compliance(dataset: BaseDataset,
     return hz_audit_results, vt_audit_results
 
 
-def plot_patterns(dataset):
+def plot_patterns(dataset, config_path=None):
+    plots = {}
+
     def _update_dict(attr, _dict):
         if attr not in _dict:
             _dict[attr] = 0
@@ -130,6 +133,8 @@ def plot_patterns(dataset):
         p.vbar(x=x, top=y, width=0.9, fill_color="#b3de69")
         return components(p)
 
+    plots_config = get_config(config_path=config_path, report_type='plots')
+    include_params = plots_config.get("include_parameters", None)
     Plot = namedtuple('Plot', ['div', 'script'])
 
     nc_by_time = {}
