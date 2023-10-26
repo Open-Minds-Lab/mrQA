@@ -139,6 +139,9 @@ def plot_patterns(dataset, config_path=None):
         return components(p)
 
     plots_config = get_config(config_path=config_path, report_type='plots')
+    if not plots_config:
+        return plots
+
     include_params = plots_config.get("include_parameters", None)
     Plot = namedtuple('Plot', ['div', 'script'])
     for parameter in include_params:

@@ -75,14 +75,15 @@ def get_config(config_path: Union[str, Path], report_type='hz') -> dict:
     audit_config = config_dict.get(key, None)
     if audit_config is None:
         logger.error(
-            f'No {key} config found in config file. Note'
+            f'No {key} config found in config file. Note '
             f'that the config file should have a key named '
             f'"{key}".')
-    include_params = audit_config.get('include_parameters', None)
-    if include_params is None:
-        logger.warn('Parameters to be included in the compliance check are '
-                    'not provided. All parameters will be included in the '
-                    f'{key}')
+    else:
+        include_params = audit_config.get('include_parameters', None)
+        if include_params is None:
+            logger.warn('Parameters to be included in the compliance check are '
+                        'not provided. All parameters will be included in the '
+                        f'{key}')
     return audit_config
 
 
