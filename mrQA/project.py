@@ -7,6 +7,8 @@ from typing import Union, Dict, Optional
 from MRdataset import save_mr_dataset, BaseDataset, DatasetEmptyException
 from bokeh.embed import components
 from bokeh.plotting import figure
+from protocol import UnspecifiedType
+
 from mrQA import logger
 from mrQA.base import CompliantDataset
 from mrQA.formatter import HtmlFormatter
@@ -148,8 +150,14 @@ def plot_patterns(dataset, config_path=None):
         nc_by_param = {}
         for seq_name in dataset.get_sequence_ids():
             for subj, sess, run, seq in dataset.traverse_horizontal(seq_name):
-                nc_by_param = _update_dict(seq[parameter].get_value(),
-                                           nc_by_param)
+                value = seq[parameter].get_value()
+                if isinstance(value, UnspecifiedType):
+                    continue
+                nc_by_param = _update_dict(value, nc_by_param)
+
+        if not nc_by_param:
+            logger.error(f"Unable to read {parameter}. Skipping plot.")
+            continue
 
         nc_by_param = dict(sorted(nc_by_param.items()))
         y = list(nc_by_param.values())
