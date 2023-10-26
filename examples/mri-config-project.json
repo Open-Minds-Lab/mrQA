@@ -12,10 +12,7 @@
     "vertical_audit": {
         "stratify_by": "series_number",
         "include_parameters": [
-            "Rows",
-            "Columns",
-            "AcquisitionMatrix",
-            "PixelSpacing",
+            "FieldOfView",
             "PhaseEncodingDirection",
             "ShimMode",
             "ShimSetting"
@@ -56,7 +53,19 @@
             "VariableFlipAngleFlag",
             "ImageOrientationPatient",
             "NumberOfAverages",
-            "ShimMode"
+            "ShimMode",
+            "FieldOfView"
+        ]
+    },
+    "plots": {
+        "include_parameters": [
+            "ContentDate",
+            "PatientSex",
+            "PatientAge",
+            "PatientWeight",
+            "OperatorsName",
+            "InstitutionName",
+            "Manufacturer"
         ]
     }
 }
