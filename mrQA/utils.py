@@ -9,18 +9,19 @@ from collections import Counter
 from datetime import datetime, timedelta, timezone
 from itertools import takewhile
 from pathlib import Path
-from subprocess import run, CalledProcessError, TimeoutExpired
+from subprocess import run, CalledProcessError, TimeoutExpired, Popen
 from typing import Union, List, Optional, Any, Iterable
 
 from MRdataset import BaseDataset, is_dicom_file
 from dateutil import parser
+from protocol import BaseSequence, MRImagingProtocol, SiemensMRImagingProtocol
+
 from mrQA import logger
 from mrQA.base import CompliantDataset, NonCompliantDataset, UndeterminedDataset
 from mrQA.config import past_records_fpath, report_fpath, mrds_fpath, \
     subject_list_dir, DATE_SEPARATOR, CannotComputeMajority, \
     Unspecified, \
     EqualCount, status_fpath, ATTRIBUTE_SEPARATOR
-from protocol import BaseSequence, MRImagingProtocol, SiemensMRImagingProtocol
 
 
 def get_reference_protocol(dataset: BaseDataset,
@@ -538,7 +539,7 @@ def execute_local(script_path: str) -> None:
     cmd = f'bash {str(script_path)}'
 
     try:
-        run(cmd, check=True, shell=True)
+        Popen(cmd, close_fds=True, shell=True)
     except FileNotFoundError as exc:
         logger.error(
             "Process failed because 'bash' could not be found.\n %s", exc)
