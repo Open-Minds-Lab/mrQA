@@ -113,6 +113,21 @@ class NonCompliantDataset(BaseDataset):
         self._nc_flat_map = {}
         self._nc_tree_map = {}
         self._nc_params_map = {}
+        self._vt_sequences = set()
+
+    def get_sequences_with_vt(self):
+        """
+        Returns a list of all sequences that were checked for vertical
+        audit.
+        """
+        return list(self._vt_sequences)
+
+    def add_sequence_pair_names(self, list_seqs):
+        """
+        Add a sequence to the list of sequences that were checked for
+        vertical audit.
+        """
+        self._vt_sequences.add(list_seqs)
 
     def get_non_compliant_param_ids(self, seq_id):
         """
@@ -129,7 +144,8 @@ class NonCompliantDataset(BaseDataset):
         else:
             return list(self._nc_params_map[seq_id])
 
-    def get_non_compliant_param_values(self, seq_id, param_name, ref_seq=None):
+    def get_non_compliant_param_values(self, seq_id, param_name,
+                                       ref_seq=None):
         """
         Returns a list of all non-compliant parameter values for a given
         sequence id and parameter name.
@@ -171,14 +187,73 @@ class NonCompliantDataset(BaseDataset):
                         if ref_seq in \
                             self._nc_tree_map[param_name][seq_id][subject_id][
                                 session_id]:
-                            for run_id in \
-                                self._nc_tree_map[param_name][seq_id][
-                                    subject_id][session_id][ref_seq]:
-                                param = self._nc_tree_map[param_name][seq_id][
-                                    subject_id][session_id][ref_seq][run_id]  # noqa
-                                path = self.get_path(subject_id, session_id,
-                                                     seq_id, run_id)
-                                yield param, (subject_id, path)
+                            yield from self._get_all_non_compliant_param_values(
+                                seq_id=seq_id, param_name=param_name,
+                                subject_id=subject_id, session_id=session_id,
+                                ref_seq=ref_seq)
+
+    def _get_all_non_compliant_param_values(self, seq_id, param_name,
+                                            subject_id,
+                                            session_id, ref_seq=None):
+        """
+        Returns a list of all non-compliant parameter values for a given
+        sequence id and parameter name.
+        """
+        for run_id in self._nc_tree_map[param_name][seq_id][
+                subject_id][session_id][ref_seq]:
+            param = self._nc_tree_map[param_name][seq_id][
+                subject_id][session_id][ref_seq][run_id]  # noqa
+            path = self.get_path(subject_id, session_id,
+                                 seq_id, run_id)
+            yield param, (subject_id, path)
+
+    def get_non_compliant_subject_ids(self, seq_id, param_name, ref_seq=None):
+        """
+        Returns a list of all non-compliant subject ids for a given
+        sequence id and parameter name. Created for vertical audit report
+        as we are not listing any parameter values or paths in the report, just
+        the subject ids.
+        """
+        if ref_seq is None:
+            ref_seq = '__NOT_SPECIFIED__'
+        if param_name in self._nc_params_map[seq_id]:
+            if seq_id in self._nc_tree_map[param_name]:
+                for subject_id in self._nc_tree_map[param_name][seq_id]:
+                    for session_id in (
+                            self._nc_tree_map[param_name][seq_id][subject_id]):
+                        if ref_seq in \
+                            self._nc_tree_map[param_name][seq_id][subject_id][
+                                session_id]:
+                            yield subject_id
+
+    def total_non_compliant_subjects_by_sequence(self, seq_id, ref_seq=None):
+        """
+        Returns the total number of non-compliant subjects for a given
+        sequence id and parameter name.
+        """
+        subject_ids = set()
+        for parameter in self.get_non_compliant_param_ids(seq_id=seq_id):
+            for subject_id in self.get_non_compliant_subject_ids(
+                    seq_id=seq_id,
+                    param_name=parameter,
+                    ref_seq=ref_seq):
+                subject_ids.add(subject_id)
+        return len(subject_ids)
+
+    def total_non_compliant_subjects_by_parameter(self, param_name):
+        """
+        Returns the total number of non-compliant subjects for a given
+        sequence id and parameter name.
+        """
+        total_subjects = set()
+        for seq_id, ref_seq in self.get_sequences_with_vt():
+            if seq_id in self._nc_params_map:
+                subjects = list(self.get_non_compliant_subject_ids(
+                                                        seq_id=seq_id,
+                                                        param_name=param_name,
+                                                        ref_seq=ref_seq))
+                total_subjects.update(subjects)
+        return len(total_subjects)
 
     def get_non_compliant_params(self, subject_id, session_id, seq_id, run_id):
         """
