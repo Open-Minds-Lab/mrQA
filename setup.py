@@ -19,6 +19,7 @@ requirements = [
     "dictdiffer",
     "jinja2>=3.0.3",
     "protocol",
+    "bokeh",
 ]
 
 test_requirements = ['pytest>=3', 'hypothesis']

@@ -340,6 +340,8 @@ def vertical_audit(dataset: BaseDataset,
             )
             seq1_name = modify_sequence_name(seq1, stratify_by)
             seq2_name = modify_sequence_name(seq2, stratify_by)
+
+            non_compliant_ds.add_sequence_pair_names((seq1_name, seq2_name))
             used_pairs.add((seq1_name, seq2_name))
 
             if is_compliant:

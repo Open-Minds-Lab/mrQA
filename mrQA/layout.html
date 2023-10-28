@@ -7,8 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bokeh/3.0.1/bokeh.min.js"
-        integrity="sha512-p7EUyPmeDeOwHiu7fIZNboAcQLxei3sWtXoHoShWWiPNUSRng/Xs5JPcaFPRa4dKy9IuHjyIQuLE4caGCwuewA=="
-        crossorigin="anonymous" referrerpolicy="no-referrer">
+            integrity="sha512-p7EUyPmeDeOwHiu7fIZNboAcQLxei3sWtXoHoShWWiPNUSRng/Xs5JPcaFPRa4dKy9IuHjyIQuLE4caGCwuewA=="
+            crossorigin="anonymous" referrerpolicy="no-referrer">
     </script>
 
     <style>
@@ -95,10 +95,10 @@
 <h2>Summary of non-compliance: {{ hz['compliant_ds'].name }}</h2>
 {% if not skip_plots %}
     {% for key in plots %}
-    <div style="width: 40%; display: block;">
-        {{ plots[key].div | safe }}
-        {{ plots[key].script | safe }}
-    </div>
+        <div style="width: 40%; display: block;">
+            {{ plots[key].div | safe }}
+            {{ plots[key].script | safe }}
+        </div>
     {% endfor %}
 {% endif %}
 
@@ -108,6 +108,7 @@
         <thead>
         <tr>
             <th class="tg-0pky" colspan="1">Parameters</th>
+             <th class="tg-0pky" colspan="1">	# non-compliant (%)</th>
             {% for pair in vt['sequence_pairs'] %}
                 <th class="tg-0pky" colspan="1">{{ pair[0] }}, <br>{{ pair[1] }}
                 </th>
@@ -118,18 +119,22 @@
         {% for param in vt['parameters'] %}
             <tr>
             <td class="tg-0pky" colspan="1">{{ param }}</td>
+            <td class="tg-0pky" colspan="1">
+            {% set total_subjects = vt['complete_ds'].subjects() | length | float %}
+                {% set nc_subjects = vt['non_compliant_ds'].total_non_compliant_subjects_by_parameter(param) | float %}
+                {% set percent_non_comp = 100 * nc_subjects/total_subjects %}
+                {{nc_subjects}} <br> ({{percent_non_comp| round(2, 'floor')}} %)
+                    </td>
             {% for pair in vt['sequence_pairs'] %}
                 <td class="tg-0pky" colspan="1">
                     {% if param in vt['non_compliant_ds'].get_non_compliant_param_ids(pair[0]) %}
-                        {% set val = vt['non_compliant_ds'].get_non_compliant_param_values(pair[0], param, pair[1]) %}
-                        {% set val_dict = utils.tuples2dict(val) %}
-                        {% for param, tuples in val_dict.items() %}
-                            {% for sub, path in tuples %}
-                                <a href="{{ path }}">{{ sub }}</a>, <br>
-                            {% endfor %}
+                        {% set val = vt['non_compliant_ds'].get_non_compliant_subject_ids(pair[0], param, pair[1]) %}
+                        {% for sub in val %}
+                            {{ sub }}, <br>
                         {% endfor %}
                     {% endif %}</td>
             {% endfor %}
+
         {% endfor %}
         </tbody>
     </table>

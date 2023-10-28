@@ -47,19 +47,6 @@ def configure_logger(log, output_dir, mode='w', level='ERROR'):
     return log
 
 
-STRATEGIES_ALLOWED = ['majority', ]
-
-PARAMETER_NAMES = [
-    'Manufacturer',
-    'BodyPartExamined',
-    'RepetitionTime',
-    'MagneticFieldStrength',
-    'FlipAngle',
-    'EchoTrainLength',
-    'PixelBandwidth',
-    'NumberOfPhaseEncodingSteps',
-]
-
 PATH_CONFIG = {
     'data_source': Path.home() / 'scan_data',
     'output_dir': Path.home() / 'mrqa_reports',
@@ -72,22 +59,27 @@ Unspecified = UnspecifiedType()
 
 
 def past_records_fpath(folder):
+    """Constructs the path to the past record file"""
     return Path(folder / 'past_record.txt')
 
 
 def status_fpath(folder):
+    """Constructs the path to the status file"""
     return Path(folder / 'non_compliance_log.txt')
 
 
 def report_fpath(folder_path, fname):
+    """Constructs the path to the report file"""
     return folder_path / f'{fname}.html'
 
 
 def mrds_fpath(folder_path, fname):
+    """Constructs the path to the MRDS file"""
     return folder_path / f'{fname}{MRDS_EXT}'
 
 
 def subject_list_dir(folder_path, fname):
+    """Constructs the path to the folder containing subject list files"""
     return folder_path / f'{fname}_files'
 
 

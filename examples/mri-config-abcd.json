@@ -11,7 +11,44 @@
     "use_echonumbers": true,
     "vertical_audit": {
         "stratify_by": null,
-        "sequences": null,
+        "sequences": [
+            [
+                "ABCD-DTI_SIEMENS_mosaic_original_baseline_year_1_arm_1",
+                "ABCD-Diffusion-FM-AP_SIEMENS_original_baseline_year_1_arm_1"
+            ],
+            [
+                "ABCD-DTI_SIEMENS_mosaic_original_baseline_year_1_arm_1",
+                "ABCD-Diffusion-FM-PA_SIEMENS_original_baseline_year_1_arm_1"
+            ],
+            [
+                "ABCD-fMRI-FM-AP_SIEMENS_original_baseline_year_1_arm_1",
+                "ABCD-rsfMRI_SIEMENS_mosaic_original_baseline_year_1_arm_1"
+            ],
+            [
+                "ABCD-fMRI-FM-PA_SIEMENS_original_baseline_year_1_arm_1",
+                "ABCD-rsfMRI_SIEMENS_mosaic_original_baseline_year_1_arm_1"
+            ],
+            [
+                "ABCD-fMRI-FM_GE_original_baseline_year_1_arm_1",
+                "ABCD-rsfMRI_GE_original_baseline_year_1_arm_1"
+            ],
+            [
+                "ABCD-DTI_PHILIPS_original_baseline_year_1_arm_1",
+                "ABCD-Diffusion-FM-AP_PHILIPS_original_baseline_year_1_arm_1"
+            ],
+            [
+                "ABCD-DTI_PHILIPS_original_baseline_year_1_arm_1",
+                "ABCD-Diffusion-FM-PA_PHILIPS_original_baseline_year_1_arm_1"
+            ],
+            [
+                "ABCD-fMRI-FM-AP_PHILIPS_original_baseline_year_1_arm_1",
+                "ABCD-rsfMRI_PHILIPS_original_baseline_year_1_arm_1"
+            ],
+            [
+                "ABCD-fMRI-FM-PA_PHILIPS_original_baseline_year_1_arm_1",
+                "ABCD-rsfMRI_PHILIPS_original_baseline_year_1_arm_1"
+            ]
+        ],
         "include_parameters": [
             "FieldOfView",
             "PhaseEncodingDirection",

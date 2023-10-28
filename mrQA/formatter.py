@@ -221,6 +221,7 @@ class HtmlFormatter(BaseFormatter):
             self.skip_vt_report = True
 
         self.vt_audit = {
+            'complete_ds': complete_ds,
             'compliant_ds': compliant_ds,
             'non_compliant_ds': non_compliant_ds,
             'sequence_pairs': sequence_pairs,
