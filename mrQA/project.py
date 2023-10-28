@@ -128,12 +128,12 @@ def plot_patterns(dataset, config_path=None):
                    width=800, height=300)
         p.vbar(x=x, top=y, width=width, fill_color="#b3de69")
         if label == 'ContentDate':
-            cumulative_nc_by_time = []
-            for i, t in enumerate(y):
-                cumulative_nc_by_time.append(sum(y[:i + 1]))
-            p.line(x=x, y=cumulative_nc_by_time,
-                   legend_label="Cumulative Deviations over Time",
-                   line_width=2, color='red')
+            # cumulative_nc_by_time = []
+            # for i, t in enumerate(y):
+            #     cumulative_nc_by_time.append(sum(y[:i + 1]))
+            # p.line(x=x, y=cumulative_nc_by_time,
+            #        legend_label="Cumulative Deviations over Time",
+            #        line_width=2, color='red')
             # map dataframe indices to date strings and use as label overrides
             p.xaxis.major_label_overrides = {
                 i: date.strftime('%b %d %Y') for i, date in enumerate(x)
@@ -169,6 +169,7 @@ def plot_patterns(dataset, config_path=None):
             x_range = [previous_month(min(x)), next_month(max(x))]
         elif parameter in ('PatientAge', 'PatientWeight'):
             x_range = [min(x) - 1, max(x) + 1]
+            width = 0.1
 
         try:
             div, script = plot_components(x=x, y=y, width=width,
