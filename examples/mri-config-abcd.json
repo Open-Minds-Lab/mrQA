@@ -99,6 +99,7 @@
         "include_parameters": [
             "ContentDate",
             "PatientSex",
+            "PatientAge",
             "Manufacturer"
         ]
     }

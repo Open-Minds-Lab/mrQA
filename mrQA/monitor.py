@@ -203,13 +203,13 @@ def monitor(name: str,
                                  output_dir=output_dir)
         new_dataset = None
 
-    compliance_summary_dict = check_compliance(dataset=dataset,
-                                               output_dir=output_dir,
-                                               decimals=decimals,
-                                               verbose=verbose,
-                                               tolerance=tolerance,
-                                               reference_path=reference_path,
-                                               config_path=config_path)
+    compliance_summary_dict, _ = check_compliance(dataset=dataset,
+                                                  output_dir=output_dir,
+                                                  decimals=decimals,
+                                                  verbose=verbose,
+                                                  tolerance=tolerance,
+                                                  reference_path=reference_path,
+                                                  config_path=config_path)
 
     log_latest_non_compliance(
         ncomp_data=compliance_summary_dict['non_compliant'],
