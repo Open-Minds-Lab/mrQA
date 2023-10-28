@@ -1,6 +1,7 @@
 import os
 import subprocess
 from pathlib import Path
+from time import sleep
 from typing import Union, Iterable
 
 from MRdataset import valid_dirs
@@ -122,6 +123,8 @@ def _run_single_batch(script_path: Union[str, Path],
             # to submit the script
             # TODO: Add try/except block here
             subprocess.run(['sbatch', script_path], check=True, shell=True)
+            # Without any delay, you may recieve NODE_FAIL error
+            sleep(2)
             # print(out.stdout)
             # some way to check was submitted/accepted
 
