@@ -1033,8 +1033,8 @@ def find_terminal_folders(root, leave=True, position=0):
             terminal.append(sd1)
         else:
             for sd2 in level2_subdirs:
-                terminal.extend(find_terminal_folders(sd2), leave=False,
-                                position=1)
+                terminal.extend(find_terminal_folders(sd2, leave=False,
+                                position=1))
 
     return terminal
 
