@@ -15,6 +15,7 @@ from typing import Union, List, Optional, Any, Iterable
 from MRdataset import BaseDataset, is_dicom_file
 from dateutil import parser
 from protocol import BaseSequence, MRImagingProtocol, SiemensMRImagingProtocol
+from tqdm import tqdm
 
 from mrQA import logger
 from mrQA.base import CompliantDataset, NonCompliantDataset, UndeterminedDataset
@@ -1001,12 +1002,19 @@ def is_folder_with_no_subfolders(fpath):
     if not fpath.is_dir():
         raise FileNotFoundError(f'Folder not found: {fpath}')
 
-    sub_dirs = [file_ for file_ in fpath.iterdir() if file_.is_dir()]
+    sub_dirs = []
+    for file_ in fpath.iterdir():
+        if file_.is_dir():
+            sub_dirs.append(file_)
+        elif file_.suffix == '.dcm':
+            # you have reached a folder which contains '.dcm' files
+            break
 
+    # sub_dirs = [file_ for file_ in fpath.iterdir() if file_.is_dir()]
     return len(sub_dirs) < 1, sub_dirs
 
 
-def find_terminal_folders(root):
+def find_terminal_folders(root, leave=True, position=0):
     """
     Find all the terminal folders in a given directory
     """
@@ -1019,13 +1027,14 @@ def find_terminal_folders(root):
         return [root, ]
 
     terminal = list()
-    for sd1 in sub_dirs:
+    for sd1 in tqdm(sub_dirs, leave=leave, position=position):
         no_more_subdirs2, level2_subdirs = is_folder_with_no_subfolders(sd1)
         if no_more_subdirs2:
             terminal.append(sd1)
         else:
             for sd2 in level2_subdirs:
-                terminal.extend(find_terminal_folders(sd2))
+                terminal.extend(find_terminal_folders(sd2), leave=False,
+                                position=1)
 
     return terminal
 
