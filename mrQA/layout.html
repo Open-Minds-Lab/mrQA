@@ -6,9 +6,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bokeh/3.0.1/bokeh.min.js"
-            integrity="sha512-p7EUyPmeDeOwHiu7fIZNboAcQLxei3sWtXoHoShWWiPNUSRng/Xs5JPcaFPRa4dKy9IuHjyIQuLE4caGCwuewA=="
-            crossorigin="anonymous" referrerpolicy="no-referrer">
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/bokeh/3.0.1/bokeh.min.js"
+        integrity="sha512-p7EUyPmeDeOwHiu7fIZNboAcQLxei3sWtXoHoShWWiPNUSRng/Xs5JPcaFPRa4dKy9IuHjyIQuLE4caGCwuewA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer">
     </script>
 
     <style>
@@ -123,7 +124,8 @@
                 {% set total_subjects = vt['complete_ds'].subjects() | length | float %}
                 {% set nc_subjects = vt['non_compliant_ds'].total_non_compliant_subjects_by_parameter(param) | float %}
                 {% set percent_non_comp = 100 * nc_subjects/total_subjects %}
-                {{ nc_subjects }} <br> ({{ percent_non_comp| round(2, 'floor') }} %)
+                {{ nc_subjects }} <br>
+                ({{ percent_non_comp| round(2, 'floor') }} %)
             </td>
             {% for pair in vt['sequence_pairs'] %}
                 <td class="tg-0pky" colspan="1">
@@ -141,13 +143,14 @@
             <td></td>
             {% for pair in vt['sequence_pairs'] %}
                 <td class="tg-0pky" colspan="1">
-                    {% if param in vt['non_compliant_ds'].get_non_compliant_param_ids(pair[0]) %}
-                        {% set val = vt['non_compliant_ds'].get_non_compliant_subject_ids(pair[0], param, pair[1]) %}
-                        {% set total_subjects = vt['complete_ds'].get_subject_ids(pair[0]) | length | float %}
-                        {% set nc_subjects = val | length %}
-                        {% set percent_non_comp = 100 * nc_subjects/total_subjects %}
-                        {{ val }} <br> ({{ percent_non_comp| round(2, 'floor') }} %)
-                    {% endif %}</td>
+                    {#                    {% if param in vt['non_compliant_ds'].get_non_compliant_param_ids(pair[0]) %}#}
+                    {% set val = vt['non_compliant_ds'].get_non_compliant_subject_ids(pair[0], param, pair[1]) %}
+                    {% set total_subjects = vt['complete_ds'].get_subject_ids(pair[0]) | length | float %}
+                    {% set nc_subjects = val | length %}
+                    {% set percent_non_comp = 100 * nc_subjects/total_subjects %}
+                    {{ val }} <br> ({{ percent_non_comp| round(2, 'floor') }} %)
+                    {#                    {% endif %}#}
+                </td>
             {% endfor %}
         </tr>
         </tbody>
