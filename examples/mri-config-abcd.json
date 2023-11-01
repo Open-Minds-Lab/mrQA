@@ -64,8 +64,6 @@
             "Columns",
             "AcquisitionMatrix",
             "Manufacturer",
-            "ManufacturersModelName",
-            "SoftwareVersions",
             "MagneticFieldStrength",
             "ReceiveCoilActiveElements",
             "ScanningSequence",
