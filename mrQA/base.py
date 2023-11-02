@@ -216,6 +216,9 @@ class NonCompliantDataset(BaseDataset):
         """
         if ref_seq is None:
             ref_seq = '__NOT_SPECIFIED__'
+        if seq_id not in self._nc_params_map:
+            # return empty generator
+            return
         if param_name in self._nc_params_map[seq_id]:
             if seq_id in self._nc_tree_map[param_name]:
                 for subject_id in self._nc_tree_map[param_name][seq_id]:
