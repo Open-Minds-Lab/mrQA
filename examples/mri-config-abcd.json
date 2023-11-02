@@ -95,10 +95,30 @@
     },
     "plots": {
         "include_parameters": [
-            "ContentDate",
-            "PatientSex",
-            "PatientAge",
-            "Manufacturer"
+            {
+                "x": "ContentDate",
+                "hue": null
+            },
+            {
+                "x": "ContentDate",
+                "hue": "Manufacturer"
+            },
+            {
+                "x": "PatientAge",
+                "hue": null
+            },
+            {
+                "x": "PatientSex",
+                "hue": null
+            },
+            {
+                "x": "Manufacturer",
+                "hue": "ManufacturersModelName"
+            },
+            {
+                "x": "Manufacturer",
+                "hue": "SoftwareVersions"
+            }
         ]
     }
 }

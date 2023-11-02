@@ -7,8 +7,6 @@ from typing import Union, Dict, Optional
 from MRdataset import save_mr_dataset, BaseDataset, DatasetEmptyException
 from bokeh.embed import components
 from bokeh.plotting import figure
-from protocol import UnspecifiedType
-
 from mrQA import logger
 from mrQA.base import CompliantDataset
 from mrQA.formatter import HtmlFormatter
@@ -16,6 +14,7 @@ from mrQA.utils import _cli_report, \
     export_subject_lists, make_output_paths, \
     modify_sequence_name, _init_datasets, get_reference_protocol, get_config, \
     previous_month, next_month
+from protocol import UnspecifiedType
 
 
 def check_compliance(dataset: BaseDataset,
@@ -96,8 +95,10 @@ def check_compliance(dataset: BaseDataset,
                                       config_path=config_path)
 
     # Generate plots/visualization
-    plot_results = plot_patterns(dataset=hz_audit_results['non_compliant'],
-                                 config_path=config_path)
+    plot_results = plot_patterns(
+        non_compliant_ds=hz_audit_results['non_compliant'],
+        complete_ds=hz_audit_results['complete_ds'],
+        config_path=config_path)
 
     # Generate the report if checking compliance was successful
     generate_report(hz_audit=hz_audit_results,
@@ -113,7 +114,7 @@ def check_compliance(dataset: BaseDataset,
     return hz_audit_results, vt_audit_results
 
 
-def plot_patterns(dataset, config_path=None):
+def plot_patterns(non_compliant_ds, complete_ds, config_path=None):
     plots = {}
 
     def _update_dict(attr, _dict):
@@ -122,23 +123,43 @@ def plot_patterns(dataset, config_path=None):
         _dict[attr] += 1
         return _dict
 
-    def plot_components(x, y, x_range, label, width):
-        p = figure(x_range=x_range, x_axis_label=label,
-                   y_axis_label="Number of Deviations",
-                   width=800, height=300)
-        p.vbar(x=x, top=y, width=width, fill_color="#b3de69")
-        if label == 'ContentDate':
-            # cumulative_nc_by_time = []
-            # for i, t in enumerate(y):
-            #     cumulative_nc_by_time.append(sum(y[:i + 1]))
-            # p.line(x=x, y=cumulative_nc_by_time,
-            #        legend_label="Cumulative Deviations over Time",
-            #        line_width=2, color='red')
-            # map dataframe indices to date strings and use as label overrides
-            p.xaxis.major_label_overrides = {
-                i: date.strftime('%b %d %Y') for i, date in enumerate(x)
-            }
+    def plot_components(data, x_range, label, width, legend_label=None):
+        colors = ["#c9d9d3", "#718dbf", "#e84d60"][:len(data[label])]
+        if legend_label is None:
+            p = figure(x_range=x_range, x_axis_label=label,
+                       y_axis_label="Number of Deviations (%)",
+                       width=800, height=300,  tools="hover")
+            p.vbar(x=label, width=width, fill_color="#b3de69", source=data)
+            # if label == 'ContentDate':
+            #     p.xaxis.major_label_overrides = {
+            #         i: date.strftime('%b %d %Y') for i, date in enumerate(x)
+            #     }
+        else:
+            p = figure(x_range=x_range, x_axis_label=label,
+                       y_axis_label="Number of Deviations (%)",
+                       width=800, height=300,  tools="hover")
+            p.vbar_stack(legend_label, x=label, width=width, colors=colors,
+                         tools="hover", source=data)
+            # if label == 'ContentDate':
+            #     p.xaxis.major_label_overrides = {
+            #         i: date.strftime('%b %d %Y') for i, date in enumerate(x)
+            #     }
         return components(p)
+
+    def get_counter(dataset, parameter, hue=None):
+        counter = {}
+        for seq_name in dataset.get_sequence_ids():
+            for subj, sess, run, seq in dataset.traverse_horizontal(
+                    seq_name):
+                try:
+                    value = seq[parameter].get_value()
+                except KeyError:
+                    continue
+
+                if isinstance(value, UnspecifiedType):
+                    continue
+                counter = _update_dict(value, counter)
+        return counter
 
     plots_config = get_config(config_path=config_path, report_type='plots')
     if not plots_config:
@@ -146,29 +167,35 @@ def plot_patterns(dataset, config_path=None):
 
     include_params = plots_config.get("include_parameters", None)
     Plot = namedtuple('Plot', ['div', 'script'])
-    for parameter in include_params:
-        nc_by_param = {}
-        for seq_name in dataset.get_sequence_ids():
-            for subj, sess, run, seq in dataset.traverse_horizontal(seq_name):
-                value = seq[parameter].get_value()
-                if isinstance(value, UnspecifiedType):
-                    continue
-                nc_by_param = _update_dict(value, nc_by_param)
+    for args in include_params:
+        parameter = args['x']
+        hue = args['hue']
+        nc_counter = get_counter(non_compliant_ds, parameter)
+        all_scans_counter = get_counter(complete_ds, parameter)
+        normalized_counts = {}
+        for key in nc_counter:
+            if key in all_scans_counter:
+                normalized_counts[key] = 100*nc_counter[key] / all_scans_counter[
+                    key]
 
-        if not nc_by_param:
+        if not normalized_counts:
             logger.error(f"Unable to read {parameter}. Skipping plot.")
             continue
 
-        nc_by_param = dict(sorted(nc_by_param.items()))
-        y = list(nc_by_param.values())
-        x = list(nc_by_param.keys())
+        normalized_counts = dict(sorted(normalized_counts.items()))
+        y = list(normalized_counts.values())
+        x = list(normalized_counts.keys())
         width = 0.9
         x_range = x
+        plot_data = {
+            parameter: x,
+
+        }
         if parameter == 'ContentDate':
             width = timedelta(days=1)
             x_range = [previous_month(min(x)), next_month(max(x))]
         elif parameter in ('PatientAge', 'PatientWeight'):
-            x_range = [min(x) - 1, max(x) + 1]
+            x_range = [min(x) - 0.1, max(x) + 0.1]
             width = 0.1
 
         try:
