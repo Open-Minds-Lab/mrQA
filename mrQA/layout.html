@@ -86,6 +86,14 @@
             margin-bottom: 20px;
         }
 
+        div {
+            margin-bottom: 50px;
+        }
+
+        div:last-of-type {
+            margin-bottom: 0;
+        }
+
     </style>
     <title> {{ title }} </title>
 </head>
@@ -144,11 +152,10 @@
             {% for pair in vt['sequence_pairs'] %}
                 <td class="tg-0pky" colspan="1">
                     {#                    {% if param in vt['non_compliant_ds'].get_non_compliant_param_ids(pair[0]) %}#}
-                    {% set val = vt['non_compliant_ds'].get_non_compliant_subject_ids(pair[0], param, pair[1]) %}
+                    {% set nc_subjects = vt['non_compliant_ds'].total_non_compliant_subjects_by_sequence(pair[0], ref_seq=pair[1]) %}
                     {% set total_subjects = vt['complete_ds'].get_subject_ids(pair[0]) | length | float %}
-                    {% set nc_subjects = val | length %}
                     {% set percent_non_comp = 100 * nc_subjects/total_subjects %}
-                    {{ val }} <br> ({{ percent_non_comp| round(2, 'floor') }} %)
+                    {{ nc_subjects }} <br> ({{ percent_non_comp| round(2, 'floor') }} %)
                     {#                    {% endif %}#}
                 </td>
             {% endfor %}
