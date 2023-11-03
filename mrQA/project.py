@@ -144,9 +144,14 @@ def plot_patterns(non_compliant_ds, complete_ds, config_path=None):
                        y_axis_label="Number of Deviations (%)",
                        width=1200, height=400)
             p.vbar(x='x', top='counts', width=width,source=source, line_color="white",
+                   legend_label=legend_label,
                    fill_color=factor_cmap('x', palette=HighContrast3,
                                           factors=legend_label, start=1, end=2))
             p.xaxis.major_label_orientation = "vertical"
+            p.x_range.range_padding = 0.1
+            p.xgrid.grid_line_color = None
+            p.legend.location = "top_left"
+            p.legend.orientation = "horizontal"
 
         return components(p)
 
@@ -220,9 +225,9 @@ def plot_patterns(non_compliant_ds, complete_ds, config_path=None):
             x_range = [min(x) - 0.1, max(x) + 0.1]
             width = 0.1
 
+        key = "_".join([parameter, hue])
         try:
             # data, x_range, label, width, legend_label=None
-            key = "_".join([parameter, hue])
             div, script = plot_components(data=plot_data, width=width,
                                           x_range=x_range, label=parameter,
                                           legend_label=list(unique_hue))
