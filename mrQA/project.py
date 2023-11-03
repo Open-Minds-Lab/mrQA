@@ -1,19 +1,20 @@
-from collections import namedtuple
-from datetime import timedelta
+from collections import namedtuple, defaultdict
 from itertools import combinations
 from pathlib import Path
 from typing import Union, Dict, Optional
 
 from MRdataset import save_mr_dataset, BaseDataset, DatasetEmptyException
 from bokeh.embed import components
+from bokeh.models import ColumnDataSource, FactorRange
+from bokeh.palettes import HighContrast3
 from bokeh.plotting import figure
+from bokeh.transform import factor_cmap
 from mrQA import logger
 from mrQA.base import CompliantDataset
 from mrQA.formatter import HtmlFormatter
 from mrQA.utils import _cli_report, \
     export_subject_lists, make_output_paths, \
-    modify_sequence_name, _init_datasets, get_reference_protocol, get_config, \
-    previous_month, next_month
+    modify_sequence_name, _init_datasets, get_reference_protocol, get_config
 from protocol import UnspecifiedType
 
 
@@ -124,26 +125,29 @@ def plot_patterns(non_compliant_ds, complete_ds, config_path=None):
         return _dict
 
     def plot_components(data, x_range, label, width, legend_label=None):
-        colors = ["#c9d9d3", "#718dbf", "#e84d60"][:len(data[label])]
+        colors = [ "#718dbf", "#5B2333",  "#e84d60",
+                  "#9D8420", "#0D0628", "#c9d9d3"][:len(legend_label)]
         if legend_label is None:
             p = figure(x_range=x_range, x_axis_label=label,
                        y_axis_label="Number of Deviations (%)",
-                       width=800, height=300,  tools="hover")
-            p.vbar(x=label, width=width, fill_color="#b3de69", source=data)
-            # if label == 'ContentDate':
-            #     p.xaxis.major_label_overrides = {
-            #         i: date.strftime('%b %d %Y') for i, date in enumerate(x)
-            #     }
+                       width=800, height=300)
+            p.vbar(x=label, width=width,  line_color="white",
+                   fill_color="#b3de69", source=data)
         else:
-            p = figure(x_range=x_range, x_axis_label=label,
+            x = [(str(f), y) for f in data[label] for y in legend_label]
+            counts = []
+            for i in range(len(data[label])):
+                for y in legend_label:
+                    counts.append(int(data[y][i]))# e an hstack
+            source = ColumnDataSource(data=dict(x=x, counts=tuple(counts)))
+            p = figure(x_range=FactorRange(*x), x_axis_label=label,
                        y_axis_label="Number of Deviations (%)",
-                       width=800, height=300,  tools="hover")
-            p.vbar_stack(legend_label, x=label, width=width, colors=colors,
-                         tools="hover", source=data)
-            # if label == 'ContentDate':
-            #     p.xaxis.major_label_overrides = {
-            #         i: date.strftime('%b %d %Y') for i, date in enumerate(x)
-            #     }
+                       width=1200, height=400)
+            p.vbar(x='x', top='counts', width=width,source=source, line_color="white",
+                   fill_color=factor_cmap('x', palette=HighContrast3,
+                                          factors=legend_label, start=1, end=2))
+            p.xaxis.major_label_orientation = "vertical"
+
         return components(p)
 
     def get_counter(dataset, parameter, hue=None):
@@ -153,12 +157,18 @@ def plot_patterns(non_compliant_ds, complete_ds, config_path=None):
                     seq_name):
                 try:
                     value = seq[parameter].get_value()
+
+                    hue_value = seq[hue].get_value()
                 except KeyError:
                     continue
 
                 if isinstance(value, UnspecifiedType):
                     continue
-                counter = _update_dict(value, counter)
+                if value not in counter:
+                    counter[value] = {}
+                if hue_value not in counter[value]:
+                    counter[value][hue_value] = 0
+                counter[value][hue_value] += 1
         return counter
 
     plots_config = get_config(config_path=config_path, report_type='plots')
@@ -170,40 +180,55 @@ def plot_patterns(non_compliant_ds, complete_ds, config_path=None):
     for args in include_params:
         parameter = args['x']
         hue = args['hue']
-        nc_counter = get_counter(non_compliant_ds, parameter)
-        all_scans_counter = get_counter(complete_ds, parameter)
-        normalized_counts = {}
+        nc_counter = get_counter(non_compliant_ds, parameter, hue)
+        all_scans_counter = get_counter(complete_ds, parameter, hue)
+        normalized_counts = defaultdict(dict)
+        unique_hue = set()
         for key in nc_counter:
-            if key in all_scans_counter:
-                normalized_counts[key] = 100*nc_counter[key] / all_scans_counter[
-                    key]
-
+            for hue in nc_counter[key]:
+                unique_hue.add(hue)
+                normalized_counts[key][hue] = (
+                    100*nc_counter[key][hue] / all_scans_counter[key][hue]
+                )
         if not normalized_counts:
             logger.error(f"Unable to read {parameter}. Skipping plot.")
             continue
 
         normalized_counts = dict(sorted(normalized_counts.items()))
-        y = list(normalized_counts.values())
-        x = list(normalized_counts.keys())
-        width = 0.9
-        x_range = x
         plot_data = {
-            parameter: x,
-
+            parameter: [],
         }
+        for hue in unique_hue:
+            plot_data[hue] = []
+
+        for key, value in normalized_counts.items():
+            if parameter == 'ContentDate':
+                key = key.strftime("%Y-%m-%d")
+            plot_data[parameter].append(key)
+            for hue in unique_hue:
+                if hue not in value:
+                    plot_data[hue].append(0)
+                else:
+                    plot_data[hue].append(value[hue])
+        width = 0.9
+        x_range = plot_data[parameter]
+        x = plot_data[parameter]
         if parameter == 'ContentDate':
-            width = timedelta(days=1)
-            x_range = [previous_month(min(x)), next_month(max(x))]
+            width = 0.9#timedelta(days=1)
+            # x_range = [previous_month(min(x)), next_month(max(x))]
         elif parameter in ('PatientAge', 'PatientWeight'):
             x_range = [min(x) - 0.1, max(x) + 0.1]
             width = 0.1
 
         try:
-            div, script = plot_components(x=x, y=y, width=width,
-                                          x_range=x_range, label=parameter)
-            plots[parameter] = Plot(div=div, script=script)
+            # data, x_range, label, width, legend_label=None
+            key = "_".join([parameter, hue])
+            div, script = plot_components(data=plot_data, width=width,
+                                          x_range=x_range, label=parameter,
+                                          legend_label=list(unique_hue))
+            plots[key] = Plot(div=div, script=script)
         except ValueError as e:
-            logger.error(f"Skipping plot. Unable to plot parameter {parameter}."
+            logger.error(f"Skipping plot. Unable to plot parameter {key}."
                          f" Got {e}")
     return plots
 
