@@ -102,7 +102,8 @@
             "ManufacturerAndDate",
             "PatientSexAndAge",
             "ManufacturersModelAndDate",
-            "SoftwareVersionsAndDate"
+            "SoftwareVersionsAndDate",
+            "SiteAndDate"
         ]
     }
 }
