@@ -1,21 +1,17 @@
-from collections import namedtuple, defaultdict
+import pickle
 from itertools import combinations
 from pathlib import Path
 from typing import Union, Dict, Optional
 
 from MRdataset import save_mr_dataset, BaseDataset, DatasetEmptyException
-from bokeh.embed import components
-from bokeh.models import ColumnDataSource, FactorRange
-from bokeh.palettes import HighContrast3
-from bokeh.plotting import figure
-from bokeh.transform import factor_cmap
+from protocol.utils import import_string
+
 from mrQA import logger
 from mrQA.base import CompliantDataset
 from mrQA.formatter import HtmlFormatter
 from mrQA.utils import _cli_report, \
     export_subject_lists, make_output_paths, \
     modify_sequence_name, _init_datasets, get_reference_protocol, get_config
-from protocol import UnspecifiedType
 
 
 def check_compliance(dataset: BaseDataset,
@@ -88,7 +84,9 @@ def check_compliance(dataset: BaseDataset,
                                         decimals=decimals,
                                         tolerance=tolerance,
                                         config_path=config_path)
-
+    with open(output_dir/'hz.pkl', 'wb') as f:
+        # save dict of the object as pickle
+        pickle.dump(hz_audit_results, f)
     # Get results of vertical audit
     vt_audit_results = vertical_audit(dataset=dataset,
                                       decimals=decimals,
@@ -117,124 +115,17 @@ def check_compliance(dataset: BaseDataset,
 
 def plot_patterns(non_compliant_ds, complete_ds, config_path=None):
     plots = {}
-
-    def _update_dict(attr, _dict):
-        if attr not in _dict:
-            _dict[attr] = 0
-        _dict[attr] += 1
-        return _dict
-
-    def plot_components(data, x_range, label, width, legend_label=None):
-        colors = [ "#718dbf", "#5B2333",  "#e84d60",
-                  "#9D8420", "#0D0628", "#c9d9d3"][:len(legend_label)]
-        if legend_label is None:
-            p = figure(x_range=x_range, x_axis_label=label,
-                       y_axis_label="Number of Deviations (%)",
-                       width=800, height=300)
-            p.vbar(x=label, width=width,  line_color="white",
-                   fill_color="#b3de69", source=data)
-        else:
-            x = [(str(f), y) for f in data[label] for y in legend_label]
-            counts = []
-            for i in range(len(data[label])):
-                for y in legend_label:
-                    counts.append(int(data[y][i]))# e an hstack
-            source = ColumnDataSource(data=dict(x=x, counts=tuple(counts)))
-            p = figure(x_range=FactorRange(*x), x_axis_label=label,
-                       y_axis_label="Number of Deviations (%)",
-                       width=1200, height=400)
-            p.vbar(x='x', top='counts', width=width,source=source, line_color="white",
-                   legend_label=legend_label,
-                   fill_color=factor_cmap('x', palette=HighContrast3,
-                                          factors=legend_label, start=1, end=2))
-            p.xaxis.major_label_orientation = "vertical"
-            p.x_range.range_padding = 0.1
-            p.xgrid.grid_line_color = None
-            p.legend.location = "top_left"
-            p.legend.orientation = "horizontal"
-
-        return components(p)
-
-    def get_counter(dataset, parameter, hue=None):
-        counter = {}
-        for seq_name in dataset.get_sequence_ids():
-            for subj, sess, run, seq in dataset.traverse_horizontal(
-                    seq_name):
-                try:
-                    value = seq[parameter].get_value()
-
-                    hue_value = seq[hue].get_value()
-                except KeyError:
-                    continue
-
-                if isinstance(value, UnspecifiedType):
-                    continue
-                if value not in counter:
-                    counter[value] = {}
-                if hue_value not in counter[value]:
-                    counter[value][hue_value] = 0
-                counter[value][hue_value] += 1
-        return counter
-
     plots_config = get_config(config_path=config_path, report_type='plots')
     if not plots_config:
         return plots
 
     include_params = plots_config.get("include_parameters", None)
-    Plot = namedtuple('Plot', ['div', 'script'])
-    for args in include_params:
-        parameter = args['x']
-        hue = args['hue']
-        nc_counter = get_counter(non_compliant_ds, parameter, hue)
-        all_scans_counter = get_counter(complete_ds, parameter, hue)
-        normalized_counts = defaultdict(dict)
-        unique_hue = set()
-        for key in nc_counter:
-            for hue in nc_counter[key]:
-                unique_hue.add(hue)
-                normalized_counts[key][hue] = (
-                    100*nc_counter[key][hue] / all_scans_counter[key][hue]
-                )
-        if not normalized_counts:
-            logger.error(f"Unable to read {parameter}. Skipping plot.")
-            continue
-
-        normalized_counts = dict(sorted(normalized_counts.items()))
-        plot_data = {
-            parameter: [],
-        }
-        for hue in unique_hue:
-            plot_data[hue] = []
-
-        for key, value in normalized_counts.items():
-            if parameter == 'ContentDate':
-                key = key.strftime("%Y-%m-%d")
-            plot_data[parameter].append(key)
-            for hue in unique_hue:
-                if hue not in value:
-                    plot_data[hue].append(0)
-                else:
-                    plot_data[hue].append(value[hue])
-        width = 0.9
-        x_range = plot_data[parameter]
-        x = plot_data[parameter]
-        if parameter == 'ContentDate':
-            width = 0.9#timedelta(days=1)
-            # x_range = [previous_month(min(x)), next_month(max(x))]
-        elif parameter in ('PatientAge', 'PatientWeight'):
-            x_range = [min(x) - 0.1, max(x) + 0.1]
-            width = 0.1
-
-        key = "_".join([parameter, hue])
-        try:
-            # data, x_range, label, width, legend_label=None
-            div, script = plot_components(data=plot_data, width=width,
-                                          x_range=x_range, label=parameter,
-                                          legend_label=list(unique_hue))
-            plots[key] = Plot(div=div, script=script)
-        except ValueError as e:
-            logger.error(f"Skipping plot. Unable to plot parameter {key}."
-                         f" Got {e}")
+    for param in include_params:
+        param_cls = import_string('mrQA.plotting.'+param)
+        print(param)
+        param_figure = param_cls()
+        param_figure.plot(non_compliant_ds, complete_ds)
+        plots[param] = param_figure
     return plots
 
 
@@ -284,6 +175,8 @@ def horizontal_audit(dataset: BaseDataset,
 
     include_params = hz_audit_config.get('include_parameters', None)
     stratify_by = hz_audit_config.get('stratify_by', None)
+    skip_sequences = hz_audit_config.get('skip_sequences', [])
+    print(skip_sequences)
 
     for seq_name in dataset.get_sequence_ids():
         # a temporary placeholder for compliant sequences. It will be
@@ -294,6 +187,15 @@ def horizontal_audit(dataset: BaseDataset,
         compliant_flag = True
         undetermined_flag = False
         for subj, sess, run, seq in dataset.traverse_horizontal(seq_name):
+            try:
+                for substr in skip_sequences:
+                    if substr in seq_name.lower():
+                        logger.warning(f'Skipping {seq_name} sequence as it contains '
+                                     f'{substr}')
+                        raise ValueError("This sequence should be skipped.")
+            except ValueError:
+                continue
+
             sequence_name = modify_sequence_name(seq, stratify_by)
 
             try:

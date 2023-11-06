@@ -51,6 +51,7 @@
         ],
         "include_parameters": [
             "FieldOfView",
+            "PixelSpacing",
             "PhaseEncodingDirection",
             "ShimMode",
             "ShimSetting"
@@ -58,6 +59,10 @@
     },
     "horizontal_audit": {
         "stratify_by": null,
+        "skip_sequences": [
+            "coil_error",
+            "qa"
+        ],
         "include_parameters": [
             "PixelSpacing",
             "Rows",
@@ -68,7 +73,6 @@
             "ReceiveCoilActiveElements",
             "ScanningSequence",
             "SequenceVariant",
-            "ScanOptions",
             "SequenceName",
             "NonLinearGradientCorrection",
             "MRAcquisitionType",
@@ -95,30 +99,10 @@
     },
     "plots": {
         "include_parameters": [
-            {
-                "x": "ContentDate",
-                "hue": null
-            },
-            {
-                "x": "ContentDate",
-                "hue": "Manufacturer"
-            },
-            {
-                "x": "PatientAge",
-                "hue": null
-            },
-            {
-                "x": "PatientSex",
-                "hue": null
-            },
-            {
-                "x": "Manufacturer",
-                "hue": "ManufacturersModelName"
-            },
-            {
-                "x": "Manufacturer",
-                "hue": "SoftwareVersions"
-            }
+            "ManufacturerAndDate",
+            "PatientSexAndAge",
+            "ManufacturersModelAndDate",
+            "SoftwareVersionsAndDate"
         ]
     }
 }

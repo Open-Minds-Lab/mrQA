@@ -1,7 +1,9 @@
 import tempfile
+from abc import ABC, abstractmethod
 
 from MRdataset import valid_dirs
 from MRdataset.base import BaseDataset
+from bokeh.palettes import turbo, d3
 from protocol import BaseParameter, BaseSequence
 
 
@@ -419,3 +421,50 @@ class NonCompliantDataset(BaseDataset):
 
     def load(self):
         pass
+
+
+class BasePlot(ABC):
+    _name = None
+
+    def __init__(self, name=None):
+        if name is not None:
+            self._name = name
+            self.div = None
+            self.script = None
+            self.plot_height = None
+            self.plot_width = None
+            self.title = None
+            self.x_axis_label = None
+            self.y_axis_label = None
+            self.x_range = None
+            self.label = None
+            self.legend_label = None
+            self.colors = None
+
+    @abstractmethod
+    def plot(self, non_compliant_ds, complete_ds, parameters):
+        """Creates a plot for the given data"""
+
+    @abstractmethod
+    def compute_counts(self, non_compliant_ds, complete_ds, parameters):
+        """Computes the counts for the given dataset and parameters."""
+
+    @abstractmethod
+    def get_plot_components(self, data):
+        """getter method for plotting components"""
+
+    @abstractmethod
+    def get_counter(self, dataset, parameters):
+        """getter method for counter"""
+
+    def set_cmap(self, length):
+        """Sets the color map for the plot"""
+        if length > 10:
+            colors = turbo(length)
+        else:
+            palette = d3['Category10']
+            if length > 3:
+                colors = palette[length]
+            else:
+                colors = palette[10][:length]
+        self.colors = colors
