@@ -6,6 +6,7 @@ from bokeh.embed import components
 from bokeh.plotting import figure
 from protocol import UnspecifiedType
 
+from mrQA import logger
 from mrQA.base import BasePlot
 from mrQA.utils import previous_month, next_month
 
@@ -148,7 +149,7 @@ class MultiLinePlot(MultiPlot):
 class MultiScatterPlot(MultiPlot):
     _name = 'multi_scatter'
 
-    def __init__(self, legend_label=None, y_axis_label=None,  size=10,
+    def __init__(self, legend_label=None, y_axis_label=None,  size=5,
                  alpha=0.75, plot_height=300,
                  plot_width=800):
         super().__init__(name=self._name)
@@ -251,7 +252,7 @@ class ManufacturersModelAndDate(MultiScatterPlot):
 class SoftwareVersionsAndDate(MultiScatterPlot):
     """Plot for Manufacturer and Date"""
     def __init__(self):
-        super().__init__(plot_height=600, plot_width=800)
+        super().__init__(plot_height=800, plot_width=800)
         self.parameters = ['ContentDate', 'SoftwareVersions']
 
     def get_counter(self, dataset, parameters):
@@ -285,7 +286,8 @@ class SoftwareVersionsAndDate(MultiScatterPlot):
 class SiteAndDate(MultiScatterPlot):
     """Plot for Manufacturer and Date"""
     def __init__(self):
-        super().__init__(plot_height=600, plot_width=800)
+        super().__init__(plot_height=1000, plot_width=800)
+        logger.warning("This plot is only for ABCD dataset")
         self.parameters = ['ContentDate', 'InstitutionName']
         self.csv_path = Path('/media/sinhah/extremessd/ABCD/1210908/original_files/abcd_lt01.txt')
         self.subject_site_map = self.get_subject_site_map()
@@ -328,7 +330,7 @@ class SiteAndDate(MultiScatterPlot):
                     continue
 
                 if (isinstance(primary_value, UnspecifiedType) or
-                    isinstance(secondary_value, UnspecifiedType)):
+                        isinstance(secondary_value, UnspecifiedType)):
                     continue
                 if primary_value not in counter:
                     counter[primary_value] = {}
