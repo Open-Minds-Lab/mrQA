@@ -13,6 +13,8 @@
         "stratify_by": "series_number",
         "include_parameters": [
             "FieldOfView",
+            "AcquisitionMatrix",
+            "PixelSpacing",
             "PhaseEncodingDirection",
             "ShimMode",
             "ShimSetting"
@@ -46,7 +48,6 @@
             "EchoTrainLength",
             "PixelBandwidth",
             "PhaseEncodingSteps",
-            "EchoNumber",
             "SliceThickness",
             "PercentPhaseFOV",
             "PercentSampling",
@@ -59,13 +60,9 @@
     },
     "plots": {
         "include_parameters": [
-            "ContentDate",
-            "PatientSex",
-            "PatientAge",
-            "PatientWeight",
-            "OperatorsName",
-            "InstitutionName",
-            "Manufacturer"
+            "PatientSexAndAge",
+            "ManufacturersModelAndDate",
+            "SoftwareVersionsAndDate"
         ]
     }
 }
