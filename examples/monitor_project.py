@@ -66,7 +66,7 @@ def main():
         arguments = [(f, args.output_dir, args.config) for f in dirs]
         pool.starmap(run, arguments)
     elif args.task == 'compile':
-        compile_reports(args.output_dir)
+        compile_reports(args.output_dir, args.config)
     else:
         raise NotImplementedError(f"Task {args.task} not implemented. Choose "
                                   "one of [monitor, compile]")
