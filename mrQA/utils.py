@@ -1,4 +1,5 @@
 import json
+import pickle
 import re
 import tempfile
 import time
@@ -1012,6 +1013,49 @@ def is_folder_with_no_subfolders(fpath):
 
     # sub_dirs = [file_ for file_ in fpath.iterdir() if file_.is_dir()]
     return len(sub_dirs) < 1, sub_dirs
+
+
+def save_audit_results(filepath: Union[str, Path], result_dict) -> None:
+    """
+    Save a dataset to a file with extension .mrds.pkl
+
+    Parameters
+    ----------
+    filepath: Union[str, Path]
+        path to the dataset file
+    mrds_obj: BaseDataset
+        dataset to be saved
+
+    Returns
+    -------
+    None
+
+    Examples
+    --------
+    .. code :: python
+
+        from MRdataset import save_mr_dataset
+        my_dataset = import_dataset(data_source='/path/to/my/data/',
+                      ds_format='dicom', name='abcd_baseline',
+                      config_path='mri-config.json')
+        dataset = save_mr_dataset(filepath='/path/to/my/dataset.mrds.pkl',
+                                  mrds_obj=my_dataset)
+    """
+
+    # Extract extension from filename
+    EXT = '.adt.pkl'
+    ext = "".join(Path(filepath).suffixes)
+    assert ext == EXT, f"Expected extension {EXT}, Got {ext}"
+    parent_folder = Path(filepath).parent
+    try:
+        parent_folder.mkdir(exist_ok=True, parents=True)
+    except OSError as exc:
+        logger.error(f'Unable to create folder {parent_folder} for saving dataset')
+        raise exc
+
+    with open(filepath, 'wb') as f:
+        # save dict of the object as pickle
+        pickle.dump(result_dict, f)
 
 
 def find_terminal_folders(root, leave=True, position=0):

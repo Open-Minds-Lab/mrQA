@@ -50,7 +50,7 @@ class MultiPlot(BasePlot):
         for key1 in counter:
             for key2 in counter[key1]:
                 uniq_secondary_values.add(key2)
-                normalized_counts[key1][key2] = (
+                normalized_counts[key1][key2] = 100*(
                     counter[key1][key2] / base_counter[key1][key2])
 
         if not normalized_counts:
@@ -67,15 +67,20 @@ class MultiPlot(BasePlot):
 
         # initialize data
         for category in self.uniq_secondary_values:
-            data[category] = []
+            data[category] = {
+                'x' : [],
+                'y' : []
+            }
 
         for key, values_by_category in normalized_counts.items():
             data[primary_param].append(key)
-            for category in self.uniq_secondary_values:
-                if category not in values_by_category:
-                    data[category].append(0)
-                else:
-                    data[category].append(values_by_category[category])
+            for category in values_by_category:
+                # if category not in values_by_category:
+                #     continue
+                #     # data[category].append(0)
+                # else:
+                data[category]['x'].append(key)
+                data[category]['y'].append(values_by_category[category])
         return data
 
     def compute_counts(self, non_compliant_ds, complete_ds, parameters):
@@ -115,7 +120,7 @@ class MultiLinePlot(MultiPlot):
                    width=self.plot_width, height=self.plot_height)
         for i, k in enumerate(self.uniq_secondary_values):
             try:
-                p.line(x=label, y=k, source=data, line_width=self.line_width,
+                p.line(x=data[k]['x'], y=data[k]['y'], line_width=self.line_width,
                        line_alpha=1, color=self.colors[i], legend_label=k)
             except IndexError:
                 print(f"Unable to plot {k}, Color index {i} out of range")
@@ -149,7 +154,7 @@ class MultiLinePlot(MultiPlot):
 class MultiScatterPlot(MultiPlot):
     _name = 'multi_scatter'
 
-    def __init__(self, legend_label=None, y_axis_label=None,  size=5,
+    def __init__(self, legend_label=None, y_axis_label='% Deviations',  size=5,
                  alpha=0.75, plot_height=300,
                  plot_width=800):
         super().__init__(name=self._name)
@@ -165,11 +170,11 @@ class MultiScatterPlot(MultiPlot):
         self.set_cmap(len(self.uniq_secondary_values))
 
         p = figure(x_range=self.x_range,
-                   y_axis_label=self.y_axis_label,
+                   y_axis_label=self.y_axis_label, x_axis_label=label,
                    width=self.plot_width, height=self.plot_height)
         for i, k in enumerate(self.uniq_secondary_values):
             try:
-                p.circle(x=label, y=k, source=data, size=self.size,
+                p.circle(x=data[k]['x'], y=data[k]['y'], size=self.size,
                          alpha=self.alpha,
                          color=self.colors[i], legend_label=k)
             except IndexError:
@@ -208,7 +213,8 @@ class ManufacturerAndDate(MultiScatterPlot):
         self.parameters = ['ContentDate', 'Manufacturer']
 
 
-class PatientSexAndAge(MultiLinePlot):
+
+class PatientSexAndAge(MultiScatterPlot):
     """Plot for PatientSex and PatientAge"""
     def __init__(self):
         super().__init__(plot_height=600, plot_width=800)

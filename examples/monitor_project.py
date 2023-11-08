@@ -126,14 +126,18 @@ def compile_reports(output_dir, config_path):
 
 def is_epi_fmap_pair(pair):
     full_string = ' '.join(pair)
-    if 'field' in full_string.lower() or 'gre' in full_string.lower():
-        if 'fmri' in full_string.lower():
+    full_string = full_string.lower()
+    if ('field' in full_string or
+        'gre' in full_string or 'fmap' in full_string):
+        if 'fmri' in full_string:
             return True
-        if 'dsi' in full_string.lower():
+        if 'dsi' in full_string:
             return True
-        if 'dti' in full_string.lower():
+        if 'dti' in full_string:
             return True
-        if 'epi' in full_string.lower():
+        if 'epi' in full_string:
+            return True
+        if 'dwi' in full_string:
             return True
     return False
 

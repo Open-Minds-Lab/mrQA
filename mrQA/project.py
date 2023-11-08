@@ -1,4 +1,3 @@
-import pickle
 from itertools import combinations
 from pathlib import Path
 from typing import Union, Dict, Optional
@@ -11,7 +10,8 @@ from mrQA.base import CompliantDataset
 from mrQA.formatter import HtmlFormatter
 from mrQA.utils import _cli_report, \
     export_subject_lists, make_output_paths, \
-    modify_sequence_name, _init_datasets, get_reference_protocol, get_config
+    modify_sequence_name, _init_datasets, get_reference_protocol, get_config, \
+    save_audit_results
 
 
 def check_compliance(dataset: BaseDataset,
@@ -84,14 +84,13 @@ def check_compliance(dataset: BaseDataset,
                                         decimals=decimals,
                                         tolerance=tolerance,
                                         config_path=config_path)
-    with open(output_dir/'hz.pkl', 'wb') as f:
-        # save dict of the object as pickle
-        pickle.dump(hz_audit_results, f)
+    save_audit_results(output_dir/(dataset.name+'_hz.adt.pkl'), hz_audit_results)
     # Get results of vertical audit
     vt_audit_results = vertical_audit(dataset=dataset,
                                       decimals=decimals,
                                       tolerance=tolerance,
                                       config_path=config_path)
+    save_audit_results(output_dir/(dataset.name+'_vt.adt.pkl'), vt_audit_results)
 
     # Generate plots/visualization
     plot_results = plot_patterns(
