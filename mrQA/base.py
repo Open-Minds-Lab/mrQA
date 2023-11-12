@@ -34,7 +34,7 @@ class CompliantDataset(BaseDataset):
         # different machine, and the processed data is then transferred to
         # another machine for audit. In such cases, the data_source of
         # original dataset will be invalid on the machine where audit is
-        # performed. Hence, we set data_source in super() to None.
+        # performed. Hence, we set data_source in super() to temp dir.
         try:
             data_source = valid_dirs(data_source)
         except (OSError, ValueError):
@@ -42,22 +42,32 @@ class CompliantDataset(BaseDataset):
 
         super().__init__(name=name, data_source=data_source,
                          ds_format=ds_format)
+
+        # If the sequence name was modified, then we need to keep track of
+        # the original sequence name as well. For example, if the sequence
+        # name was modified from T1w to T1w_modified, then we need to keep
+        # track of the original sequence name T1w as well. Why is modification
+        # of sequence name required? For example, if the sequence name is
+        # same, but the sequence is acquired twice, then we need to modify
+        # the sequence name to distinguish between the two sequences.
         self._org2mod_seq_names = {}
         self._mod2org_seq_names = {}
 
     def get_modified_seq_name(self, seq_name):
+        """Get the modified sequence name"""
         return self._org2mod_seq_names[seq_name]
 
     def _get_original_seq_name(self, seq_name):
+        """Get the original sequence name"""
         return self._mod2org_seq_names[seq_name]
 
     def set_modified_seq_name(self, original, modified):
+        """Set the modified sequence name"""
         self._org2mod_seq_names[original] = modified
         self._mod2org_seq_names[modified] = original
 
     def load(self):
         pass
-
 
 
 class UndeterminedDataset(BaseDataset):
@@ -93,16 +103,28 @@ class UndeterminedDataset(BaseDataset):
 
         super().__init__(name=name, data_source=data_source,
                          ds_format=ds_format)
+
+        # If the sequence name was modified, then we need to keep track of
+        # the original sequence name as well. For example, if the sequence
+        # name was modified from T1w to T1w_modified, then we need to keep
+        # track of the original sequence name T1w as well. Why is modification
+        # of sequence name required? For example, if the sequence name is
+        # same, but the sequence is acquired twice, then we need to modify
+        # the sequence name to distinguish between the two sequences.
+
         self._org2mod_seq_names = {}
         self._mod2org_seq_names = {}
 
     def get_modified_seq_name(self, seq_name):
+        """Get the modified sequence name"""
         return self._org2mod_seq_names[seq_name]
 
     def get_original_seq_name(self, seq_name):
+        """Get the original sequence name"""
         return self._mod2org_seq_names[seq_name]
 
     def set_modified_seq_name(self, original, modified):
+        """Set the modified sequence name"""
         self._org2mod_seq_names[original] = modified
         self._mod2org_seq_names[modified] = original
 
@@ -141,20 +163,35 @@ class NonCompliantDataset(BaseDataset):
 
         super().__init__(name=name, data_source=data_source,
                          ds_format=ds_format)
+
+        # Dictionary to store all non-compliant parameters
         self._nc_flat_map = {}
         self._nc_tree_map = {}
         self._nc_params_map = {}
+
+        # Set to store all sequence pairs that were checked for vertical audit
         self._vt_sequences = set()
+
+        # If the sequence name was modified, then we need to keep track of
+        # the original sequence name as well. For example, if the sequence
+        # name was modified from T1w to T1w_modified, then we need to keep
+        # track of the original sequence name T1w as well. Why is modification
+        # of sequence name required? For example, if the sequence name is
+        # same, but the sequence is acquired twice, then we need to modify
+        # the sequence name to distinguish between the two sequences.
         self._org2mod_seq_names = {}
         self._mod2org_seq_names = {}
 
     def get_modified_seq_name(self, seq_name):
+        """Get the modified sequence name"""
         return self._org2mod_seq_names[seq_name]
 
     def get_original_seq_name(self, seq_name):
+        """Get the original sequence name"""
         return self._mod2org_seq_names[seq_name]
 
     def set_modified_seq_name(self, original, modified):
+        """Set the modified sequence name"""
         self._org2mod_seq_names[original] = modified
         self._mod2org_seq_names[modified] = original
 
@@ -175,6 +212,10 @@ class NonCompliantDataset(BaseDataset):
     def get_nc_log(self, parameters, filter_fn=None, output_dir=None,
                    audit='vt'):
         """Generate a log of all non-compliant parameters in the dataset"""
+
+        # PEP8: E731 do not assign a lambda expression, use a def
+        def _filter_fn(x): return True
+
         nc_log = {}
         if audit == 'hz':
             # TODO: implement it later
@@ -186,15 +227,16 @@ class NonCompliantDataset(BaseDataset):
 
         # Implementation for vertical audit only
         if filter_fn is None:
-            filter_fn = lambda x : True
+            filter_fn = _filter_fn
 
         sequence_pairs = self.get_vt_sequences()
 
+        # Don't create the log for all sequence pairs. For example, we only
+        # want to highlight the issues in field-map and epi sequences.
         for pair in filter(filter_fn, sequence_pairs):
             for param_name in parameters:
-                nc_values = list(self.get_vt_param_values(pair, param_name))
-                for param_tupl, sub, path in nc_values:
-
+                for param_tupl, sub, path in self.get_vt_param_values(
+                                                            pair, param_name):
                     if param_name not in nc_log:  # empty
                         nc_log[param_name] = []
 
@@ -202,13 +244,15 @@ class NonCompliantDataset(BaseDataset):
                         'subject': sub,
                         'sequence_names': pair,
                         'values': [p.get_value() for p in param_tupl],
-                        'paths': str(path),
+                        'path': str(path),
                     })
+
         # if output_dir is provided, dump it as a json file
         if nc_log and output_dir is not None:
             filename = self.name + '_vt_log.json'
             with open(output_dir / filename, 'w') as f:
                 json.dump(nc_log, f, indent=4)
+
         return nc_log
 
     def get_nc_param_ids(self, seq_id):
@@ -226,8 +270,7 @@ class NonCompliantDataset(BaseDataset):
         else:
             return list(self._nc_params_map[seq_id])
 
-    def get_nc_param_values(self, seq_id, param_name,
-                            ref_seq=None):
+    def get_nc_param_values(self, seq_id, param_name, ref_seq=None):
         """
         Returns a list of all non-compliant parameter values for a given
         sequence id and parameter name.
@@ -255,7 +298,7 @@ class NonCompliantDataset(BaseDataset):
             For example, if field map and the rs-fMRI sequence are compared,
             then the seq_id can be rs-fMRI, and ref_seq can be field map.
             This will return only those values that are non-compliant with
-            the field map sequence. If ref_seq is provided, returns only
+            the field map sequence. If ref_seq is provided, it returns only
             those values that are non-compliant with the reference protocol.
 
         """
@@ -274,12 +317,11 @@ class NonCompliantDataset(BaseDataset):
                                 subject_id=subject_id, session_id=session_id,
                                 ref_seq=ref_seq)
 
-    def _get_all_nc_param_values(self, seq_id, param_name,
-                                 subject_id,
+    def _get_all_nc_param_values(self, seq_id, param_name, subject_id,
                                  session_id, ref_seq=None):
         """
         Returns a list of all non-compliant parameter values for a given
-        sequence id and parameter name.
+        sequence id, subject_id, session_id and parameter name.
         """
         for run_id in self._nc_tree_map[param_name][seq_id][
                 subject_id][session_id][ref_seq]:
@@ -290,6 +332,7 @@ class NonCompliantDataset(BaseDataset):
             yield param_tupl, subject_id, path
 
     def get_vt_param_values(self, seq_pair, param_name):
+        """Wrapper around get_nc_param_values() for vertical audit"""
         seq1, seq2 = seq_pair
         yield from self.get_nc_param_values(seq1, param_name, seq2)
 
