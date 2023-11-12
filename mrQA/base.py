@@ -209,9 +209,12 @@ class NonCompliantDataset(BaseDataset):
         """
         self._vt_sequences.add(list_seqs)
 
-    def get_nc_log(self, parameters, filter_fn=None, output_dir=None,
-                   audit='vt'):
-        """Generate a log of all non-compliant parameters in the dataset"""
+    def generate_nc_log(self, parameters, filter_fn=None, output_dir=None,
+                        audit='vt', verbosity=1):
+        """
+        Generate a log of all non-compliant parameters in the dataset.
+        Apart from returning the log, it also dumps the log as a json file
+        """
 
         # PEP8: E731 do not assign a lambda expression, use a def
         def _filter_fn(x): return True
@@ -240,12 +243,16 @@ class NonCompliantDataset(BaseDataset):
                     if param_name not in nc_log:  # empty
                         nc_log[param_name] = []
 
-                    nc_log[param_name].append({
-                        'subject': sub,
-                        'sequence_names': pair,
-                        'values': [p.get_value() for p in param_tupl],
-                        'path': str(path),
-                    })
+                    nc_dict = {}
+                    nc_dict['subject'] = sub
+                    nc_dict['sequence_names'] = pair
+
+                    if verbosity > 1:
+                        nc_dict['values'] = [p.get_value() for p in param_tupl]
+                    if verbosity > 2:
+                        nc_dict['path'] = str(path)
+
+                    nc_log[param_name].append(nc_dict)
 
         # if output_dir is provided, dump it as a json file
         if nc_log and output_dir is not None:
@@ -453,8 +460,9 @@ class NonCompliantDataset(BaseDataset):
             Sequence ID e.g. T1w, T2w etc.
         run_id: str
             Run ID e.g. run-01
-        non_compliant_params: List[BaseParameter]
-            List of non-compliant parameters
+        non_compliant_params: List[Tuple]
+            List of non-compliant parameters. Each tuple contains
+            non-compliant parameter and the reference parameter.
         ref_seq: str
             Name of the reference sequence, e.g. field-map
         """

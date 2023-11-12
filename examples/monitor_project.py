@@ -96,11 +96,11 @@ def compile_reports(folder_path, output_dir, config_path):
     mrds_files = list(Path(folder_path).rglob('*.mrds.pkl'))
     if not mrds_files:
         raise FileNotFoundError(f"No .mrds.pkl files found in {output_dir}")
+
     for mrds in mrds_files:
         ds = load_mr_dataset(mrds)
         # TODO : check compliance, but better is to save
-        #  compliance check results in the .vt.mrds.pkl and .hz.mrds.pkl
-        #  file and load it here.
+        #  compliance results which can be re-used here
         hz, vt = check_compliance(
             ds,
             output_dir=output_dir / 'compiled_reports',
@@ -109,11 +109,13 @@ def compile_reports(folder_path, output_dir, config_path):
         non_compliant_ds = vt['non_compliant']
         parameters = ['ShimSetting', 'PixelSpacing']
         # after checking compliance just look for epi-fmap pairs for now
-        nc_log = non_compliant_ds.get_nc_log(parameters=parameters,
-                                             filter_fn=filter_epi_fmap_pairs,
-                                             output_dir=output_dir,)
-        print(nc_log)
-        complete_log.append(nc_log)
+        nc_log = non_compliant_ds.generate_nc_log(
+                                                parameters=parameters,
+                                                filter_fn=filter_epi_fmap_pairs,
+                                                output_dir=output_dir,
+                                                audit='vt')
+        # print(nc_log)
+        # complete_log.append(nc_log)
 
 
 if __name__ == "__main__":
