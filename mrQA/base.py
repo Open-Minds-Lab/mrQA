@@ -193,24 +193,16 @@ class NonCompliantDataset(BaseDataset):
         for pair in filter(filter_fn, sequence_pairs):
             for param_name in parameters:
                 nc_values = list(self.get_vt_param_values(pair, param_name))
-                for tupl1, tupl2 in nc_values:
-                    param1, (sub1, path1) = tupl1
-                    param2, (sub2, path2) = tupl2
-
-                    # vertical audit works within session. For sanity check,
-                    # we assert that the subject ids are same. If not, something
-                    # is wrong with the implementation.
-                    assert sub1 == sub2, (f'Expected same subject ids, '
-                                          f'got {sub1} and {sub2}')
+                for param_tupl, sub, path in nc_values:
 
                     if param_name not in nc_log:  # empty
                         nc_log[param_name] = []
 
                     nc_log[param_name].append({
-                        'subject': sub1,
+                        'subject': sub,
                         'sequence_names': pair,
-                        'values' : (param1.get_value(), param2.get_value()),
-                        'paths' : (str(path1), str(path2))
+                        'values': [p.get_value() for p in param_tupl],
+                        'paths': str(path),
                     })
         # if output_dir is provided, dump it as a json file
         if nc_log and output_dir is not None:
@@ -291,17 +283,15 @@ class NonCompliantDataset(BaseDataset):
         """
         for run_id in self._nc_tree_map[param_name][seq_id][
                 subject_id][session_id][ref_seq]:
-            param = self._nc_tree_map[param_name][seq_id][
+            param_tupl = self._nc_tree_map[param_name][seq_id][
                 subject_id][session_id][ref_seq][run_id]  # noqa
             path = self.get_path(subject_id, session_id,
                                  seq_id, run_id)
-            yield param, (subject_id, path)
+            yield param_tupl, subject_id, path
 
     def get_vt_param_values(self, seq_pair, param_name):
         seq1, seq2 = seq_pair
-        list1 = list(self.get_nc_param_values(seq1, param_name, seq2))
-        list2 = list(self.get_nc_param_values(seq2, param_name, seq1))
-        yield from zip(list1, list2)
+        yield from self.get_nc_param_values(seq1, param_name, seq2)
 
     def get_nc_subject_ids(self, seq_id, param_name, ref_seq=None):
         """
@@ -445,23 +435,25 @@ class NonCompliantDataset(BaseDataset):
             raise TypeError(
                 'Expected str, got {}'.format(type(ref_seq)))
 
-        for param in non_compliant_params:
-            if not isinstance(param, BaseParameter):
-                raise TypeError(
-                    'Expected BaseParameter, got {}'.format(type(param)))
+        for param_tupl in non_compliant_params:
+            # if not isinstance(param_tupl, BaseParameter):
+            #     raise TypeError(
+            #         'Expected BaseParameter, got {}'.format(type(param_tupl)))
 
+            param_name = param_tupl[0].name
             self._nc_flat_map[
-                (param.name, subject_id, session_id, seq_id, ref_seq,
-                 run_id)] = param
+                (param_name, subject_id, session_id, seq_id, ref_seq,
+                 run_id)] = param_tupl
             self._nc_tree_add_node(subject_id=subject_id, session_id=session_id,
-                                   seq_id=seq_id, run_id=run_id, param=param,
+                                   seq_id=seq_id, run_id=run_id,
+                                   param=param_tupl, param_name=param_name,
                                    ref_seq=ref_seq)
             if seq_id not in self._nc_params_map:
                 self._nc_params_map[seq_id] = set()
-            self._nc_params_map[seq_id].add(param.name)
+            self._nc_params_map[seq_id].add(param_name)
 
     def _nc_tree_add_node(self, subject_id, session_id, seq_id, run_id,
-                          param, ref_seq=None):
+                          param, param_name, ref_seq=None):
         """
         Add a node to the tree map. This is a private function that is used by
         the (horizontal/vertical) audit to add non-compliant parameters to the
@@ -484,7 +476,6 @@ class NonCompliantDataset(BaseDataset):
         if ref_seq is None:
             ref_seq = '__NOT_SPECIFIED__'
 
-        param_name = param.name
         if param_name not in self._nc_tree_map:
             self._nc_tree_map[param_name] = dict()
 
