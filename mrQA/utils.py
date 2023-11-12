@@ -133,7 +133,7 @@ def files_under_folder(fpath: Union[str, Path],
     fpath: str
         filepath of the directory
     ext: str
-        filter files with given extension. For ex. return only .nii files
+        filter_fn files with given extension. For ex. return only .nii files
 
     Returns
     -------
@@ -164,7 +164,7 @@ def files_in_path(fp_list: Union[Iterable, str, Path],
     fp_list : List[Path]
         List of folder paths
     ext : str
-        Used to filter files, and select only those which have this extension
+        Used to filter_fn files, and select only those which have this extension
     Returns
     -------
     List of paths
@@ -726,7 +726,7 @@ def compute_majority(dataset: BaseDataset, seq_name, config_dict=None):
     stratify_by = config_dict.get('stratify_by', None)
 
     for subj, sess, runs, seq in dataset.traverse_horizontal(seq_name):
-        sequence_id = modify_sequence_name(seq, stratify_by)
+        sequence_id = modify_sequence_name(seq, stratify_by, None)
         if sequence_id not in seq_dict:
             seq_dict[sequence_id] = []
         seq_dict[sequence_id].append(seq)
@@ -967,7 +967,7 @@ def folders_with_min_files(root: Union[Path, str],
     root : List[Path]
         List of folder paths
     pattern : str
-        pattern to filter files
+        pattern to filter_fn files
 
     min_count : int
         size representing the number of files in folder
@@ -1104,7 +1104,7 @@ def log_latest_non_compliance(ncomp_data, latest_data, output_dir):
         # Don't rename run_id as run, it will conflict with subprocess.run
         for sub, sess, run_id, seq in latest_data.traverse_horizontal(seq_id):
             try:
-                nc_param_dict = ncomp_data.get_non_compliant_params(
+                nc_param_dict = ncomp_data.get_nc_params(
                     subject_id=sub, session_id=sess,
                     run_id=run_id, seq_id=seq_id)
                 status = {
@@ -1172,7 +1172,8 @@ def valid_paths(files: Union[List, str]) -> Union[List[Path], Path]:
                                   f'Got {type(files)}')
 
 
-def modify_sequence_name(seq: "BaseSequence", stratify_by: str) -> str:
+def modify_sequence_name(seq: "BaseSequence", stratify_by: str,
+                         datasets) -> str:
     """
     Modifies the sequence name to include the stratification value, if it
     exists.
@@ -1201,6 +1202,11 @@ def modify_sequence_name(seq: "BaseSequence", stratify_by: str) -> str:
             [seq.name, stratify_value])
     else:
         seq_name_with_stratify = seq.name
+
+    if datasets:
+        for ds in datasets:
+            ds.set_modified_seq_name(seq.name, seq_name_with_stratify)
+
     return seq_name_with_stratify
 
 
@@ -1324,6 +1330,24 @@ def infer_protocol(dataset: BaseDataset,
             ref_protocol.add_sequence_from_dict(seq_id, param_dict)
 
     return ref_protocol
+
+def filter_epi_fmap_pairs(pair):
+    epi_substrings = ['epi', 'bold', 'rest', 'fmri', 'pasl',
+                      'asl', 'dsi', 'dti', 'dwi']
+    fmap_substrings = ['fmap', 'fieldmap', 'map']
+    if (has_substring(pair[0].lower(), epi_substrings) and
+        has_substring(pair[1].lower(), fmap_substrings)):
+        return True
+    if (has_substring(pair[1].lower(), epi_substrings) and
+        has_substring(pair[0].lower(), fmap_substrings)):
+        return True
+    return False
+
+def has_substring(input_string, substrings):
+    for substring in substrings:
+        if substring in input_string:
+            return True
+
 
 
 def previous_month(dt):

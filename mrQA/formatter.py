@@ -119,7 +119,7 @@ class HtmlFormatter(BaseFormatter):
 
         self.skip_hz_report = False
         self.skip_vt_report = False
-        self.skip_plots = False
+        self.skip_plots = True
         if render:
             self.render()
 

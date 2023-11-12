@@ -130,15 +130,15 @@
             <td class="tg-0pky" colspan="1">{{ param }}</td>
             <td class="tg-0pky" colspan="1">
                 {% set total_subjects = vt['complete_ds'].subjects() | length | float %}
-                {% set nc_subjects = vt['non_compliant_ds'].total_non_compliant_subjects_by_parameter(param) | float %}
+                {% set nc_subjects = vt['non_compliant_ds'].total_nc_subjects_by_parameter(param) | float %}
                 {% set percent_non_comp = 100 * nc_subjects/total_subjects %}
                 {{ nc_subjects }} <br>
                 ({{ percent_non_comp| round(2, 'floor') }} %)
             </td>
             {% for pair in vt['sequence_pairs'] %}
                 <td class="tg-0pky" colspan="1">
-                    {% if param in vt['non_compliant_ds'].get_non_compliant_param_ids(pair[0]) %}
-                        {% set val = vt['non_compliant_ds'].get_non_compliant_subject_ids(pair[0], param, pair[1]) %}
+                    {% if param in vt['non_compliant_ds'].get_nc_param_ids(pair[0]) %}
+                        {% set val = vt['non_compliant_ds'].get_nc_subject_ids(pair[0], param, pair[1]) %}
                         {% for sub in val %}
                             {{ sub }}, <br>
                         {% endfor %}
@@ -151,9 +151,10 @@
             <td></td>
             {% for pair in vt['sequence_pairs'] %}
                 <td class="tg-0pky" colspan="1">
-                    {#                    {% if param in vt['non_compliant_ds'].get_non_compliant_param_ids(pair[0]) %}#}
-                    {% set nc_subjects = vt['non_compliant_ds'].total_non_compliant_subjects_by_sequence(pair[0], ref_seq=pair[1]) %}
-                    {% set total_subjects = vt['complete_ds'].get_subject_ids(pair[0]) | length | float %}
+                    {#                    {% if param in vt['nc_ds'].get_nc_param_ids(pair[0]) %}#}
+                    {% set nc_subjects = vt['non_compliant_ds'].total_nc_subjects_by_sequence(pair[0], ref_seq=pair[1]) %}
+                    {% set original_seq_name = vt['non_compliant_ds'].get_original_seq_name(pair[0]) %}
+                    {% set total_subjects = vt['complete_ds'].get_subject_ids(original_seq_name) | length | float %}
                     {% set percent_non_comp = 100 * nc_subjects/total_subjects %}
                     {{ nc_subjects }} <br> ({{ percent_non_comp| round(2, 'floor') }} %)
                     {#                    {% endif %}#}
@@ -189,7 +190,7 @@
     length %}
             {% set comp_subject_count = total_subjects - ncomp_sub_ids|length %}
             {% set non_compliant_params =
-    hz['non_compliant_ds'].get_non_compliant_param_ids(seq_id) %}
+    hz['non_compliant_ds'].get_nc_param_ids(seq_id) %}
             {% if hz['non_compliant_ds'].get_subject_ids(seq_id) %}{#
                  |length > 2 #}
                 <tr>
@@ -218,7 +219,7 @@
                     </td>
                     <td class="tg-0pky" colspan="1">
                         {% for parameter in
-            hz['non_compliant_ds'].get_non_compliant_param_ids(seq_id)|sort %}
+            hz['non_compliant_ds'].get_nc_param_ids(seq_id)|sort %}
                             {{ parameter }},
                         {% endfor %}
                     </td>
@@ -307,7 +308,7 @@
             </tbody>
         </table>
         {% set non_compliant_params =
-hz['non_compliant_ds'].get_non_compliant_param_ids(seq_id) %}
+hz['non_compliant_ds'].get_nc_param_ids(seq_id) %}
         {% if non_compliant_params|length %}
             <table class="tg" id="with_margin">
                 <thead>
@@ -328,7 +329,7 @@ hz['non_compliant_ds'].get_non_compliant_param_ids(seq_id) %}
                 </thead>
                 <tbody>
                 {% for parameter in non_compliant_params|sort %}
-                    {% set nc_data = hz['non_compliant_ds'].get_non_compliant_param_values(seq_id,
+                    {% set nc_data = hz['non_compliant_ds'].get_nc_param_values(seq_id,
     parameter)|list %}
                     {% set nc_dict = utils.tuples2dict(nc_data) %}
                     <tr>

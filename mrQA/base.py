@@ -1,10 +1,14 @@
+import json
 import tempfile
 from abc import ABC, abstractmethod
+from typing import List
 
 from MRdataset import valid_dirs
 from MRdataset.base import BaseDataset
 from bokeh.palettes import turbo, d3
 from protocol import BaseParameter, BaseSequence
+
+from mrQA.config import ATTRIBUTE_SEPARATOR
 
 
 class CompliantDataset(BaseDataset):
@@ -38,9 +42,22 @@ class CompliantDataset(BaseDataset):
 
         super().__init__(name=name, data_source=data_source,
                          ds_format=ds_format)
+        self._org2mod_seq_names = {}
+        self._mod2org_seq_names = {}
+
+    def get_modified_seq_name(self, seq_name):
+        return self._org2mod_seq_names[seq_name]
+
+    def _get_original_seq_name(self, seq_name):
+        return self._mod2org_seq_names[seq_name]
+
+    def set_modified_seq_name(self, original, modified):
+        self._org2mod_seq_names[original] = modified
+        self._mod2org_seq_names[modified] = original
 
     def load(self):
         pass
+
 
 
 class UndeterminedDataset(BaseDataset):
@@ -76,6 +93,18 @@ class UndeterminedDataset(BaseDataset):
 
         super().__init__(name=name, data_source=data_source,
                          ds_format=ds_format)
+        self._org2mod_seq_names = {}
+        self._mod2org_seq_names = {}
+
+    def get_modified_seq_name(self, seq_name):
+        return self._org2mod_seq_names[seq_name]
+
+    def get_original_seq_name(self, seq_name):
+        return self._mod2org_seq_names[seq_name]
+
+    def set_modified_seq_name(self, original, modified):
+        self._org2mod_seq_names[original] = modified
+        self._mod2org_seq_names[modified] = original
 
     def load(self):
         pass
@@ -116,8 +145,20 @@ class NonCompliantDataset(BaseDataset):
         self._nc_tree_map = {}
         self._nc_params_map = {}
         self._vt_sequences = set()
+        self._org2mod_seq_names = {}
+        self._mod2org_seq_names = {}
 
-    def get_sequences_with_vt(self):
+    def get_modified_seq_name(self, seq_name):
+        return self._org2mod_seq_names[seq_name]
+
+    def get_original_seq_name(self, seq_name):
+        return self._mod2org_seq_names[seq_name]
+
+    def set_modified_seq_name(self, original, modified):
+        self._org2mod_seq_names[original] = modified
+        self._mod2org_seq_names[modified] = original
+
+    def get_vt_sequences(self)->List:
         """
         Returns a list of all sequences that were checked for vertical
         audit.
@@ -131,7 +172,54 @@ class NonCompliantDataset(BaseDataset):
         """
         self._vt_sequences.add(list_seqs)
 
-    def get_non_compliant_param_ids(self, seq_id):
+    def get_nc_log(self, parameters, filter_fn=None, output_dir=None,
+                   audit='vt'):
+        """Generate a log of all non-compliant parameters in the dataset"""
+        nc_log = {}
+        if audit == 'hz':
+            # TODO: implement it later
+            raise NotImplementedError('Creating log files for horizontal audit'
+                                      ' is not supported yet. Use the html '
+                                      'report instead.')
+        if audit not in ['vt', 'hz']:
+            raise ValueError('Expected one of [vt, hz], got {}'.format(audit))
+
+        # Implementation for vertical audit only
+        if filter_fn is None:
+            filter_fn = lambda x : True
+
+        sequence_pairs = self.get_vt_sequences()
+
+        for pair in filter(filter_fn, sequence_pairs):
+            for param_name in parameters:
+                nc_values = list(self.get_vt_param_values(pair, param_name))
+                for tupl1, tupl2 in nc_values:
+                    param1, (sub1, path1) = tupl1
+                    param2, (sub2, path2) = tupl2
+
+                    # vertical audit works within session. For sanity check,
+                    # we assert that the subject ids are same. If not, something
+                    # is wrong with the implementation.
+                    assert sub1 == sub2, (f'Expected same subject ids, '
+                                          f'got {sub1} and {sub2}')
+
+                    if param_name not in nc_log:  # empty
+                        nc_log[param_name] = []
+
+                    nc_log[param_name].append({
+                        'subject': sub1,
+                        'sequence_names': pair,
+                        'values' : (param1.get_value(), param2.get_value()),
+                        'paths' : (str(path1), str(path2))
+                    })
+        # if output_dir is provided, dump it as a json file
+        if nc_log and output_dir is not None:
+            filename = self.name + '_vt_log.json'
+            with open(output_dir / filename, 'w') as f:
+                json.dump(nc_log, f, indent=4)
+        return nc_log
+
+    def get_nc_param_ids(self, seq_id):
         """
         Returns a list of all non-compliant parameter names for a given
         sequence id.
@@ -146,8 +234,8 @@ class NonCompliantDataset(BaseDataset):
         else:
             return list(self._nc_params_map[seq_id])
 
-    def get_non_compliant_param_values(self, seq_id, param_name,
-                                       ref_seq=None):
+    def get_nc_param_values(self, seq_id, param_name,
+                            ref_seq=None):
         """
         Returns a list of all non-compliant parameter values for a given
         sequence id and parameter name.
@@ -189,14 +277,14 @@ class NonCompliantDataset(BaseDataset):
                         if ref_seq in \
                             self._nc_tree_map[param_name][seq_id][subject_id][
                                 session_id]:
-                            yield from self._get_all_non_compliant_param_values(
+                            yield from self._get_all_nc_param_values(
                                 seq_id=seq_id, param_name=param_name,
                                 subject_id=subject_id, session_id=session_id,
                                 ref_seq=ref_seq)
 
-    def _get_all_non_compliant_param_values(self, seq_id, param_name,
-                                            subject_id,
-                                            session_id, ref_seq=None):
+    def _get_all_nc_param_values(self, seq_id, param_name,
+                                 subject_id,
+                                 session_id, ref_seq=None):
         """
         Returns a list of all non-compliant parameter values for a given
         sequence id and parameter name.
@@ -209,7 +297,13 @@ class NonCompliantDataset(BaseDataset):
                                  seq_id, run_id)
             yield param, (subject_id, path)
 
-    def get_non_compliant_subject_ids(self, seq_id, param_name, ref_seq=None):
+    def get_vt_param_values(self, seq_pair, param_name):
+        seq1, seq2 = seq_pair
+        list1 = list(self.get_nc_param_values(seq1, param_name, seq2))
+        list2 = list(self.get_nc_param_values(seq2, param_name, seq1))
+        yield from zip(list1, list2)
+
+    def get_nc_subject_ids(self, seq_id, param_name, ref_seq=None):
         """
         Returns a list of all non-compliant subject ids for a given
         sequence id and parameter name. Created for vertical audit report
@@ -231,36 +325,35 @@ class NonCompliantDataset(BaseDataset):
                                 session_id]:
                             yield subject_id
 
-    def total_non_compliant_subjects_by_sequence(self, seq_id, ref_seq=None):
+    def total_nc_subjects_by_sequence(self, seq_id, ref_seq=None):
         """
         Returns the total number of non-compliant subjects for a given
         sequence id and parameter name.
         """
         subject_ids = set()
-        for parameter in self.get_non_compliant_param_ids(seq_id=seq_id):
-            for subject_id in self.get_non_compliant_subject_ids(
+        for parameter in self.get_nc_param_ids(seq_id=seq_id):
+            for subject_id in self.get_nc_subject_ids(
                     seq_id=seq_id,
                     param_name=parameter,
                     ref_seq=ref_seq):
                 subject_ids.add(subject_id)
         return len(subject_ids)
 
-    def total_non_compliant_subjects_by_parameter(self, param_name):
+    def total_nc_subjects_by_parameter(self, param_name):
         """
         Returns the total number of non-compliant subjects for a given
         sequence id and parameter name.
         """
         total_subjects = set()
-        for seq_id, ref_seq in self.get_sequences_with_vt():
+        for seq_id, ref_seq in self.get_vt_sequences():
             if seq_id in self._nc_params_map:
-                subjects = list(self.get_non_compliant_subject_ids(
-                                                        seq_id=seq_id,
+                subjects = list(self.get_nc_subject_ids(seq_id=seq_id,
                                                         param_name=param_name,
                                                         ref_seq=ref_seq))
                 total_subjects.update(subjects)
         return len(total_subjects)
 
-    def get_non_compliant_params(self, subject_id, session_id, seq_id, run_id):
+    def get_nc_params(self, subject_id, session_id, seq_id, run_id):
         """
         A generator that returns all non-compliant parameters for a given
         subject, session, sequence and run.
@@ -310,8 +403,8 @@ class NonCompliantDataset(BaseDataset):
         img_sequence = self._tree_map[subject_id][session_id][seq_id][run_id]
         return img_sequence.path
 
-    def add_non_compliant_params(self, subject_id, session_id, seq_id, run_id,
-                                 non_compliant_params, ref_seq=None):
+    def add_nc_params(self, subject_id, session_id, seq_id, run_id,
+                      non_compliant_params, ref_seq=None):
         """
         Add non-compliant parameters to the dataset. This is a helper function
         that is used by the (horizontal/vertical) audit to add non-compliant

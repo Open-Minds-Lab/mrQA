@@ -5,7 +5,7 @@ from pathlib import Path
 from MRdataset import DatasetEmptyException, valid_dirs, load_mr_dataset
 
 from mrQA import monitor, logger, check_compliance
-from mrQA.utils import txt2list
+from mrQA.utils import txt2list, filter_epi_fmap_pairs
 
 
 def main():
@@ -66,7 +66,7 @@ def main():
         arguments = [(f, args.output_dir, args.config) for f in dirs]
         pool.starmap(run, arguments)
     elif args.task == 'compile':
-        compile_reports(args.output_dir, args.config)
+        compile_reports(args.data_root, args.output_dir, args.config)
     else:
         raise NotImplementedError(f"Task {args.task} not implemented. Choose "
                                   "one of [monitor, compile]")
@@ -90,56 +90,30 @@ def run(folder_path, output_dir, config_path):
         logger.warning(f'{e}: Folder {name} has no DICOM files.')
 
 
-def compile_reports(output_dir, config_path):
+def compile_reports(folder_path, output_dir, config_path):
     output_dir = Path(output_dir)
-    nc_log = {}
-    mrds_files = list(Path(output_dir).rglob('*.mrds.pkl'))
+    complete_log = []
+    mrds_files = list(Path(folder_path).rglob('*.mrds.pkl'))
     if not mrds_files:
         raise FileNotFoundError(f"No .mrds.pkl files found in {output_dir}")
     for mrds in mrds_files:
         ds = load_mr_dataset(mrds)
-        # TODO : check compliance again, but better is to save
+        # TODO : check compliance, but better is to save
         #  compliance check results in the .vt.mrds.pkl and .hz.mrds.pkl
-        #  file and load it here
+        #  file and load it here.
         hz, vt = check_compliance(
             ds,
-            output_dir=output_dir/'compiled_reports',
+            output_dir=output_dir / 'compiled_reports',
             config_path=config_path,
         )
-        for pair in vt['sequence_pairs']:
-            if not is_epi_fmap_pair(pair):
-                continue
-            # TODO: Just check shimsetting for now, add other parameters later
-            for param in ['ShimSetting', 'PixelSpacing']:#vt['parameters']:
-                nc_subjects = vt['non_compliant_ds'].total_non_compliant_subjects_by_parameter(param)
-                if nc_subjects == 0:
-                    continue
-                if param in vt['non_compliant_ds'].get_non_compliant_param_ids(pair[0]):
-                    subjects = vt['non_compliant_ds'].get_non_compliant_subject_ids(pair[0], param, pair[1])
-                    nc_log[param] = {
-                        'dataset' : ds.name,
-                        'subjects' : subjects,
-                        'sequence' : pair,
-                    }
-    print(nc_log)
-
-
-def is_epi_fmap_pair(pair):
-    full_string = ' '.join(pair)
-    full_string = full_string.lower()
-    if ('field' in full_string or
-        'gre' in full_string or 'fmap' in full_string):
-        if 'fmri' in full_string:
-            return True
-        if 'dsi' in full_string:
-            return True
-        if 'dti' in full_string:
-            return True
-        if 'epi' in full_string:
-            return True
-        if 'dwi' in full_string:
-            return True
-    return False
+        non_compliant_ds = vt['non_compliant']
+        parameters = ['ShimSetting', 'PixelSpacing']
+        # after checking compliance just look for epi-fmap pairs for now
+        nc_log = non_compliant_ds.get_nc_log(parameters=parameters,
+                                             filter_fn=filter_epi_fmap_pairs,
+                                             output_dir=output_dir,)
+        print(nc_log)
+        complete_log.append(nc_log)
 
 
 if __name__ == "__main__":

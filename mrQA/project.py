@@ -84,27 +84,29 @@ def check_compliance(dataset: BaseDataset,
                                         decimals=decimals,
                                         tolerance=tolerance,
                                         config_path=config_path)
-    save_audit_results(output_dir/(dataset.name+'_hz.adt.pkl'), hz_audit_results)
+    save_audit_results(output_dir / (dataset.name + '_hz.adt.pkl'),
+                       hz_audit_results)
     # Get results of vertical audit
     vt_audit_results = vertical_audit(dataset=dataset,
                                       decimals=decimals,
                                       tolerance=tolerance,
                                       config_path=config_path)
-    save_audit_results(output_dir/(dataset.name+'_vt.adt.pkl'), vt_audit_results)
+    save_audit_results(output_dir / (dataset.name + '_vt.adt.pkl'),
+                       vt_audit_results)
 
     # Generate plots/visualization
-    plot_results = plot_patterns(
-        non_compliant_ds=hz_audit_results['non_compliant'],
-        complete_ds=hz_audit_results['complete_ds'],
-        config_path=config_path)
+    # plot_results = plot_patterns(
+    #     non_compliant_ds=hz_audit_results['non_compliant'],
+    #     complete_ds=hz_audit_results['complete_ds'],
+    #     config_path=config_path)
 
     # Generate the report if checking compliance was successful
     generate_report(hz_audit=hz_audit_results,
                     vt_audit=vt_audit_results,
                     report_path=report_path,
                     sub_lists_dir_path=sub_lists_dir_path,
-                    output_dir=output_dir,
-                    plots=plot_results)
+                    output_dir=output_dir, )
+    # plots=plot_results)
 
     # Print a small message on the console, about non-compliance of dataset
     print(_cli_report(hz_audit_results, str(report_path)))
@@ -120,7 +122,7 @@ def plot_patterns(non_compliant_ds, complete_ds, config_path=None):
 
     include_params = plots_config.get("include_parameters", None)
     for param in include_params:
-        param_cls = import_string('mrQA.plotting.'+param)
+        param_cls = import_string('mrQA.plotting.' + param)
         print(param)
         param_figure = param_cls()
         param_figure.plot(non_compliant_ds, complete_ds)
@@ -189,13 +191,16 @@ def horizontal_audit(dataset: BaseDataset,
             try:
                 for substr in skip_sequences:
                     if substr in seq_name.lower():
-                        logger.warning(f'Skipping {seq_name} sequence as it contains '
-                                     f'{substr}')
+                        logger.warning(
+                            f'Skipping {seq_name} sequence as it contains '
+                            f'{substr}')
                         raise ValueError("This sequence should be skipped.")
             except ValueError:
                 continue
 
-            sequence_name = modify_sequence_name(seq, stratify_by)
+            sequence_name = modify_sequence_name(
+                seq, stratify_by,
+                datasets=[compliant_ds, non_compliant_ds, undetermined_ds])
 
             try:
                 ref_sequence = ref_protocol[sequence_name]
@@ -204,6 +209,7 @@ def horizontal_audit(dataset: BaseDataset,
                                f'sequence.')
                 undetermined_ds.add(subject_id=subj, session_id=sess,
                                     run_id=run, seq_id=sequence_name, seq=seq)
+
                 undetermined_flag = True
                 continue
 
@@ -225,7 +231,7 @@ def horizontal_audit(dataset: BaseDataset,
                 non_compliant_params = [x[1] for x in non_compliant_tuples]
                 non_compliant_ds.add(subject_id=subj, session_id=sess,
                                      run_id=run, seq_id=sequence_name, seq=seq)
-                non_compliant_ds.add_non_compliant_params(
+                non_compliant_ds.add_nc_params(
                     subject_id=subj, session_id=sess, run_id=run,
                     seq_id=sequence_name,
                     non_compliant_params=non_compliant_params
@@ -297,8 +303,12 @@ def vertical_audit(dataset: BaseDataset,
                 decimals=decimals,
                 include_params=include_params
             )
-            seq1_name = modify_sequence_name(seq1, stratify_by)
-            seq2_name = modify_sequence_name(seq2, stratify_by)
+            seq1_name = modify_sequence_name(
+                seq1, stratify_by,
+                [compliant_ds, non_compliant_ds])
+            seq2_name = modify_sequence_name(
+                seq2, stratify_by,
+                [compliant_ds, non_compliant_ds])
 
             non_compliant_ds.add_sequence_pair_names((seq1_name, seq2_name))
             used_pairs.add((seq1_name, seq2_name))
@@ -315,14 +325,14 @@ def vertical_audit(dataset: BaseDataset,
                                      seq=seq2)
 
                 non_compliant_params = [x[0] for x in non_compliant_tuples]
-                non_compliant_ds.add_non_compliant_params(
+                non_compliant_ds.add_nc_params(
                     subject_id=subject, session_id=session, run_id=run1,
                     seq_id=seq1_name, ref_seq=seq2_name,
                     non_compliant_params=non_compliant_params
                 )
 
                 non_compliant_params = [x[1] for x in non_compliant_tuples]
-                non_compliant_ds.add_non_compliant_params(
+                non_compliant_ds.add_nc_params(
                     subject_id=subject, session_id=session, run_id=run2,
                     seq_id=seq2_name, ref_seq=seq1_name,
                     non_compliant_params=non_compliant_params
@@ -392,7 +402,7 @@ def generate_report(hz_audit: dict,
         parameters=vt_audit['parameters']
     )
 
-    report_formatter.collect_plots(**plots)
+    # report_formatter.collect_plots(**plots)
     report_formatter.render()
     # Generate the HTML report and save it to the output_path
     return Path(report_path)

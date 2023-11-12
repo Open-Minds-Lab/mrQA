@@ -27,5 +27,5 @@ help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
 abcd_subset:
-	mrqa -d /media/sinhah/extremessd/ABCD-375/dicom-baseline-subset -n 	ABCD-subset -o /home/sinhah/debug_reports/ABCD-subset/ --config	/home/sinhah/github/mrQA/mrQA/resources/mri-config-abcd.json --mrds-pkl /home/sinhah/debug_reports/ABCD-subset/ABCD-subset_DATE_10_19_2023_12_46_41.mrds.pkl
-
+	mrqa -d /home/sinhah/scan_data/vertical_abcd -n 	ABCD -o /home/sinhah/scan_data/vertical_abcd_mrqa_files/ --config	/home/sinhah/github/mrQA/examples/mri-config-abcd.json --mrds-pkl-path  /media/sinhah/extremessd/ABCD/active_series/non-recommended/fmap/dicom_mrqa_v2_files/reports/abcd-fmap-baseline-non-recommended_DATE_11_01_2023_13_49_13.mrds.pkl #/home/sinhah/scan_data/vertical_abcd_mrqa_files/abcd-vertical_DATE_10_26_2023_16_14_18.mrds.pkl
+	$(BROWSER)  /home/sinhah/scan_data/vertical_abcd_mrqa_files/

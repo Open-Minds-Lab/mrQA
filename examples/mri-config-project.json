@@ -12,7 +12,6 @@
     "vertical_audit": {
         "stratify_by": "series_number",
         "include_parameters": [
-            "FieldOfView",
             "AcquisitionMatrix",
             "PixelSpacing",
             "PhaseEncodingDirection",
@@ -56,13 +55,6 @@
             "NumberOfAverages",
             "ShimMode",
             "FieldOfView"
-        ]
-    },
-    "plots": {
-        "include_parameters": [
-            "PatientSexAndAge",
-            "ManufacturersModelAndDate",
-            "SoftwareVersionsAndDate"
         ]
     }
 }
