@@ -29,3 +29,7 @@ help:
 abcd_subset:
 	mrqa -d /home/sinhah/scan_data/vertical_abcd -n 	ABCD -o /home/sinhah/scan_data/vertical_abcd_mrqa_files/ --config	/home/sinhah/github/mrQA/examples/mri-config-abcd.json --mrds-pkl-path  /media/sinhah/extremessd/ABCD/active_series/non-recommended/fmap/dicom_mrqa_v2_files/reports/abcd-fmap-baseline-non-recommended_DATE_11_01_2023_13_49_13.mrds.pkl #/home/sinhah/scan_data/vertical_abcd_mrqa_files/abcd-vertical_DATE_10_26_2023_16_14_18.mrds.pkl
 	$(BROWSER)  /home/sinhah/scan_data/vertical_abcd_mrqa_files/
+
+monitor_compile:
+	python /home/harsh/Github/in_progress/mrQA/examples/monitor_project.py -d /home/harsh/mr_reports/MRRC-reportsv2/mrqa_reportsv2 -t compile -o /home/harsh/mr_reports/MRRC-reportsv2/debug --config  /home/harsh/Github/in_progress/mrQA/examples/mri-config-project.json
+
