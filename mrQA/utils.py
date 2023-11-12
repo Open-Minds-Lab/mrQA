@@ -1135,9 +1135,15 @@ def tuples2dict(mylist):
     the main code. Do not delete.
     """
     result = {}
+    # each entry in mylist is a tuple of the form
+    # ((param_nc_sequence, param_ref_sequence), subject_id, path)
     for i in mylist:
-        key = i[0]
-        result.setdefault(key, []).extend(i[1:])
+        param_tupl = i[0]
+
+        # param_tupl[1] is the parameter from reference sequence
+        # param_tupl[0] is the parameter from the non-compliant sequence
+        param_sequence = param_tupl[0]
+        result.setdefault(param_sequence, []).append(i[1:])
     return result
 
 

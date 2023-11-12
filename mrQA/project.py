@@ -228,7 +228,11 @@ def horizontal_audit(dataset: BaseDataset,
                                  run_id=run, seq_id=sequence_name, seq=seq)
             else:
                 compliant_flag = False
-                non_compliant_params = [x[1] for x in non_compliant_tuples]
+
+                # reverse the order of the tuples. Always store in this order
+                # (sequence_value, reference_value)
+
+                non_compliant_params = [(b, a) for a, b in non_compliant_tuples]
                 non_compliant_ds.add(subject_id=subj, session_id=sess,
                                      run_id=run, seq_id=sequence_name, seq=seq)
                 non_compliant_ds.add_nc_params(
@@ -324,18 +328,20 @@ def vertical_audit(dataset: BaseDataset,
                                      run_id=run2, seq_id=seq2_name,
                                      seq=seq2)
 
-                non_compliant_params = [x[0] for x in non_compliant_tuples]
+                # non_compliant_params = [x[0] for x in non_compliant_tuples]
                 non_compliant_ds.add_nc_params(
                     subject_id=subject, session_id=session, run_id=run1,
                     seq_id=seq1_name, ref_seq=seq2_name,
-                    non_compliant_params=non_compliant_params
+                    non_compliant_params=non_compliant_tuples
                 )
 
-                non_compliant_params = [x[1] for x in non_compliant_tuples]
+                # reverse the order of the tuples. Always store in this order
+                # (sequence_value, reference_value)
+                nc_tuples_reverse = [(b, a) for a, b in non_compliant_tuples]
                 non_compliant_ds.add_nc_params(
                     subject_id=subject, session_id=session, run_id=run2,
                     seq_id=seq2_name, ref_seq=seq1_name,
-                    non_compliant_params=non_compliant_params
+                    non_compliant_params=nc_tuples_reverse
                 )
     # TODO: add option for num_sequences > 2
     eval_dict = {
