@@ -6,9 +6,7 @@ from typing import List
 from MRdataset import valid_dirs
 from MRdataset.base import BaseDataset
 from bokeh.palettes import turbo, d3
-from protocol import BaseParameter, BaseSequence
-
-from mrQA.config import ATTRIBUTE_SEPARATOR
+from protocol import BaseSequence
 
 
 class CompliantDataset(BaseDataset):
@@ -341,6 +339,8 @@ class NonCompliantDataset(BaseDataset):
     def get_vt_param_values(self, seq_pair, param_name):
         """Wrapper around get_nc_param_values() for vertical audit"""
         seq1, seq2 = seq_pair
+        if seq1 not in self._nc_params_map:
+            return
         yield from self.get_nc_param_values(seq1, param_name, seq2)
 
     def get_nc_subject_ids(self, seq_id, param_name, ref_seq=None):

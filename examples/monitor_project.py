@@ -93,13 +93,15 @@ def run(folder_path, output_dir, config_path):
 def compile_reports(folder_path, output_dir, config_path):
     output_dir = Path(output_dir)
     complete_log = []
+    # Look for all mrds.pkl file in the output_dir. For ex, mrqa_reports
+    # Collect mrds.pkl files for all projects
     mrds_files = list(Path(folder_path).rglob('*.mrds.pkl'))
     if not mrds_files:
         raise FileNotFoundError(f"No .mrds.pkl files found in {output_dir}")
 
     for mrds in mrds_files:
         ds = load_mr_dataset(mrds)
-        # TODO : check compliance, but better is to save
+        # TODO : check compliance, but maybe its better is to save
         #  compliance results which can be re-used here
         hz, vt = check_compliance(
             ds,
@@ -108,14 +110,15 @@ def compile_reports(folder_path, output_dir, config_path):
         )
         non_compliant_ds = vt['non_compliant']
         parameters = ['ShimSetting', 'PixelSpacing']
+        # TODO: discuss what parameters can be compared between anatomical
+        #   and functional scans
         # after checking compliance just look for epi-fmap pairs for now
         nc_log = non_compliant_ds.generate_nc_log(
-                                                parameters=parameters,
-                                                filter_fn=filter_epi_fmap_pairs,
-                                                output_dir=output_dir,
-                                                audit='vt')
-        # print(nc_log)
-        # complete_log.append(nc_log)
+            parameters=parameters,
+            filter_fn=filter_epi_fmap_pairs,
+            output_dir=output_dir,
+            audit='vt',
+            verbosity=1)
 
 
 if __name__ == "__main__":
