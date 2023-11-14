@@ -3,7 +3,6 @@ import multiprocessing as mp
 from pathlib import Path
 
 from MRdataset import DatasetEmptyException, valid_dirs, load_mr_dataset
-
 from mrQA import monitor, logger, check_compliance
 from mrQA.utils import txt2list, filter_epi_fmap_pairs
 
@@ -25,6 +24,11 @@ def main():
     optional.add_argument('-t', '--task', type=str,
                           help='specify the task to be performed, one of'
                                ' [monitor, compile]', default='monitor')
+    optional.add_argument('-a', '--audit', type=str,
+                          help='specify the audit type if compiling reports. '
+                               'Choose one of [hz, vt]. Required if task is '
+                               'compile',
+                          default='vt')
     optional.add_argument('-o', '--output-dir', type=str,
                           default='/home/mrqa/mrqa_reports/',
                           help='specify the directory where the report'
@@ -66,7 +70,8 @@ def main():
         arguments = [(f, args.output_dir, args.config) for f in dirs]
         pool.starmap(run, arguments)
     elif args.task == 'compile':
-        compile_reports(args.data_root, args.output_dir, args.config)
+        compile_reports(args.data_root, args.output_dir, args.config,
+                        args.audit)
     else:
         raise NotImplementedError(f"Task {args.task} not implemented. Choose "
                                   "one of [monitor, compile]")
@@ -90,14 +95,14 @@ def run(folder_path, output_dir, config_path):
         logger.warning(f'{e}: Folder {name} has no DICOM files.')
 
 
-def compile_reports(folder_path, output_dir, config_path):
+def compile_reports(folder_path, output_dir, config_path, audit='vt'):
     output_dir = Path(output_dir)
     complete_log = []
     # Look for all mrds.pkl file in the output_dir. For ex, mrqa_reports
     # Collect mrds.pkl files for all projects
     mrds_files = list(Path(folder_path).rglob('*.mrds.pkl'))
     if not mrds_files:
-        raise FileNotFoundError(f"No .mrds.pkl files found in {output_dir}")
+        raise FileNotFoundError(f"No .mrds.pkl files found in {folder_path}")
 
     for mrds in mrds_files:
         ds = load_mr_dataset(mrds)
@@ -108,17 +113,31 @@ def compile_reports(folder_path, output_dir, config_path):
             output_dir=output_dir / 'compiled_reports',
             config_path=config_path,
         )
-        non_compliant_ds = vt['non_compliant']
-        parameters = ['ShimSetting', 'PixelSpacing']
-        # TODO: discuss what parameters can be compared between anatomical
-        #   and functional scans
-        # after checking compliance just look for epi-fmap pairs for now
+        if audit == 'hz':
+            non_compliant_ds = hz['non_compliant']
+            filter_fn = None
+            nc_params = ['ReceiveCoilActiveElements']
+            supplementary_params = ['BodyPartExamined']
+        elif audit == 'vt':
+            non_compliant_ds = vt['non_compliant']
+            nc_params = ['ShimSetting', 'PixelSpacing']
+            supplementary_params = []
+            # TODO: discuss what parameters can be compared between anatomical
+            #   and functional scans
+            # after checking compliance just look for epi-fmap pairs for now
+            filter_fn = filter_epi_fmap_pairs
+        else:
+            raise ValueError(f"Invalid audit type {audit}. Choose one of "
+                             f"[hz, vt]")
+
         nc_log = non_compliant_ds.generate_nc_log(
-            parameters=parameters,
-            filter_fn=filter_epi_fmap_pairs,
+            parameters=nc_params,
+            suppl_params=supplementary_params,
+            filter_fn=filter_fn,
             output_dir=output_dir,
-            audit='vt',
-            verbosity=1)
+            audit=audit,
+            verbosity=4)
+
 
 
 if __name__ == "__main__":

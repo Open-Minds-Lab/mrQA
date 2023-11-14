@@ -207,36 +207,70 @@ class NonCompliantDataset(BaseDataset):
         """
         self._vt_sequences.add(list_seqs)
 
+    def generate_hz_log(self, parameters, suppl_params, filter_fn=None,
+                        verbosity=1):
+        sequences = self.get_sequence_ids()
+        nc_log = {}
+        for seq_id in sequences:
+            for param_name in parameters:
+                for param_tupl, sub, path, seq in self.get_nc_param_values(
+                        seq_id, param_name):
+                    if param_name not in nc_log:  # empty
+                        nc_log[param_name] = []
+
+                    nc_dict = {}
+                    nc_dict['subject'] = sub
+                    nc_dict['sequence_name'] = seq_id
+
+                    # if additional parameters have to be included in the log
+                    if suppl_params:
+                        for i in suppl_params:
+                            nc_dict[i] = seq[i].get_value()
+
+                    if verbosity > 1:
+                        nc_dict['values'] = [p.get_value() for p in param_tupl]
+                    if verbosity > 2:
+                        nc_dict['path'] = str(path)
+
+                    nc_log[param_name].append(nc_dict)
+        return nc_log
+
     def generate_nc_log(self, parameters, filter_fn=None, output_dir=None,
-                        audit='vt', verbosity=1):
+                        suppl_params=None, audit='vt', verbosity=1):
         """
         Generate a log of all non-compliant parameters in the dataset.
         Apart from returning the log, it also dumps the log as a json file
         """
-
-        # PEP8: E731 do not assign a lambda expression, use a def
-        def _filter_fn(x): return True
-
         nc_log = {}
         if audit == 'hz':
-            # TODO: implement it later
-            raise NotImplementedError('Creating log files for horizontal audit'
-                                      ' is not supported yet. Use the html '
-                                      'report instead.')
+            nc_log = self.generate_hz_log(parameters, suppl_params,
+                                          filter_fn, verbosity)
+            filename = self.name + '_hz_log.json'
+        elif audit == 'vt':
+            nc_log = self.generate_vt_log(parameters, suppl_params,
+                                          filter_fn, verbosity)
+            filename = self.name + '_vt_log.json'
         if audit not in ['vt', 'hz']:
             raise ValueError('Expected one of [vt, hz], got {}'.format(audit))
 
-        # Implementation for vertical audit only
-        if filter_fn is None:
-            filter_fn = _filter_fn
+        # if output_dir is provided, dump it as a json file
+        if nc_log and output_dir is not None:
+            with open(output_dir / filename, 'w') as f:
+                json.dump(nc_log, f, indent=4)
 
+        return nc_log
+
+    def generate_vt_log(self, parameters, suppl_params, filter_fn=None,
+                        verbosity=1):
+
+        nc_log = {}
         sequence_pairs = self.get_vt_sequences()
 
         # Don't create the log for all sequence pairs. For example, we only
         # want to highlight the issues in field-map and epi sequences.
         for pair in filter(filter_fn, sequence_pairs):
             for param_name in parameters:
-                for param_tupl, sub, path in self.get_vt_param_values(
+                for param_tupl, sub, path, seq in self.get_vt_param_values(
                                                             pair, param_name):
                     if param_name not in nc_log:  # empty
                         nc_log[param_name] = []
@@ -251,12 +285,6 @@ class NonCompliantDataset(BaseDataset):
                         nc_dict['path'] = str(path)
 
                     nc_log[param_name].append(nc_dict)
-
-        # if output_dir is provided, dump it as a json file
-        if nc_log and output_dir is not None:
-            filename = self.name + '_vt_log.json'
-            with open(output_dir / filename, 'w') as f:
-                json.dump(nc_log, f, indent=4)
 
         return nc_log
 
@@ -334,7 +362,8 @@ class NonCompliantDataset(BaseDataset):
                 subject_id][session_id][ref_seq][run_id]  # noqa
             path = self.get_path(subject_id, session_id,
                                  seq_id, run_id)
-            yield param_tupl, subject_id, path
+            seq = self.get(subject_id, session_id, seq_id, run_id)
+            yield param_tupl, subject_id, path, seq
 
     def get_vt_param_values(self, seq_pair, param_name):
         """Wrapper around get_nc_param_values() for vertical audit"""

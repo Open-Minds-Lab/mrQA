@@ -15,15 +15,14 @@ from typing import Union, List, Optional, Any, Iterable
 
 from MRdataset import BaseDataset, is_dicom_file
 from dateutil import parser
-from protocol import BaseSequence, MRImagingProtocol, SiemensMRImagingProtocol
-from tqdm import tqdm
-
 from mrQA import logger
 from mrQA.base import CompliantDataset, NonCompliantDataset, UndeterminedDataset
 from mrQA.config import past_records_fpath, report_fpath, mrds_fpath, \
     subject_list_dir, DATE_SEPARATOR, CannotComputeMajority, \
     Unspecified, \
     EqualCount, status_fpath, ATTRIBUTE_SEPARATOR
+from protocol import BaseSequence, MRImagingProtocol, SiemensMRImagingProtocol
+from tqdm import tqdm
 
 
 def get_reference_protocol(dataset: BaseDataset,
@@ -1143,7 +1142,7 @@ def tuples2dict(mylist):
         # param_tupl[1] is the parameter from reference sequence
         # param_tupl[0] is the parameter from the non-compliant sequence
         param_sequence = param_tupl[0]
-        result.setdefault(param_sequence, []).append(i[1:])
+        result.setdefault(param_sequence, []).append(i[1:3])
     return result
 
 
