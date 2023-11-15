@@ -193,7 +193,7 @@ class NonCompliantDataset(BaseDataset):
         self._org2mod_seq_names[original] = modified
         self._mod2org_seq_names[modified] = original
 
-    def get_vt_sequences(self)->List:
+    def get_vt_sequences(self) -> List:
         """
         Returns a list of all sequences that were checked for vertical
         audit.

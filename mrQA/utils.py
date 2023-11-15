@@ -15,14 +15,15 @@ from typing import Union, List, Optional, Any, Iterable
 
 from MRdataset import BaseDataset, is_dicom_file
 from dateutil import parser
+from protocol import BaseSequence, MRImagingProtocol, SiemensMRImagingProtocol
+from tqdm import tqdm
+
 from mrQA import logger
 from mrQA.base import CompliantDataset, NonCompliantDataset, UndeterminedDataset
 from mrQA.config import past_records_fpath, report_fpath, mrds_fpath, \
     subject_list_dir, DATE_SEPARATOR, CannotComputeMajority, \
     Unspecified, \
     EqualCount, status_fpath, ATTRIBUTE_SEPARATOR
-from protocol import BaseSequence, MRImagingProtocol, SiemensMRImagingProtocol
-from tqdm import tqdm
 
 
 def get_reference_protocol(dataset: BaseDataset,
@@ -1049,7 +1050,8 @@ def save_audit_results(filepath: Union[str, Path], result_dict) -> None:
     try:
         parent_folder.mkdir(exist_ok=True, parents=True)
     except OSError as exc:
-        logger.error(f'Unable to create folder {parent_folder} for saving dataset')
+        logger.error(f'Unable to create folder {parent_folder}'
+                     ' for saving dataset')
         raise exc
 
     with open(filepath, 'wb') as f:
@@ -1135,13 +1137,13 @@ def tuples2dict(mylist):
     """
     result = {}
     # each entry in mylist is a tuple of the form
-    # ((param_nc_sequence, param_ref_sequence), subject_id, path)
+    # ((param_nc_sequence, param_ref_sequence), subject_id, path, seq)
     for i in mylist:
-        param_tupl = i[0]
+        param_tuple = i[0]
 
-        # param_tupl[1] is the parameter from reference sequence
-        # param_tupl[0] is the parameter from the non-compliant sequence
-        param_sequence = param_tupl[0]
+        # param_tuple[1] is the parameter from reference sequence
+        # param_tuple[0] is the parameter from the non-compliant sequence
+        param_sequence = param_tuple[0]
         result.setdefault(param_sequence, []).append(i[1:3])
     return result
 
@@ -1336,28 +1338,32 @@ def infer_protocol(dataset: BaseDataset,
 
     return ref_protocol
 
+
 def filter_epi_fmap_pairs(pair):
     epi_substrings = ['epi', 'bold', 'rest', 'fmri', 'pasl',
                       'asl', 'dsi', 'dti', 'dwi']
     fmap_substrings = ['fmap', 'fieldmap', 'map']
     if (has_substring(pair[0].lower(), epi_substrings) and
-        has_substring(pair[1].lower(), fmap_substrings)):
+            has_substring(pair[1].lower(), fmap_substrings)):
         return True
     if (has_substring(pair[1].lower(), epi_substrings) and
-        has_substring(pair[0].lower(), fmap_substrings)):
+            has_substring(pair[0].lower(), fmap_substrings)):
         return True
     return False
 
+
 def has_substring(input_string, substrings):
+    """Check if a string contains any of the substrings"""
     for substring in substrings:
         if substring in input_string:
             return True
 
 
-
 def previous_month(dt):
+    """Return the first day of the previous month."""
     return dt.replace(day=1) - timedelta(days=1)
 
 
 def next_month(dt):
+    """Return the first day of the next month."""
     return dt.replace(day=28) + timedelta(days=5)

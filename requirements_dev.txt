@@ -7,4 +7,5 @@ protocol
 hypothesis
 pytest
 bokeh
+flake8
 

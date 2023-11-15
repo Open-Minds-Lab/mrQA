@@ -39,7 +39,7 @@ class MultiPlot(BasePlot):
                     continue
 
                 if (isinstance(primary_value, UnspecifiedType) or
-                    isinstance(secondary_value, UnspecifiedType)):
+                        isinstance(secondary_value, UnspecifiedType)):
                     continue
                 if primary_value not in counter:
                     counter[primary_value] = {}
@@ -74,8 +74,8 @@ class MultiPlot(BasePlot):
         # initialize data
         for category in self.uniq_secondary_values:
             data[category] = {
-                'x' : [],
-                'y' : []
+                'x': [],
+                'y': []
             }
 
         for key, values_by_category in normalized_counts.items():
@@ -101,11 +101,13 @@ class MultiPlot(BasePlot):
         """Creates a plot for the given data"""
         raise NotImplementedError
 
+
 class BarPlot(MultiPlot):
+    """Plot for creating bar plots"""
     _name = 'bar_plot'
 
-    def __init__(self, legend_label=None, y_axis_label='% Deviations'
-                 , plot_height=300,
+    def __init__(self, legend_label=None, y_axis_label='% Deviations',
+                 plot_height=300,
                  plot_width=800):
         super().__init__(name=self._name)
         self.legend_label = legend_label
@@ -123,13 +125,15 @@ class BarPlot(MultiPlot):
 
     def pad_with_zeroes(self, normalized_counts, primary_param):
         """Pad the normalized counts with zeroes"""
-        factors = [(str(i), str(j)) for i in normalized_counts for j in normalized_counts[i]]
-        y = [normalized_counts[i][j] for i in normalized_counts for j in normalized_counts[i]]
+        factors = [(str(i), str(j)) for i in normalized_counts
+                   for j in normalized_counts[i]]
+        y = [normalized_counts[i][j] for i in normalized_counts
+             for j in normalized_counts[i]]
 
         self.x_range = FactorRange(*factors)
         source = ColumnDataSource(data=dict(
             factors=factors,
-            y = y
+            y=y
         ))
 
         return source
@@ -142,9 +146,8 @@ class BarPlot(MultiPlot):
         for key1 in counter:
             for key2 in counter[key1]:
                 uniq_secondary_values.add(key2)
-                total = sum(counter[key1].values())
                 normalized_counts[key1][key2] = 100*(
-                    counter[key1][key2] / base_counter[key1][key2] )
+                    counter[key1][key2] / base_counter[key1][key2])
 
         if not normalized_counts:
             raise ValueError("Primary counter is empty. "
@@ -162,9 +165,10 @@ class BarPlot(MultiPlot):
         # for i, k in enumerate(self.uniq_secondary_values):
         try:
             p.vbar(x='factors', top='y', source=data, width=self.width,
-                   fill_color=self.colors[2], fill_alpha=0.75, line_color=self.colors[0])
+                   fill_color=self.colors[2], fill_alpha=0.75,
+                   line_color=self.colors[0])
         except IndexError:
-            print(f"Unable to plot, Color index  out of range")
+            print("Unable to plot, Color index  out of range")
 
         p.xaxis.major_label_orientation = "vertical"
         p.xgrid.grid_line_color = None
@@ -194,8 +198,8 @@ class BarPlot(MultiPlot):
         self.div, self.script = self.get_plot_components(data)
 
 
-
 class MultiLinePlot(MultiPlot):
+    """Plot for creating multi line plots"""
     _name = 'multi_line'
 
     def __init__(self, legend_label=None, y_axis_label=None,  line_width=2,
@@ -211,7 +215,6 @@ class MultiLinePlot(MultiPlot):
         self.plot_height = plot_height
 
     def get_plot_components(self, data):
-        label = list(data.keys())[0]
         self.set_cmap(len(self.uniq_secondary_values))
 
         p = figure(x_range=self.x_range,
@@ -219,7 +222,8 @@ class MultiLinePlot(MultiPlot):
                    width=self.plot_width, height=self.plot_height)
         for i, k in enumerate(self.uniq_secondary_values):
             try:
-                p.line(x=data[k]['x'], y=data[k]['y'], line_width=self.line_width,
+                p.line(x=data[k]['x'], y=data[k]['y'],
+                       line_width=self.line_width,
                        line_alpha=1, color=self.colors[i], legend_label=k)
             except IndexError:
                 print(f"Unable to plot {k}, Color index {i} out of range")
@@ -312,7 +316,6 @@ class ManufacturerAndDate(MultiScatterPlot):
         self.parameters = ['ContentDate', 'Manufacturer']
 
 
-
 class PatientSexAndAge(BarPlot):
     """Plot for PatientSex and PatientAge"""
     def __init__(self):
@@ -344,7 +347,7 @@ class ManufacturersModelAndDate(MultiScatterPlot):
                     continue
 
                 if (isinstance(primary_value, UnspecifiedType) or
-                    isinstance(secondary_value, UnspecifiedType)):
+                        isinstance(secondary_value, UnspecifiedType)):
                     continue
                 if primary_value not in counter:
                     counter[primary_value] = {}
@@ -378,7 +381,7 @@ class SoftwareVersionsAndDate(MultiScatterPlot):
                     continue
 
                 if (isinstance(primary_value, UnspecifiedType) or
-                    isinstance(secondary_value, UnspecifiedType)):
+                        isinstance(secondary_value, UnspecifiedType)):
                     continue
                 if primary_value not in counter:
                     counter[primary_value] = {}
@@ -394,7 +397,7 @@ class Site(BasePlot):
         super().__init__()
         logger.warning("This plot is only for ABCD dataset")
         self.parameters = ['ContentDate', 'InstitutionName']
-        self.csv_path = Path('/media/sinhah/extremessd/ABCD/1210908/original_files/abcd_lt01.txt')
+        self.csv_path = Path('/media/sinhah/extremessd/ABCD/1210908/original_files/abcd_lt01.txt') # noqa
         self.subject_site_map = self.get_subject_site_map()
         self.y_axis_label = '% Deviations'
         self.plot_width = 600
@@ -451,15 +454,15 @@ class Site(BasePlot):
 
     def pad_with_zeroes(self, normalized_counts, primary_param):
         """Pad the normalized counts with zeroes"""
-        # factors = [(str(i), str(j)) for i in normalized_counts for j in normalized_counts[i]]
-        # y = [normalized_counts[i][j] for i in normalized_counts for j in normalized_counts[i]]
+        # factors = [(str(i), str(j)) for i in normalized_counts for j in normalized_counts[i]] # noqa
+        # y = [normalized_counts[i][j] for i in normalized_counts for j in normalized_counts[i]] # noqa
         factors = [str(i) for i in normalized_counts]
         y = [normalized_counts[i] for i in normalized_counts]
 
         self.x_range = FactorRange(*factors)
         source = ColumnDataSource(data=dict(
             factors=factors,
-            y = y
+            y=y
         ))
 
         return source
@@ -470,8 +473,8 @@ class Site(BasePlot):
         uniq_secondary_values = set()
 
         for key1 in counter:
-                normalized_counts[key1] = 100*(
-                    counter[key1] / base_counter[key1] )
+            normalized_counts[key1] = 100*(
+                counter[key1] / base_counter[key1])
 
         if not normalized_counts:
             raise ValueError("Primary counter is empty. "
@@ -489,9 +492,10 @@ class Site(BasePlot):
         # for i, k in enumerate(self.uniq_secondary_values):
         try:
             p.vbar(x='factors', top='y', source=data, width=self.width,
-                   fill_color=self.colors[2], fill_alpha=0.75, line_color=self.colors[0])
+                   fill_color=self.colors[2], fill_alpha=0.75,
+                   line_color=self.colors[0])
         except IndexError:
-            print(f"Unable to plot, Color index  out of range")
+            print("Unable to plot, Color index  out of range")
 
         p.xaxis.major_label_orientation = "vertical"
         p.xgrid.grid_line_color = None
@@ -520,13 +524,16 @@ class Site(BasePlot):
 
         self.div, self.script = self.get_plot_components(data)
 
+
 class ManufacturerAndModel(BarPlot):
+    """Plot for Manufacturer and Model"""
     def __init__(self):
         super().__init__(plot_height=300, plot_width=400)
         self.parameters = ['Manufacturer', 'ManufacturersModelName']
 
 
 class ManufacturerAndVersion(BarPlot):
+    """Plot for Manufacturer and SoftwareVersion"""
     def __init__(self):
         super().__init__(plot_height=300, plot_width=400)
         self.parameters = ['Manufacturer', 'SoftwareVersions']
@@ -551,7 +558,7 @@ class ManufacturerAndVersion(BarPlot):
                     continue
 
                 if (isinstance(primary_value, UnspecifiedType) or
-                    isinstance(secondary_value, UnspecifiedType)):
+                        isinstance(secondary_value, UnspecifiedType)):
                     continue
                 if primary_value not in counter:
                     counter[primary_value] = {}
@@ -559,4 +566,3 @@ class ManufacturerAndVersion(BarPlot):
                     counter[primary_value][secondary_value] = 0
                 counter[primary_value][secondary_value] += 1
         return counter
-
