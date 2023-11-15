@@ -7,7 +7,7 @@ from MRdataset.config import MRException
 from protocol import UnspecifiedType
 
 
-def configure_logger(log, output_dir, mode='w', level='ERROR'):
+def configure_logger(log, output_dir, mode='w', level='WARNING'):
     """
     Initiate log files.
 
@@ -17,7 +17,13 @@ def configure_logger(log, output_dir, mode='w', level='ERROR'):
         The logger object.
     mode : str, (``'w'``, ``'a'``)
         The writing mode to the log files.
-        Defaults to ``'w'``, overwrites previous files.    """
+        Defaults to ``'w'``, overwrites previous files.
+    output_dir : str or Path
+        The path to the output directory.
+    level : str,
+        The level of logging to the console. One of ['WARNING', 'ERROR']
+    """
+
     console_handler = logging.StreamHandler()  # creates the handler
     warn_formatter = ('%(filename)s:%(name)s:%(funcName)s:%(lineno)d:'
                       ' %(message)s')
@@ -27,23 +33,32 @@ def configure_logger(log, output_dir, mode='w', level='ERROR'):
     output_dir = Path(output_dir) / '.mrdataset'
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    warn_file = output_dir / 'warn.log'
-    if level == 'WARNING':
-        warn = logging.FileHandler(warn_file, mode=mode)
-        warn.setLevel(logging.WARN)
-        warn.setFormatter(logging.Formatter(warn_formatter))
-        log.addHandler(warn)
+    options = {
+        "warn": {
+            'level': logging.WARN,
+            'file': output_dir / 'warn.log',
+            'formatter': warn_formatter
+        },
+        "error": {
+            'level': logging.ERROR,
+            'file': output_dir / 'error.log',
+            'formatter': error_formatter
+        }
+    }
 
-    # keep only errors on console
-    console_handler.setLevel(logging.ERROR)  # sets the handler info
-    console_handler.setFormatter(logging.Formatter(error_formatter))
+    if level == 'ERROR':
+        config = options['error']
+    else:
+        config = options['warn']
+
+    file_handler = logging.FileHandler(config['file'], mode=mode)
+    file_handler.setLevel(config['level'])
+    file_handler.setFormatter(logging.Formatter(config['formatter']))
+    log.addHandler(file_handler)
+
+    console_handler.setLevel(config['level'])  # sets the handler info
+    console_handler.setFormatter(logging.Formatter(config['formatter']))
     log.addHandler(console_handler)
-
-    error_file = output_dir / 'error.log'
-    error = logging.FileHandler(error_file, mode=mode)
-    error.setLevel(logging.ERROR)
-    error.setFormatter(logging.Formatter(error_formatter))
-    log.addHandler(error)
     return log
 
 
@@ -135,6 +150,7 @@ class ChangingParamsinSeries(ComplianceException):
     Custom error that is raised when parameter values are different for
     different slices even though the SeriesInstanceUID is same.
     """
+
     def __init__(self, filepath):
         super().__init__("Expected all dicom slices to have same parameters. "
                          "Got changing parameters : {}".format(filepath))

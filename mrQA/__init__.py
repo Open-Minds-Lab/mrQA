@@ -6,7 +6,7 @@ __email__ = 'harsh.sinha@pitt.edu'
 
 import logging
 
-from MRdataset.config import configure_logger
+from mrQA.config import configure_logger
 
 logger = logging.getLogger(__name__)
 logger = configure_logger(logger, output_dir=None, mode='w')
