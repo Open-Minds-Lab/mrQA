@@ -182,11 +182,17 @@ class NonCompliantDataset(BaseDataset):
 
     def get_modified_seq_name(self, seq_name):
         """Get the modified sequence name"""
-        return self._org2mod_seq_names[seq_name]
+        try:
+            return self._org2mod_seq_names[seq_name]
+        except KeyError:
+            return seq_name
 
     def get_original_seq_name(self, seq_name):
         """Get the original sequence name"""
-        return self._mod2org_seq_names[seq_name]
+        try:
+            return self._mod2org_seq_names[seq_name]
+        except KeyError:
+            return seq_name
 
     def set_modified_seq_name(self, original, modified):
         """Set the modified sequence name"""

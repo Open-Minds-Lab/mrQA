@@ -787,6 +787,7 @@ def _cli_report(hz_audit: dict, report_name):
         ret_string = f'In {compliant_ds.name} dataset, all modalities ' \
                      f'are compliant. See {report_name} for report.'
 
+    print(ret_string)
     return ret_string
 
 
@@ -1194,27 +1195,25 @@ def modify_sequence_name(seq: "BaseSequence", stratify_by: str,
         Modified sequence name
     """
     # TODO: change stratify_by from attributes to acquisition parameters
-    stratify_value = None
-    if stratify_by:
-        try:
-            stratify_value = getattr(seq, stratify_by)
-        except AttributeError:
-            try:
-                stratify_value = seq[stratify_by]
-            except KeyError:
-                logger.warning(f"Attribute {stratify_by} not found in "
-                               f"sequence {seq.name}")
-    if stratify_value:
-        seq_name_with_stratify = ATTRIBUTE_SEPARATOR.join(
-            [seq.name, stratify_value])
-    else:
-        seq_name_with_stratify = seq.name
+    stratify_value = ''
+    if 'gre_field' in seq.name.lower():
+        stratify_by = 'NonLinearGradientCorrection'
+        nlgc = seq[stratify_by].get_value()
+        if 'P' in nlgc:
+            stratify_value = 'P'
+        elif 'M' in nlgc:
+            stratify_value = 'M'
+        else:
+            stratify_value = ''
 
-    if datasets:
-        for ds in datasets:
-            ds.set_modified_seq_name(seq.name, seq_name_with_stratify)
+        seq_name_with_stratify = ATTRIBUTE_SEPARATOR.join([seq.name,
+                                                          stratify_value])
+        if datasets:
+            for ds in datasets:
+                ds.set_modified_seq_name(seq.name, seq_name_with_stratify)
 
-    return seq_name_with_stratify
+        return seq_name_with_stratify
+    return seq.name
 
 
 def get_config_from_file(config_path: Union[Path, str]) -> dict:

@@ -3,6 +3,8 @@ from pathlib import Path
 from typing import Union, Dict, Optional
 
 from MRdataset import save_mr_dataset, BaseDataset, DatasetEmptyException
+from protocol.utils import import_string
+
 from mrQA import logger
 from mrQA.base import CompliantDataset
 from mrQA.formatter import HtmlFormatter
@@ -10,7 +12,6 @@ from mrQA.utils import _cli_report, \
     export_subject_lists, make_output_paths, \
     modify_sequence_name, _init_datasets, get_reference_protocol, get_config, \
     save_audit_results
-from protocol.utils import import_string
 
 
 def check_compliance(dataset: BaseDataset,
@@ -108,7 +109,7 @@ def check_compliance(dataset: BaseDataset,
     # plots=plot_results)
 
     # Print a small message on the console, about non-compliance of dataset
-    print(_cli_report(hz_audit_results, str(report_path)))
+    _cli_report(hz_audit_results, str(report_path))
     # TODO : print(_cli_report(vt_audit_results, str(report_path)))
     return hz_audit_results, vt_audit_results
 
