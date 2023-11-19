@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, timezone
 from itertools import takewhile
 from pathlib import Path
 from subprocess import run, CalledProcessError, TimeoutExpired, Popen
-from typing import Union, List, Optional, Any, Iterable
+from typing import Union, List, Optional, Any, Iterable, Sized
 
 from MRdataset import BaseDataset, is_dicom_file
 from dateutil import parser
@@ -31,7 +31,7 @@ def get_reference_protocol(dataset: BaseDataset,
                            reference_path: Union[str, Path] = None):
     """
     Given a dataset, it returns the reference protocol that contains
-    reference protcol for each sequence in the dataset.
+    reference protocol for each sequence in the dataset.
     """
     # Infer reference protocol if not provided
     if reference_path is None:
@@ -365,8 +365,8 @@ def pick_majority(counter_: Counter, parameter: str, default: Any = None):
         If the counter is empty
     """
     if len(counter_) == 0:
-        logger.error('Expected atleast one entry in counter. Got 0')
-        raise ValueError('Expected atleast one entry in counter. Got 0')
+        logger.error('Expected at least one entry in counter. Got 0')
+        raise ValueError('Expected at least one entry in counter. Got 0')
     if len(counter_) == 1:
         return list(counter_.keys())[0]
     # there are more than 1 value, remove default, and computer majority
@@ -417,7 +417,7 @@ def _check_args_validity(list_: List) -> bool:
     return True
 
 
-def split_list(dir_index: list, num_chunks: int) -> typing.Iterable[List[str]]:
+def split_list(dir_index: Sized, num_chunks: int) -> Iterable:
     """
     Adapted from https://stackoverflow.com/questions/2130016/splitting-a-list-into-n-parts-of-approximately-equal-length # noqa
 
@@ -867,6 +867,8 @@ def folders_modified_since(last_reported_on: str,
     TimeoutExpired
         If the command `find` times out.
     """
+    modified_folders = set()
+
     mod_time = _get_time(time_format, last_reported_on)
     out_path = Path(output_dir) / 'modified_folders_since.txt'
     if out_path.is_file():
@@ -877,7 +879,6 @@ def folders_modified_since(last_reported_on: str,
     try:
         run(cmd, check=True, shell=True)
         modified_files = txt2list(out_path)
-        modified_folders = set()
         for f in modified_files:
             if not Path(f).is_file():
                 logger.warning(f'File {f} not found.')
@@ -885,7 +886,6 @@ def folders_modified_since(last_reported_on: str,
                 continue
             else:
                 modified_folders.add(Path(f).parent)
-        return list(modified_folders)
     except FileNotFoundError as exc:
         logger.error(
             'Process failed because file could not be found.\n %s', exc)
@@ -896,6 +896,8 @@ def folders_modified_since(last_reported_on: str,
         )
     except TimeoutExpired as exc:
         logger.error('Process timed out.\n %s', exc)
+
+    return list(modified_folders)
 
 
 def get_last_valid_record(folder_path: Path) -> Optional[tuple]:
@@ -1024,8 +1026,8 @@ def save_audit_results(filepath: Union[str, Path], result_dict) -> None:
     ----------
     filepath: Union[str, Path]
         path to the dataset file
-    mrds_obj: BaseDataset
-        dataset to be saved
+    result_dict: dict
+        dictionary containing the compliant and non-compliant dataset object
 
     Returns
     -------

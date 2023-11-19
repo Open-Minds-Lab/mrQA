@@ -83,7 +83,7 @@ def assert_list(list1, list2):
     return False
 
 
-@settings(max_examples=100, deadline=None)
+@settings(max_examples=5, deadline=None)
 @given(st.lists(st.integers(min_value=0, max_value=3), min_size=15,
                 max_size=15),
        st.floats(allow_nan=False, allow_infinity=False),

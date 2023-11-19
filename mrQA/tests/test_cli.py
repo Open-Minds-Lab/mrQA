@@ -3,6 +3,7 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from time import sleep
 
 from hypothesis import given, settings, assume
 
@@ -52,7 +53,7 @@ def test_binary_subset():
     pass
 
 
-@settings(max_examples=5, deadline=None)
+@settings(max_examples=10, deadline=None)
 @given(args=(dcm_dataset_strategy))
 def test_report_generated(args):
     ds1, attributes = args
@@ -77,7 +78,11 @@ def test_report_generated(args):
             assert ds1.name in report_path.stem.split(DATE_SEPARATOR)[0]
         else:
             assert not report_paths
-
+        # wait for 2 seconds, otherwise the next test will fail.
+        # This happens if report is generated with the same timestamp, then
+        # the number of reports will be 1 because the previous report will be
+        # overwritten.
+        sleep(2)
         # re-run with mrds pkl path
         mrds_paths = list(Path(tempdir).glob('*.mrds.pkl'))
         assert len(mrds_paths) > 0

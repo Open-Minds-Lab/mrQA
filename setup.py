@@ -20,6 +20,7 @@ requirements = [
     "jinja2>=3.0.3",
     "protocol",
     "bokeh",
+    "tqdm"
 ]
 
 test_requirements = ['pytest>=3', 'hypothesis']
