@@ -35,7 +35,7 @@ def _check_args(data_source: Union[str, Path, Iterable] = None,
     # Check if data_source is a valid directory, or list of valid directories
     data_source = valid_dirs(data_source)
 
-    # RULE : If output_dir not provided, output wil be saved in 'mrqa_files'
+    # RULE : If output_dir not provided, output will be saved in 'mrqa_files'
     # created in the parent folder of data_source
     if not output_dir:
         if isinstance(data_source, Iterable):
@@ -44,19 +44,20 @@ def _check_args(data_source: Union[str, Path, Iterable] = None,
             raise RuntimeError('Need an output directory to store files')
 
         # Didn't find a good alternative to os.access
-        # in pathlib, please raise a issue if you know one, happy to incorporate
-        output_dir = data_source.parent / (
-            data_source.name + '_mrqa_files')
+        # in pathlib, please raise an issue if you know one,
+        # happy to incorporate
+        parent_dir = Path(data_source[0]).parent
+        output_dir = parent_dir / (data_source[0].name + '_mrqa_files')
 
         # Check if permission to create a folder in data_source.parent
-        if os.access(data_source.parent, os.W_OK):
+        if os.access(parent_dir, os.W_OK):
             logger.warning('Expected a directory to save job scripts. Using '
                            'parent folder of --data_source instead.')
         else:
-            raise PermissionError(f'You do not have write permission to'
-                                  f'create a folder in '
-                                  f'{data_source.parent}'
-                                  f'Please provide output_dir')
+            raise PermissionError('You do not have write permission to'
+                                  'create a folder in '
+                                  f'{parent_dir}'
+                                  'Please provide output_dir')
     else:
         output_dir = Path(output_dir)
     # Information about conda env is required for creating slurm scripts
@@ -123,7 +124,7 @@ def _run_single_batch(script_path: Union[str, Path],
             # to submit the script
             # TODO: Add try/except block here
             subprocess.run(['sbatch', script_path], check=True, shell=True)
-            # Without any delay, you may recieve NODE_FAIL error
+            # Without any delay, you may receive NODE_FAIL error
             sleep(2)
             # print(out.stdout)
             # some way to check was submitted/accepted
@@ -234,7 +235,7 @@ def _get_num_workers(folders_per_job, folder_list):
 def _get_terminal_folders(data_source: Union[str, Path],
                           all_ids_path: Union[str, Path],
                           pattern='*',
-                          min_count=1) -> list:
+                          min_count=1) -> Iterable:
     """
     Get the list of subject ids from the data source folder
 
@@ -247,12 +248,12 @@ def _get_terminal_folders(data_source: Union[str, Path],
 
     Returns
     -------
-    subject_list : list
+    subject_list : Iterable
         List of subject ids
     """
     terminal_folder_list = []
     # Get the list of subject ids
-    for directory in data_source:
+    for directory in valid_dirs(data_source):
         sub_folders = folders_with_min_files(directory, pattern,
                                              min_count)
         terminal_folder_list.extend(sub_folders)
