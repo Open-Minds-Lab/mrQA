@@ -86,6 +86,7 @@ def cli():
                      subjects_per_job=args.subjects_per_job,
                      conda_env=args.conda_env,
                      conda_dist=args.conda_dist,
+                     config_path=args.config,
                      hpc=args.hpc)
     dataset = load_mr_dataset(args.out_mrds_path)
     try:
@@ -353,7 +354,7 @@ def split_folders_list(data_source: Union[str, Path],
 
     Returns
     -------
-    batch_ids_path_list : list
+    batch_ids_path_list : Sized
         Paths to the text files, each containing a list of subjects
     """
 
