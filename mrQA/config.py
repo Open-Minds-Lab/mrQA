@@ -98,13 +98,13 @@ def subject_list_dir(folder_path, fname):
     return folder_path / f'{fname}_files'
 
 
-# class CannotComputeMajority(MRException):
-#     """Custom error that is raised when majority cannot be computed."""
-#
-#     def __init__(self, name):
-#         super().__init__(
-#             f"Could not compute majority for {name}")
-#
+class CannotComputeMajority(MRException):
+    """Custom error that is raised when majority cannot be computed."""
+
+    def __init__(self, name):
+        super().__init__(
+            f"Could not compute majority for {name}")
+
 #
 # class ReferenceNotSetForModality(MRException):
 #     """Custom error that is raised when majority cannot be computed."""
