@@ -1,13 +1,8 @@
 [run]
 branch = True
-omit =
-    # omit anything in a .local directory anywhere
-    */.local/*
-    # omit everything in /usr
-    /usr/*
-    /home/sinhah/github/protocol/*
-    ./*
-    */_version.py
+omit = */tests/*
+       _*.py
+       plotting.py
 
 [report]
 ; Regexes for lines to exclude from consideration
@@ -18,6 +13,7 @@ exclude_also =
 
     ; Don't complain if tests don't hit defensive assertion code:
     raise AssertionError
+    raise NotImplementedError
 
     ; Don't complain if non-runnable code isn't run:
     if 0:
@@ -27,3 +23,6 @@ exclude_also =
     @(abc\.)?abstractmethod
 
 ignore_errors = True
+
+[html]
+directory = htmlcov
