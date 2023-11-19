@@ -7,15 +7,12 @@ import pydicom
 
 from mrQA.utils import convert2ascii
 
-compl_data_xnat = '/home/sinhah/scan_data/compliant_data'
 
 def make_test_dataset(num_noncompliant_subjects,
                       repetition_time,
                       echo_train_length,
                       flip_angle):
-    src_dir, dest_dir = setup_directories(compl_data_xnat)  # noqa
-    print()
-    # copyeverything(src_dir, dest_dir)
+    src_dir, dest_dir = setup_directories(compliant_dicom_dataset())  # noqa
     dataset_info = defaultdict(set)
     modalities = [s.name for s in src_dir.iterdir() if (s.is_dir() and
                                                         'mrdataset' not in
@@ -94,6 +91,16 @@ def sample_dicom_dataset(tmp_path='/tmp'):
         with zipfile.ZipFile(DATA_ARCHIVE, 'r') as zip_ref:
             zip_ref.extractall(DATA_ROOT)
     return DATA_ROOT / 'example_dicom_data'
+
+
+def compliant_dicom_dataset(tmp_path='/tmp'):
+    DATA_ARCHIVE = THIS_DIR / 'resources/compliant_dicom_data.zip'
+    DATA_ROOT = Path(tmp_path)
+    output_dir = DATA_ROOT / 'compliant_dicom_data'
+    if not output_dir.exists():
+        with zipfile.ZipFile(DATA_ARCHIVE, 'r') as zip_ref:
+            zip_ref.extractall(DATA_ROOT)
+    return DATA_ROOT / 'compliant_dicom_data'
 
 
 def setup_directories(src):
