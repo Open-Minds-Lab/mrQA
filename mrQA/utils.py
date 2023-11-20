@@ -408,7 +408,7 @@ def _check_args_validity(list_: List) -> bool:
         raise ValueError('List is empty.')
     for seq in list_:
         if len(seq) == 0:
-            raise ValueError('Atleast one of sequences is empty.')
+            raise ValueError('At least one of sequences is empty.')
     if len(list_) < 3:
         logger.info('Cannot compute majority attribute values. '
                     'Got less than 3 values for each '
@@ -422,14 +422,14 @@ def split_list(dir_index: Sized, num_chunks: int) -> Iterable:
     Adapted from https://stackoverflow.com/questions/2130016/splitting-a-list-into-n-parts-of-approximately-equal-length # noqa
 
     Given a list of n elements, split it into k parts, where k = num_chunks.
-    Each part has atleast n/k elements. And the remaining elements
+    Each part has at least n/k elements. And the remaining elements
     n % k are distributed uniformly among the sub-parts such that
     each part has almost same number of elements. The first n % k will have
     floor(n/k) + 1 elements.
 
     Parameters
     ----------
-    dir_index : list
+    dir_index : Sized
         list to split
     num_chunks : int
         number of parts

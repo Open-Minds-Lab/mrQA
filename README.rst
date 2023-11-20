@@ -7,8 +7,8 @@ mrQA : automatic protocol compliance checks on MR datasets
 .. image:: https://app.codacy.com/project/badge/Grade/8cd263e1eaa0480d8fac50eba0094401
         :target: https://app.codacy.com/gh/sinhaharsh/mrQA/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade
 
-.. image:: https://github.com/sinhaharsh/mrQA/actions/workflows/continuos-integration.yml/badge.svg
-        :target: https://github.com/sinhaharsh/mrQA/actions/workflows/continuos-integration.yml
+.. image:: https://github.com/sinhaharsh/mrQA/actions/workflows/continuous-integration.yml/badge.svg
+        :target: https://github.com/sinhaharsh/mrQA/actions/workflows/continuous-integration.yml
 
 
 .. image:: https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg
