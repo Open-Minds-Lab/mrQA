@@ -1,9 +1,8 @@
-from pathlib import Path
-from mrQA import monitor
 import tempfile
-import shutil
+from pathlib import Path
 
-from mrQA.tests.test_utils import copy2dest
+from mrQA import monitor
+from mrQA.tests.utils import copy2dest
 
 
 def run(folder_path):

@@ -106,4 +106,7 @@ ENV/
 /update_today.txt
 
 # codacy
-results.sarif
+*.sarif
+
+# mri protocol
+*.xml

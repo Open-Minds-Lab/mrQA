@@ -7,7 +7,7 @@ from typing import Union, List
 from MRdataset import import_dataset, load_mr_dataset
 
 from mrQA import logger
-from mrQA.config import PATH_CONFIG
+from mrQA.config import PATH_CONFIG, THIS_DIR
 from mrQA.project import check_compliance
 from mrQA.utils import is_writable, folders_modified_since, \
     get_last_valid_record, log_latest_non_compliance
@@ -30,7 +30,8 @@ def get_parser():
                           help='directory containing downloaded dataset with '
                                'dicom files, supports nested hierarchies')
     required.add_argument('--config', type=str,
-                          help='path to config file')
+                          help='path to config file',
+                          default=THIS_DIR / 'resources/mri-config.json')
     optional.add_argument('-o', '--output-dir', type=str,
                           help='specify the directory where the report'
                                ' would be saved. By default, the --data_source '

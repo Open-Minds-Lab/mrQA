@@ -6,6 +6,8 @@ from MRdataset import MRDS_EXT
 from MRdataset.config import MRException
 from protocol import UnspecifiedType
 
+THIS_DIR = Path(__file__).parent.resolve()
+
 
 def configure_logger(log, output_dir, mode='w', level='WARNING'):
     """

@@ -8,7 +8,7 @@ from MRdataset import import_dataset, load_mr_dataset, valid_dirs, \
 
 from mrQA import check_compliance
 from mrQA import logger
-from mrQA.config import PATH_CONFIG
+from mrQA.config import PATH_CONFIG, THIS_DIR
 from mrQA.utils import is_writable
 
 
@@ -27,7 +27,8 @@ def get_parser():
                           help='directory containing downloaded dataset with '
                                'dicom files, supports nested hierarchies')
     required.add_argument('--config', type=str,
-                          help='path to config file')
+                          help='path to config file',
+                          default=THIS_DIR / 'resources/mri-config.json')
     optional.add_argument('-o', '--output-dir', type=str,
                           help='specify the directory where the report'
                                ' would be saved. By default, the --data_source '

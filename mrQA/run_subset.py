@@ -8,6 +8,7 @@ from typing import Union
 from MRdataset import import_dataset, save_mr_dataset, BaseDataset
 
 from mrQA import logger
+from mrQA.config import THIS_DIR
 from mrQA.utils import txt2list
 
 
@@ -37,7 +38,8 @@ def cli():
     optional.add_argument('-v', '--verbose', action='store_true',
                           help='allow verbose output on console')
     required.add_argument('--config', type=str,
-                          help='path to config file')
+                          help='path to config file',
+                          default=THIS_DIR / 'resources/mri-config.json')
 
     if len(sys.argv) < 2:
         logger.critical('Too few arguments!')

@@ -9,7 +9,7 @@ from MRdataset import load_mr_dataset, MRDS_EXT, DatasetEmptyException
 
 from mrQA import check_compliance
 from mrQA import logger
-from mrQA.config import PATH_CONFIG
+from mrQA.config import PATH_CONFIG, THIS_DIR
 from mrQA.parallel_utils import _check_args, _make_file_folders, \
     _run_single_batch, _create_slurm_script, _get_num_workers, \
     _get_terminal_folders
@@ -36,7 +36,8 @@ def get_parser():
                           help='directory containing downloaded dataset with '
                                'dicom files, supports nested hierarchies')
     required.add_argument('--config', type=str,
-                          help='path to config file')
+                          help='path to config file',
+                          default=THIS_DIR / 'resources/mri-config.json')
     optional.add_argument('-o', '--output-dir', type=str,
                           help='specify the directory where the report'
                                ' would be saved. By default, the --data_source '
