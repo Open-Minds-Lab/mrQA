@@ -41,6 +41,33 @@ def test_binary_mrqa(args):
     return
 
 
+@settings(max_examples=5, deadline=None)
+@given(args=(dcm_dataset_strategy))
+def test_binary_mrqa_with_reference_protocol(args):
+    ds1, attributes = args
+    assume(len(ds1.name) > 0)
+    ds1.load()
+    with tempfile.TemporaryDirectory() as tempdir:
+        # shlex doesn't test work with binaries
+        subprocess.run(['mrqa',
+                        '--data-source', attributes['fake_ds_dir'],
+                        '--config', attributes['config_path'],
+                        '--name', ds1.name,
+                        '--format', 'dicom',
+                        '--decimals', '3',
+                        '--tolerance', '0.1',
+                        '--verbose',
+                        '--ref-protocol-path', attributes['ref_protocol_path'],
+                        '--output-dir', tempdir])
+        report_paths = list(Path(tempdir).glob('*.html'))
+        # check if report was generated
+        assert len(report_paths) > 0
+        report_path = report_paths[0]
+        assert str(report_path.parent) == str(tempdir)
+        assert ds1.name in report_path.stem.split(DATE_SEPARATOR)[0]
+    return
+
+
 def test_binary_parallel():
     pass
 

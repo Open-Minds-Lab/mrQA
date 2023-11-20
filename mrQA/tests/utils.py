@@ -125,3 +125,15 @@
 #         parent.mkdir(exist_ok=True, parents=True)
 #         shutil.copy(file, parent)
 #     return file_list
+
+from requests import get  # to make GET request
+
+
+def download(url, file_name):
+    """Download file from url and save to file_name"""
+    # open in binary mode
+    with open(file_name, "wb") as file:
+        # get request
+        response = get(url)
+        # write to file
+        file.write(response.content)
