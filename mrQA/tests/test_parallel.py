@@ -70,6 +70,8 @@ def test_equivalence_seq_vs_parallel():
 
     assert sequential_vt_results['complete_ds'] == parallel_vt_results[
         'complete_ds']
+    assert sequential_vt_results['sequence_pairs'] == parallel_vt_results[
+        'sequence_pairs']
     assert sequential_vt_results['compliant'] == parallel_vt_results[
         'compliant']
     assert sequential_vt_results['non_compliant'] == parallel_vt_results[
