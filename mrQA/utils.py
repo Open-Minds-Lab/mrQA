@@ -3,7 +3,6 @@ import pickle
 import re
 import tempfile
 import time
-import typing
 import unicodedata
 import warnings
 from collections import Counter
@@ -446,7 +445,7 @@ def split_list(dir_index: Sized, num_chunks: int) -> Iterable:
     if not is_integer_number(num_chunks):
         raise ValueError(f'Number of chunks must be an integer. '
                          f'Got {num_chunks}')
-    if num_chunks == 0:
+    if num_chunks < 1:
         raise ValueError('Cannot divide list into chunks of size 0')
     if len(dir_index) == 0:
         raise ValueError('List of directories is empty!')
@@ -1170,12 +1169,12 @@ def valid_paths(files: Union[List, str]) -> Union[List[Path], Path]:
         raise ValueError('Expected a valid path or Iterable, Got NoneType')
     if isinstance(files, str) or isinstance(files, Path):
         if not Path(files).is_file():
-            raise OSError('Invalid File {0}'.format(files))
+            raise FileNotFoundError('Invalid File {0}'.format(files))
         return Path(files).resolve()
     elif isinstance(files, Iterable):
         for file in files:
             if not Path(file).is_file():
-                raise OSError('Invalid File {0}'.format(file))
+                raise FileNotFoundError('Invalid File {0}'.format(file))
         return [Path(f).resolve() for f in files]
     else:
         raise NotImplementedError('Expected str or Path or Iterable, '
@@ -1254,7 +1253,7 @@ def get_config_from_file(config_path: Union[Path, str]) -> dict:
     return config
 
 
-def get_protocol_from_file(reference_path: Path,
+def get_protocol_from_file(reference_path: Union[Path, str],
                            vendor: str = 'siemens') -> MRImagingProtocol:
     """
     Extracts the reference protocol from the file. Supports only Siemens
@@ -1262,7 +1261,7 @@ def get_protocol_from_file(reference_path: Path,
 
     Parameters
     ----------
-    reference_path : Union[Path, str]
+    reference_path : Path | str
         Path to the reference protocol file
     vendor: str
         Vendor of the scanner. Default is Siemens
@@ -1358,13 +1357,14 @@ def has_substring(input_string, substrings):
     for substring in substrings:
         if substring in input_string:
             return True
+    return False
 
 
 def previous_month(dt):
     """Return the first day of the previous month."""
-    return dt.replace(day=1) - timedelta(days=1)
+    return (dt.replace(day=1) - timedelta(days=1)).replace(day=1)
 
 
 def next_month(dt):
     """Return the first day of the next month."""
-    return dt.replace(day=28) + timedelta(days=5)
+    return (dt.replace(day=28) + timedelta(days=5)).replace(day=1)
