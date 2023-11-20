@@ -122,69 +122,69 @@ def is_writable(dir_path):
     return True
 
 
-def files_under_folder(fpath: Union[str, Path],
-                       ext: str = None) -> typing.Iterable[Path]:
-    """
-    Generates all the files inside the folder recursively. If ext is given
-    returns file which have that extension.
+# def files_under_folder(fpath: Union[str, Path],
+#                        ext: str = None) -> typing.Iterable[Path]:
+#     """
+#     Generates all the files inside the folder recursively. If ext is given
+#     returns file which have that extension.
+#
+#     Parameters
+#     ----------
+#     fpath: str
+#         filepath of the directory
+#     ext: str
+#         filter_fn files with given extension. For ex. return only .nii files
+#
+#     Returns
+#     -------
+#     generates filepaths
+#     """
+#     if not Path(fpath).is_dir():
+#         raise FileNotFoundError(f"Folder doesn't exist : {fpath}")
+#     folder_path = Path(fpath).resolve()
+#     if ext:
+#         pattern = '*' + ext
+#     else:
+#         pattern = '*'
+#     for file in folder_path.rglob(pattern):
+#         if file.is_file():
+#             # If it is a regular file and not a directory, return filepath
+#             yield file
 
-    Parameters
-    ----------
-    fpath: str
-        filepath of the directory
-    ext: str
-        filter_fn files with given extension. For ex. return only .nii files
 
-    Returns
-    -------
-    generates filepaths
-    """
-    if not Path(fpath).is_dir():
-        raise FileNotFoundError(f"Folder doesn't exist : {fpath}")
-    folder_path = Path(fpath).resolve()
-    if ext:
-        pattern = '*' + ext
-    else:
-        pattern = '*'
-    for file in folder_path.rglob(pattern):
-        if file.is_file():
-            # If it is a regular file and not a directory, return filepath
-            yield file
-
-
-def files_in_path(fp_list: Union[Iterable, str, Path],
-                  ext: Optional[str] = None):
-    """
-    If given a single folder, returns the list of all files in the directory.
-    If given a list of folders, returns concatenated list of all the files
-    inside each directory.
-
-    Parameters
-    ----------
-    fp_list : List[Path]
-        List of folder paths
-    ext : str
-        Used to filter_fn files, and select only those which have this extension
-    Returns
-    -------
-    List of paths
-    """
-    if isinstance(fp_list, Iterable):
-        files = []
-        for i in fp_list:
-            if str(i) == '' or str(i) == '.' or i == Path():
-                logger.warning("Found an empty string. Skipping")
-                continue
-            if Path(i).is_dir():
-                files.extend(list(files_under_folder(i, ext)))
-            elif Path(i).is_file():
-                files.append(i)
-        return sorted(list(set(files)))
-    elif isinstance(fp_list, str) or isinstance(fp_list, Path):
-        return sorted(list(files_under_folder(fp_list, ext)))
-    else:
-        raise NotImplementedError("Expected either Iterable or str type. Got"
-                                  f"{type(fp_list)}")
+# def files_in_path(fp_list: Union[Iterable, str, Path],
+#                   ext: Optional[str] = None):
+#     """
+#     If given a single folder, returns the list of all files in the directory.
+#     If given a list of folders, returns concatenated list of all the files
+#     inside each directory.
+#
+#     Parameters
+#     ----------
+#     fp_list : List[Path]
+#         List of folder paths
+#     ext : str
+#         Used to filter_fn files, and select only those which have this extension
+#     Returns
+#     -------
+#     List of paths
+#     """
+#     if isinstance(fp_list, Iterable):
+#         files = []
+#         for i in fp_list:
+#             if str(i) == '' or str(i) == '.' or i == Path():
+#                 logger.warning("Found an empty string. Skipping")
+#                 continue
+#             if Path(i).is_dir():
+#                 files.extend(list(files_under_folder(i, ext)))
+#             elif Path(i).is_file():
+#                 files.append(i)
+#         return sorted(list(set(files)))
+#     elif isinstance(fp_list, str) or isinstance(fp_list, Path):
+#         return sorted(list(files_under_folder(fp_list, ext)))
+#     else:
+#         raise NotImplementedError("Expected either Iterable or str type. Got"
+#                                   f"{type(fp_list)}")
 
 
 def get_items_upto_count(dict_: Counter, rank: int = 1):
