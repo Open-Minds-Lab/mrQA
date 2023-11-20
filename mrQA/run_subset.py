@@ -12,7 +12,19 @@ from mrQA.config import THIS_DIR
 from mrQA.utils import txt2list
 
 
-def cli():
+def parse_args():
+    parser = get_parser()
+    args = parser.parse_args()
+
+    if args.verbose:
+        logger.setLevel('WARNING')
+    else:
+        logger.setLevel('ERROR')
+
+    return args
+
+
+def get_parser():
     """Console script for mrQA."""
     parser = argparse.ArgumentParser(
         description='Protocol Compliance of MRI scans',
@@ -22,17 +34,17 @@ def cli():
     required = parser.add_argument_group('required arguments')
     optional = parser.add_argument_group('optional arguments')
 
-    required.add_argument('-o', '--output_path', type=str,
+    required.add_argument('-o', '--output-path', type=str,
                           required=True,
                           help='complete path to pickle file for storing '
                                'partial dataset')
-    required.add_argument('-b', '--batch_ids_file', type=str,
+    required.add_argument('-b', '--batch-ids-file', type=str,
                           required=True,
                           help='text file path specifying the folders to read')
     optional.add_argument('-h', '--help', action='help',
                           default=argparse.SUPPRESS,
                           help='show this help message and exit')
-    optional.add_argument('--is_partial', action='store_true',
+    optional.add_argument('--is-partial', action='store_true',
                           help='flag dataset as a partial dataset')
     # TODO: use this flag to store cache
     optional.add_argument('-v', '--verbose', action='store_true',
@@ -46,13 +58,13 @@ def cli():
         parser.print_help()
         parser.exit(1)
 
-    args = parser.parse_args()
-    output_path = Path(args.output_path).resolve()
+    return parser
 
-    if args.verbose:
-        logger.setLevel('WARNING')
-    else:
-        logger.setLevel('ERROR')
+
+def cli():
+    """Console script for mrQA subset."""
+    args = parse_args()
+    output_path = Path(args.output_path).resolve()
 
     if not output_path.exists():
         partial_dataset = read_subset(output_dir=Path(args.output_path).parent,
