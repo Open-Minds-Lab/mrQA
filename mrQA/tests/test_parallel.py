@@ -20,7 +20,7 @@ def test_equivalence_seq_vs_parallel():
         shutil.copytree(sample_dicom_dataset(), tempdir, dirs_exist_ok=True)
         data_source = tempdir
         config_path = THIS_DIR / 'resources/mri-config.json'
-        output_dir = Path(data_source).parent / 'test_mrqa_files'
+        output_dir = Path(data_source) / 'test_mrqa_files'
         output_path = {
             'sequential': output_dir / ('sequential' + MRDS_EXT),
             'parallel': output_dir / ('parallel' + MRDS_EXT)
