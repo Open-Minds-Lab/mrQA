@@ -188,7 +188,7 @@ def _create_slurm_script(output_script_path: Union[str, Path],
     # Add flags to python command
     if verbose:
         python_cmd += ' --verbose'
-    python_cmd += ' --is_partial'
+    python_cmd += ' --is-partial'
 
     # Create the slurm script file
     with open(output_script_path, 'w', encoding='utf-8') as fp:

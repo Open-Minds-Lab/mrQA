@@ -121,7 +121,8 @@ def parse_args():
     return args
 
 
-def main():
+def cli():
+    """Console script for mrQA monitor."""
     args = parse_args()
     monitor(name=args.name,
             data_source=args.data_source,
@@ -221,4 +222,4 @@ def monitor(name: str,
 
 
 if __name__ == '__main__':
-    sys.exit(main())  # pragma: no cover
+    sys.exit(cli())  # pragma: no cover
