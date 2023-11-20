@@ -1,0 +1,75 @@
+{
+    "begin": "2014-03-12T13:37:27+00:00",
+    "end": "2017-03-12T13:37:27+00:00",
+    "include_sequence": {
+        "phantom": false,
+        "nifti_header": false,
+        "moco": false,
+        "sbref": false,
+        "derived": false
+    },
+    "use_echonumbers": true,
+    "horizontal_audit": {
+        "stratify_by": "series_number",
+        "include_parameters": [
+            "EchoTrainLength",
+            "ParallelAcquisitionTechnique",
+            "MagneticFieldStrength",
+            "MRAcquisitionType",
+            "MultiSliceMode",
+            "PhasePolarity",
+            "PhaseEncodingSteps",
+            "PixelBandwidth",
+            "ScanningSequence",
+            "SequenceVariant",
+            "RepetitionTime",
+            "EchoTime",
+            "FlipAngle",
+            "PhaseEncodingDirection",
+            "ShimMode",
+            "Rows",
+            "Columns",
+            "AcquisitionMatrix"
+        ]
+    },
+    "vertical_audit": {
+        "stratify_by": "series_number",
+        "sequences": [
+            [
+                "ncanda-rsfmri-v1",
+                "ncanda-grefieldmap-v1"
+            ],
+            [
+                "ncanda-dti30b400-v1",
+                "ncanda-grefieldmap-v1"
+            ],
+            [
+                "ncanda-dti60b1000-v1",
+                "ncanda-grefieldmap-v1"
+            ]
+        ],
+        "include_parameters": [
+            "Rows",
+            "Columns",
+            "AcquisitionMatrix",
+            "PhaseEncodingDirection",
+            "ShimMode",
+            "ShimSetting"
+        ]
+    },
+    "plots": {
+        "include_parameters": [
+            "ContentDate",
+            "PatientSex",
+            "PatientAge",
+            "PatientWeight",
+            "OperatorsName",
+            "InstitutionName",
+            "Manufacturer"
+        ]
+    },
+    "exclude_subjects": [
+        "210098",
+        "210078"
+    ]
+}

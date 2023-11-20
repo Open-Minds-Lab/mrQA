@@ -1,0 +1,107 @@
+{
+    "begin": "03_12_2024",
+    "end": "03_12_2000",
+    "include_sequence": {
+        "phantom": false,
+        "nifti_header": false,
+        "moco": false,
+        "sbref": false,
+        "derived": false
+    },
+    "use_echonumbers": true,
+    "vertical_audit": {
+        "stratify_by": null,
+        "sequences": [
+            [
+                "ABCD-DTI_SIEMENS_mosaic_original_baseline_year_1_arm_1",
+                "ABCD-Diffusion-FM-AP_SIEMENS_original_baseline_year_1_arm_1"
+            ],
+            [
+                "ABCD-DTI_SIEMENS_mosaic_original_baseline_year_1_arm_1",
+                "ABCD-Diffusion-FM-PA_SIEMENS_original_baseline_year_1_arm_1"
+            ],
+            [
+                "ABCD-fMRI-FM-AP_SIEMENS_original_baseline_year_1_arm_1",
+                "ABCD-rsfMRI_SIEMENS_mosaic_original_baseline_year_1_arm_1"
+            ],
+            [
+                "ABCD-fMRI-FM-PA_SIEMENS_original_baseline_year_1_arm_1",
+                "ABCD-rsfMRI_SIEMENS_mosaic_original_baseline_year_1_arm_1"
+            ],
+            [
+                "ABCD-fMRI-FM_GE_original_baseline_year_1_arm_1",
+                "ABCD-rsfMRI_GE_original_baseline_year_1_arm_1"
+            ],
+            [
+                "ABCD-DTI_PHILIPS_original_baseline_year_1_arm_1",
+                "ABCD-Diffusion-FM-AP_PHILIPS_original_baseline_year_1_arm_1"
+            ],
+            [
+                "ABCD-DTI_PHILIPS_original_baseline_year_1_arm_1",
+                "ABCD-Diffusion-FM-PA_PHILIPS_original_baseline_year_1_arm_1"
+            ],
+            [
+                "ABCD-fMRI-FM-AP_PHILIPS_original_baseline_year_1_arm_1",
+                "ABCD-rsfMRI_PHILIPS_original_baseline_year_1_arm_1"
+            ],
+            [
+                "ABCD-fMRI-FM-PA_PHILIPS_original_baseline_year_1_arm_1",
+                "ABCD-rsfMRI_PHILIPS_original_baseline_year_1_arm_1"
+            ]
+        ],
+        "include_parameters": [
+            "FieldOfView",
+            "PixelSpacing",
+            "PhaseEncodingDirection",
+            "ShimMode",
+            "ShimSetting"
+        ]
+    },
+    "horizontal_audit": {
+        "stratify_by": null,
+        "skip_sequences": [
+            "coil_error",
+            "qa",
+            "fmri"
+        ],
+        "include_parameters": [
+            "PixelSpacing",
+            "Rows",
+            "Columns",
+            "AcquisitionMatrix",
+            "Manufacturer",
+            "MagneticFieldStrength",
+            "ScanningSequence",
+            "SequenceVariant",
+            "SequenceName",
+            "NonLinearGradientCorrection",
+            "MRAcquisitionType",
+            "PhaseEncodingDirection",
+            "EchoTime",
+            "InversionTime",
+            "DwellTime",
+            "RepetitionTime",
+            "FlipAngle",
+            "BodyPartExamined",
+            "EchoTrainLength",
+            "PixelBandwidth",
+            "PhaseEncodingSteps",
+            "EchoNumber",
+            "SliceThickness",
+            "PercentPhaseFOV",
+            "PercentSampling",
+            "VariableFlipAngleFlag",
+            "ImageOrientationPatient",
+            "NumberOfAverages",
+            "ShimMode",
+            "FieldOfView"
+        ]
+    },
+    "plots": {
+        "include_parameters": [
+            "ManufacturerAndModel",
+            "ManufacturerAndVersion",
+            "Site"
+        ]
+    }
+}

@@ -1,0 +1,66 @@
+{
+    "begin": "03_12_2024",
+    "end": "03_12_2000",
+    "include_sequence": {
+        "phantom": false,
+        "nifti_header": false,
+        "moco": false,
+        "sbref": false,
+        "derived": false
+    },
+    "use_echonumbers": true,
+    "exclude_subjects": [
+        "210098",
+        "210078"
+    ],
+    "vertical_audit": {
+        "stratify_by": "series_number",
+        "include_parameters": [
+            "Rows",
+            "Columns",
+            "AcquisitionMatrix",
+            "PixelSpacing",
+            "PhaseEncodingDirection",
+            "ShimMode",
+            "ShimSetting"
+        ]
+    },
+    "horizontal_audit": {
+        "stratify_by": "series_number",
+        "include_parameters": [
+            "PixelSpacing",
+            "Rows",
+            "Columns",
+            "AcquisitionMatrix",
+            "Manufacturer",
+            "ManufacturersModelName",
+            "SoftwareVersions",
+            "MagneticFieldStrength",
+            "ReceiveCoilActiveElements",
+            "ScanningSequence",
+            "SequenceVariant",
+            "ScanOptions",
+            "SequenceName",
+            "NonLinearGradientCorrection",
+            "MRAcquisitionType",
+            "PhaseEncodingDirection",
+            "EchoTime",
+            "InversionTime",
+            "DwellTime",
+            "RepetitionTime",
+            "FlipAngle",
+            "BodyPartExamined",
+            "EchoTrainLength",
+            "PixelBandwidth",
+            "PhaseEncodingSteps",
+            "EchoNumber",
+            "SliceThickness",
+            "PercentPhaseFOV",
+            "PercentSampling",
+            "VariableFlipAngleFlag",
+            "ImageOrientationPatient",
+            "NumberOfAverages",
+            "ShimMode"
+        ]
+    }
+}

@@ -104,3 +104,6 @@ ENV/
 .vscode/
 .idea/
 /update_today.txt
+
+# codacy
+results.sarif
