@@ -110,3 +110,4 @@ ENV/
 
 # mri protocol
 *.xml
+*.secrets

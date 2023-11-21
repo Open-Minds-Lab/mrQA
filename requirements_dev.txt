@@ -9,4 +9,5 @@ pytest
 bokeh
 flake8
 requests
+coverage
 
