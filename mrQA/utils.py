@@ -4,7 +4,6 @@ import re
 import tempfile
 import time
 import unicodedata
-import warnings
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 from itertools import takewhile
@@ -22,7 +21,7 @@ from mrQA.base import CompliantDataset, NonCompliantDataset, UndeterminedDataset
 from mrQA.config import past_records_fpath, report_fpath, mrds_fpath, \
     subject_list_dir, DATE_SEPARATOR, CannotComputeMajority, \
     Unspecified, \
-    EqualCount, status_fpath, ATTRIBUTE_SEPARATOR
+    EqualCount, status_fpath, ATTRIBUTE_SEPARATOR, DATETIME_FORMAT, DATE_FORMAT
 
 
 def get_reference_protocol(dataset: BaseDataset,
@@ -1081,54 +1080,60 @@ def find_terminal_folders(root, leave=True, position=0):
         else:
             for sd2 in level2_subdirs:
                 terminal.extend(find_terminal_folders(sd2, leave=False,
-                                position=1))
+                                                      position=1))
 
     return terminal
 
 
-def log_latest_non_compliance(ncomp_data, latest_data, output_dir):
+def get_datetime(date):
+    try:
+        date = datetime.strptime(date, DATETIME_FORMAT)
+    except ValueError as exc:
+        if 'unconverted data remains' in str(exc):
+            try:
+                date = datetime.strptime(date, DATE_FORMAT)
+            except ValueError as exc:
+                raise ValueError(f'Invalid date format. '
+                                 f'Use one of '
+                                 f'[{DATE_FORMAT}, {DATETIME_FORMAT}]') from exc
+    return date
+
+
+def log_latest_non_compliance(dataset, config_path,
+                              filter_fn=None,
+                              audit='hz', date=None, output_dir=None):
     """
     Log the latest non-compliance data from recent sessions to a file
-
-    Parameters
-    ----------
-    ncomp_data
-    latest_data
-    output_dir
-
-    Returns
-    -------
-
     """
-    if latest_data is None:
-        return
-    full_status = []
-    for seq_id in latest_data.get_sequence_ids():
-        # Don't rename run_id as run, it will conflict with subprocess.run
-        for sub, sess, run_id, seq in latest_data.traverse_horizontal(seq_id):
-            try:
-                nc_param_dict = ncomp_data.get_nc_params(
-                    subject_id=sub, session_id=sess,
-                    run_id=run_id, seq_id=seq_id)
-                status = {
-                    'ts': seq.timestamp,
-                    'subject': sub,
-                    'sequence': seq_id,
-                    'ds_name': latest_data.name,
-                    'nc_params': ';'.join(nc_param_dict.keys())
-                }
-                full_status.append(status)
-            except KeyError:
-                continue
-    status_filepath = status_fpath(output_dir)
+    nc_log = {}
+    ds_name = None
+    date = get_datetime(date)
+
+    config = get_config(config_path=config_path, report_type=audit)
+    parameters = config.get("include_parameters", None)
+
+    if audit == 'hz':
+        ds_name = dataset.name
+        nc_log = dataset.generate_nc_log(parameters, filter_fn,
+                                         date=date,
+                                         audit='hz', verbosity=1,
+                                         output_dir=None)
+    elif audit == 'vt':
+        ds_name = dataset.name
+        nc_log = dataset.generate_nc_log(parameters, filter_fn,
+                                         date=date,
+                                         audit='vt', verbosity=1,
+                                         output_dir=None)
+
+    status_filepath = status_fpath(output_dir, audit)
     if not status_filepath.parent.is_dir():
         status_filepath.parent.mkdir(parents=True)
 
-    with open(status_filepath, 'a', encoding='utf-8') as fp:
-        for i in full_status:
-            fp.write(
-                f" {i['ts']}, {i['ds_name']}, {i['sequence']}, {i['subject']}, "
-                f"{i['nc_params']} \n")
+    with open(status_filepath, 'w', encoding='utf-8') as fp:
+        for parameter in nc_log:
+            for i in nc_log[parameter]:
+                fp.write(f" {i['date']}, {ds_name}, {i['sequence_name']},"
+                         f" {i['subject']}, {parameter} \n")
     return None  # status_filepath
 
 
