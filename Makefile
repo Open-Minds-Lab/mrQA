@@ -86,3 +86,11 @@ dist: clean ## builds source and wheel package
 
 install: clean ## install the package to the active Python's site-packages
 	python setup.py install
+
+merge:
+	git switch mrds-issue-12
+	git push
+	git switch master
+	git merge mrds-issue-12
+	git push origin master
+	git switch mrds-issue-12
