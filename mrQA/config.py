@@ -36,14 +36,14 @@ def configure_logger(log, output_dir, mode='w', level='WARNING'):
     output_dir.mkdir(parents=True, exist_ok=True)
 
     options = {
-        "warn": {
-            'level': logging.WARN,
-            'file': output_dir / 'warn.log',
+        "warn" : {
+            'level'    : logging.WARN,
+            'file'     : output_dir / 'warn.log',
             'formatter': warn_formatter
         },
         "error": {
-            'level': logging.ERROR,
-            'file': output_dir / 'error.log',
+            'level'    : logging.ERROR,
+            'file'     : output_dir / 'error.log',
             'formatter': error_formatter
         }
     }
@@ -66,12 +66,13 @@ def configure_logger(log, output_dir, mode='w', level='WARNING'):
 
 PATH_CONFIG = {
     'data_source': Path.home() / 'scan_data',
-    'output_dir': Path.home() / 'mrqa_reports',
+    'output_dir' : Path.home() / 'mrqa_reports',
 }
 
 DATE_SEPARATOR = '_DATE_'
 ATTRIBUTE_SEPARATOR = '_ATTR_'
-
+DATETIME_FORMAT = '%m_%d_%Y_%H_%M_%S'
+DATE_FORMAT = '%m_%d_%Y'
 Unspecified = UnspecifiedType()
 
 
@@ -80,9 +81,9 @@ def past_records_fpath(folder):
     return Path(folder / 'past_record.txt')
 
 
-def status_fpath(folder):
+def status_fpath(folder, audit):
     """Constructs the path to the status file"""
-    return Path(folder / 'non_compliance_log.txt')
+    return Path(folder / f'{audit}_non_compliance_log.txt')
 
 
 def report_fpath(folder_path, fname):
@@ -106,6 +107,7 @@ class CannotComputeMajority(MRException):
     def __init__(self, name):
         super().__init__(
             f"Could not compute majority for {name}")
+
 
 #
 # class ReferenceNotSetForModality(MRException):
