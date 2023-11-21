@@ -164,11 +164,11 @@ def horizontal_audit(dataset: BaseDataset,
     compliant_ds, non_compliant_ds, undetermined_ds = _init_datasets(dataset)
 
     eval_dict = {
-        'complete_ds': dataset,
-        'reference': ref_protocol,
-        'compliant': compliant_ds,
+        'complete_ds'  : dataset,
+        'reference'    : ref_protocol,
+        'compliant'    : compliant_ds,
         'non_compliant': non_compliant_ds,
-        'undetermined': undetermined_ds,
+        'undetermined' : undetermined_ds,
     }
 
     if not (ref_protocol and hz_audit_config):
@@ -274,11 +274,11 @@ def vertical_audit(dataset: BaseDataset,
                                  report_type='vt')
     compliant_ds, non_compliant_ds, _ = _init_datasets(dataset)
     eval_dict = {
-        'complete_ds': dataset,
-        'compliant': compliant_ds,
-        'non_compliant': non_compliant_ds,
+        'complete_ds'   : dataset,
+        'compliant'     : compliant_ds,
+        'non_compliant' : non_compliant_ds,
         'sequence_pairs': [],
-        'parameters': []
+        'parameters'    : []
     }
     if not vt_audit_config:
         return eval_dict
@@ -290,8 +290,8 @@ def vertical_audit(dataset: BaseDataset,
 
     # If no sequence pairs are provided, then compare all possible pairs
     if chosen_pairs is None:
-        logger.warn('No sequence pairs provided. Comparing all possible '
-                    'sequence pairs.')
+        logger.warning('No sequence pairs provided. Comparing all possible '
+                       'sequence pairs.')
         chosen_pairs = list(combinations(dataset.get_sequence_ids(), 2))
     # check pair are queryable, all the pairs are not present
     # throw an error if any of the pair is not present
@@ -344,11 +344,11 @@ def vertical_audit(dataset: BaseDataset,
                 )
     # TODO: add option for num_sequences > 2
     eval_dict = {
-        'complete_ds': dataset,
-        'compliant': compliant_ds,
-        'non_compliant': non_compliant_ds,
+        'complete_ds'   : dataset,
+        'compliant'     : compliant_ds,
+        'non_compliant' : non_compliant_ds,
         'sequence_pairs': used_pairs,
-        'parameters': include_params
+        'parameters'    : include_params
     }
     return eval_dict
 

@@ -1,0 +1,15 @@
+{
+    "begin": "03_12_2024",
+    "end": "03_12_2000",
+    "include_sequence": {
+        "phantom": false,
+        "nifti_header": false,
+        "moco": false,
+        "sbref": false,
+        "derived": false
+    },
+    "use_echonumbers": true,
+    "vertical_audit": {
+        "stratify_by": null
+    }
+}

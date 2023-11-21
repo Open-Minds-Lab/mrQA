@@ -3,9 +3,7 @@ import pickle
 import re
 import tempfile
 import time
-import typing
 import unicodedata
-import warnings
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 from itertools import takewhile
@@ -23,7 +21,7 @@ from mrQA.base import CompliantDataset, NonCompliantDataset, UndeterminedDataset
 from mrQA.config import past_records_fpath, report_fpath, mrds_fpath, \
     subject_list_dir, DATE_SEPARATOR, CannotComputeMajority, \
     Unspecified, \
-    EqualCount, status_fpath, ATTRIBUTE_SEPARATOR
+    EqualCount, status_fpath, ATTRIBUTE_SEPARATOR, DATETIME_FORMAT, DATE_FORMAT
 
 
 def get_reference_protocol(dataset: BaseDataset,
@@ -84,9 +82,10 @@ def get_config(config_path: Union[str, Path], report_type='hz') -> dict:
     else:
         include_params = audit_config.get('include_parameters', None)
         if include_params is None:
-            logger.warn('Parameters to be included in the compliance check are '
-                        'not provided. All parameters will be included in the '
-                        f'{key}')
+            logger.warning(
+                'Parameters to be included in the compliance check are '
+                'not provided. All parameters will be included in the '
+                f'{key}')
     return audit_config
 
 
@@ -122,69 +121,69 @@ def is_writable(dir_path):
     return True
 
 
-def files_under_folder(fpath: Union[str, Path],
-                       ext: str = None) -> typing.Iterable[Path]:
-    """
-    Generates all the files inside the folder recursively. If ext is given
-    returns file which have that extension.
+# def files_under_folder(fpath: Union[str, Path],
+#                        ext: str = None) -> typing.Iterable[Path]:
+#     """
+#     Generates all the files inside the folder recursively. If ext is given
+#     returns file which have that extension.
+#
+#     Parameters
+#     ----------
+#     fpath: str
+#         filepath of the directory
+#     ext: str
+#         filter_fn files with given extension. For ex. return only .nii files
+#
+#     Returns
+#     -------
+#     generates filepaths
+#     """
+#     if not Path(fpath).is_dir():
+#         raise FileNotFoundError(f"Folder doesn't exist : {fpath}")
+#     folder_path = Path(fpath).resolve()
+#     if ext:
+#         pattern = '*' + ext
+#     else:
+#         pattern = '*'
+#     for file in folder_path.rglob(pattern):
+#         if file.is_file():
+#             # If it is a regular file and not a directory, return filepath
+#             yield file
 
-    Parameters
-    ----------
-    fpath: str
-        filepath of the directory
-    ext: str
-        filter_fn files with given extension. For ex. return only .nii files
 
-    Returns
-    -------
-    generates filepaths
-    """
-    if not Path(fpath).is_dir():
-        raise FileNotFoundError(f"Folder doesn't exist : {fpath}")
-    folder_path = Path(fpath).resolve()
-    if ext:
-        pattern = '*' + ext
-    else:
-        pattern = '*'
-    for file in folder_path.rglob(pattern):
-        if file.is_file():
-            # If it is a regular file and not a directory, return filepath
-            yield file
-
-
-def files_in_path(fp_list: Union[Iterable, str, Path],
-                  ext: Optional[str] = None):
-    """
-    If given a single folder, returns the list of all files in the directory.
-    If given a list of folders, returns concatenated list of all the files
-    inside each directory.
-
-    Parameters
-    ----------
-    fp_list : List[Path]
-        List of folder paths
-    ext : str
-        Used to filter_fn files, and select only those which have this extension
-    Returns
-    -------
-    List of paths
-    """
-    if isinstance(fp_list, Iterable):
-        files = []
-        for i in fp_list:
-            if str(i) == '' or str(i) == '.' or i == Path():
-                logger.warning("Found an empty string. Skipping")
-                continue
-            if Path(i).is_dir():
-                files.extend(list(files_under_folder(i, ext)))
-            elif Path(i).is_file():
-                files.append(i)
-        return sorted(list(set(files)))
-    elif isinstance(fp_list, str) or isinstance(fp_list, Path):
-        return sorted(list(files_under_folder(fp_list, ext)))
-    else:
-        raise NotImplementedError("Expected either Iterable or str type. Got"
-                                  f"{type(fp_list)}")
+# def files_in_path(fp_list: Union[Iterable, str, Path],
+#                   ext: Optional[str] = None):
+#     """
+#     If given a single folder, returns the list of all files in the directory.
+#     If given a list of folders, returns concatenated list of all the files
+#     inside each directory.
+#
+#     Parameters
+#     ----------
+#     fp_list : List[Path]
+#         List of folder paths
+#     ext : str
+#         Used to filter_fn files, and select only those which have this ext
+#     Returns
+#     -------
+#     List of paths
+#     """
+#     if isinstance(fp_list, Iterable):
+#         files = []
+#         for i in fp_list:
+#             if str(i) == '' or str(i) == '.' or i == Path():
+#                 logger.warning("Found an empty string. Skipping")
+#                 continue
+#             if Path(i).is_dir():
+#                 files.extend(list(files_under_folder(i, ext)))
+#             elif Path(i).is_file():
+#                 files.append(i)
+#         return sorted(list(set(files)))
+#     elif isinstance(fp_list, str) or isinstance(fp_list, Path):
+#         return sorted(list(files_under_folder(fp_list, ext)))
+#     else:
+#         raise NotImplementedError("Expected either Iterable or str type. Got"
+#                                   f"{type(fp_list)}")
 
 
 def get_items_upto_count(dict_: Counter, rank: int = 1):
@@ -213,7 +212,7 @@ def get_items_upto_count(dict_: Counter, rank: int = 1):
 
 def timestamp():
     """Generate a timestamp as a string"""
-    time_string = time.strftime('%m_%d_%Y_%H_%M_%S')
+    time_string = time.strftime(DATETIME_FORMAT)
     return time_string
 
 
@@ -240,16 +239,16 @@ def make_output_paths(output_dir, dataset):
         subject lists for each modality
     """
     ts = timestamp()
-    utc = datetime.strptime(ts, '%m_%d_%Y_%H_%M_%S').timestamp()
+    # utc = datetime.strptime(ts, '%m_%d_%Y_%H_%M_%S').timestamp()
     filename = f'{dataset.name}{DATE_SEPARATOR}{ts}'
     report_path = report_fpath(output_dir, filename)
     mrds_path = mrds_fpath(output_dir, filename)
     sub_lists_dir_path = subject_list_dir(output_dir, filename)
-    log_report_history(output_dir, mrds_path, report_path, ts, utc)
+    log_report_history(output_dir, mrds_path, report_path, ts)
     return report_path, mrds_path, sub_lists_dir_path
 
 
-def log_report_history(output_dir, mrds_path, report_path, ts, utc):
+def log_report_history(output_dir, mrds_path, report_path, ts):
     """
     Log the report generation history to a text file
 
@@ -270,8 +269,8 @@ def log_report_history(output_dir, mrds_path, report_path, ts, utc):
     if not records_filepath.parent.is_dir():
         records_filepath.parent.mkdir(parents=True)
     with open(records_filepath, 'a', encoding='utf-8') as fp:
-        fp.write(f'{utc},{report_path},'
-                 f'{mrds_path},{ts}\n')
+        fp.write(f'{ts},{report_path},'
+                 f'{mrds_path}\n')
 
 
 def majority_values(list_seqs: list,
@@ -408,7 +407,7 @@ def _check_args_validity(list_: List) -> bool:
         raise ValueError('List is empty.')
     for seq in list_:
         if len(seq) == 0:
-            raise ValueError('Atleast one of sequences is empty.')
+            raise ValueError('At least one of sequences is empty.')
     if len(list_) < 3:
         logger.info('Cannot compute majority attribute values. '
                     'Got less than 3 values for each '
@@ -422,14 +421,14 @@ def split_list(dir_index: Sized, num_chunks: int) -> Iterable:
     Adapted from https://stackoverflow.com/questions/2130016/splitting-a-list-into-n-parts-of-approximately-equal-length # noqa
 
     Given a list of n elements, split it into k parts, where k = num_chunks.
-    Each part has atleast n/k elements. And the remaining elements
+    Each part has at least n/k elements. And the remaining elements
     n % k are distributed uniformly among the sub-parts such that
     each part has almost same number of elements. The first n % k will have
     floor(n/k) + 1 elements.
 
     Parameters
     ----------
-    dir_index : list
+    dir_index : Sized
         list to split
     num_chunks : int
         number of parts
@@ -446,14 +445,15 @@ def split_list(dir_index: Sized, num_chunks: int) -> Iterable:
     if not is_integer_number(num_chunks):
         raise ValueError(f'Number of chunks must be an integer. '
                          f'Got {num_chunks}')
-    if num_chunks == 0:
+    if num_chunks < 1:
         raise ValueError('Cannot divide list into chunks of size 0')
     if len(dir_index) == 0:
         raise ValueError('List of directories is empty!')
     if len(dir_index) < num_chunks:
-        warnings.warn(f'Got num_chunks={num_chunks}, list_size={len(dir_index)}'
-                      f'Expected num_chunks < list_size',
-                      stacklevel=2)
+        logger.warning(
+            f'Got num_chunks={num_chunks}, list_size={len(dir_index)}'
+            f'Expected num_chunks < list_size',
+            stacklevel=2)
         num_chunks = len(dir_index)
     k, m = divmod(len(dir_index), num_chunks)
     #  k, m = (len(dir_index)//num_chunks, len(dir_index)%num_chunks)
@@ -763,9 +763,9 @@ def _cli_report(hz_audit: dict, report_name):
     non_compliant_ds = hz_audit['non_compliant']
     compliant_ds = hz_audit['compliant']
     undetermined_ds = hz_audit['undetermined']
-    if not (compliant_ds.get_sequence_ids() or
-            non_compliant_ds.get_sequence_ids() or
-            undetermined_ds.get_sequence_ids()):
+    if not (compliant_ds.get_sequence_ids()
+            or non_compliant_ds.get_sequence_ids()
+            or undetermined_ds.get_sequence_ids()):
         logger.error('No report generated for horizontal audit.')
         return
 
@@ -816,7 +816,7 @@ def _datasets_processed(dir_path, ignore_case=True):
 
 
 def _get_time(time_format: str, last_reported_on: str):
-    str_format = '%m/%d/%Y %H:%M:%S'
+    str_format = DATETIME_FORMAT
     if time_format == 'timestamp':
         mod_time = datetime.fromtimestamp(float(last_reported_on)).strftime(
             str_format)
@@ -869,7 +869,7 @@ def folders_modified_since(last_reported_on: str,
     """
     modified_folders = set()
 
-    mod_time = _get_time(time_format, last_reported_on)
+    mod_time = get_datetime(last_reported_on)
     out_path = Path(output_dir) / 'modified_folders_since.txt'
     if out_path.is_file():
         out_path.unlink()
@@ -925,9 +925,8 @@ def get_last_valid_record(folder_path: Path) -> Optional[tuple]:
             num_records = len(lines)
             if i < -num_records:
                 return None
-            last_line = lines[i]
-            last_reported_on, last_report_path, last_mrds_path, _ = \
-                last_line.split(',')
+            last_line = lines[i].strip('\n').split(',')
+            last_reported_on, last_report_path, last_mrds_path = last_line
             if Path(last_mrds_path).is_file():
                 return last_reported_on, last_report_path, last_mrds_path
             i -= 1
@@ -942,7 +941,7 @@ def get_timestamps():
     ts = datetime.timestamp(now)
     date_time = now.strftime('%m/%d/%Y %H:%M:%S%z')
     return {
-        'utc': ts,
+        'utc'      : ts,
         'date_time': date_time
     }
 
@@ -1082,54 +1081,60 @@ def find_terminal_folders(root, leave=True, position=0):
         else:
             for sd2 in level2_subdirs:
                 terminal.extend(find_terminal_folders(sd2, leave=False,
-                                position=1))
+                                                      position=1))
 
     return terminal
 
 
-def log_latest_non_compliance(ncomp_data, latest_data, output_dir):
+def get_datetime(date):
+    try:
+        date = datetime.strptime(date, DATETIME_FORMAT)
+    except ValueError as exc:
+        if 'unconverted data remains' in str(exc):
+            try:
+                date = datetime.strptime(date, DATE_FORMAT)
+            except ValueError as exc:
+                raise ValueError(f'Invalid date format. '
+                                 f'Use one of '
+                                 f'[{DATE_FORMAT}, {DATETIME_FORMAT}]') from exc
+    return date
+
+
+def log_latest_non_compliance(dataset, config_path,
+                              filter_fn=None,
+                              audit='hz', date=None, output_dir=None):
     """
     Log the latest non-compliance data from recent sessions to a file
-
-    Parameters
-    ----------
-    ncomp_data
-    latest_data
-    output_dir
-
-    Returns
-    -------
-
     """
-    if latest_data is None:
-        return
-    full_status = []
-    for seq_id in latest_data.get_sequence_ids():
-        # Don't rename run_id as run, it will conflict with subprocess.run
-        for sub, sess, run_id, seq in latest_data.traverse_horizontal(seq_id):
-            try:
-                nc_param_dict = ncomp_data.get_nc_params(
-                    subject_id=sub, session_id=sess,
-                    run_id=run_id, seq_id=seq_id)
-                status = {
-                    'ts': seq.timestamp,
-                    'subject': sub,
-                    'sequence': seq_id,
-                    'ds_name': latest_data.name,
-                    'nc_params': ';'.join(nc_param_dict.keys())
-                }
-                full_status.append(status)
-            except KeyError:
-                continue
-    status_filepath = status_fpath(output_dir)
+    nc_log = {}
+    ds_name = None
+    date = get_datetime(date)
+
+    config = get_config(config_path=config_path, report_type=audit)
+    parameters = config.get("include_parameters", None)
+
+    if audit == 'hz':
+        ds_name = dataset.name
+        nc_log = dataset.generate_nc_log(parameters, filter_fn,
+                                         date=date,
+                                         audit='hz', verbosity=1,
+                                         output_dir=None)
+    elif audit == 'vt':
+        ds_name = dataset.name
+        nc_log = dataset.generate_nc_log(parameters, filter_fn,
+                                         date=date,
+                                         audit='vt', verbosity=1,
+                                         output_dir=None)
+
+    status_filepath = status_fpath(output_dir, audit)
     if not status_filepath.parent.is_dir():
         status_filepath.parent.mkdir(parents=True)
 
-    with open(status_filepath, 'a', encoding='utf-8') as fp:
-        for i in full_status:
-            fp.write(
-                f" {i['ts']}, {i['ds_name']}, {i['sequence']}, {i['subject']}, "
-                f"{i['nc_params']} \n")
+    with open(status_filepath, 'w', encoding='utf-8') as fp:
+        for parameter in nc_log:
+            for i in nc_log[parameter]:
+                fp.write(f" {i['date']}, {ds_name}, {i['sequence_name']},"
+                         f" {i['subject']}, {parameter} \n")
     return None  # status_filepath
 
 
@@ -1170,12 +1175,12 @@ def valid_paths(files: Union[List, str]) -> Union[List[Path], Path]:
         raise ValueError('Expected a valid path or Iterable, Got NoneType')
     if isinstance(files, str) or isinstance(files, Path):
         if not Path(files).is_file():
-            raise OSError('Invalid File {0}'.format(files))
+            raise FileNotFoundError('Invalid File {0}'.format(files))
         return Path(files).resolve()
     elif isinstance(files, Iterable):
         for file in files:
             if not Path(file).is_file():
-                raise OSError('Invalid File {0}'.format(file))
+                raise FileNotFoundError('Invalid File {0}'.format(file))
         return [Path(f).resolve() for f in files]
     else:
         raise NotImplementedError('Expected str or Path or Iterable, '
@@ -1209,7 +1214,7 @@ def modify_sequence_name(seq: "BaseSequence", stratify_by: str,
             stratify_value = ''
 
         seq_name_with_stratify = ATTRIBUTE_SEPARATOR.join([seq.name,
-                                                          stratify_value])
+                                                           stratify_value])
         if datasets:
             for ds in datasets:
                 ds.set_modified_seq_name(seq.name, seq_name_with_stratify)
@@ -1254,7 +1259,7 @@ def get_config_from_file(config_path: Union[Path, str]) -> dict:
     return config
 
 
-def get_protocol_from_file(reference_path: Path,
+def get_protocol_from_file(reference_path: Union[Path, str],
                            vendor: str = 'siemens') -> MRImagingProtocol:
     """
     Extracts the reference protocol from the file. Supports only Siemens
@@ -1262,7 +1267,7 @@ def get_protocol_from_file(reference_path: Path,
 
     Parameters
     ----------
-    reference_path : Union[Path, str]
+    reference_path : Path | str
         Path to the reference protocol file
     vendor: str
         Vendor of the scanner. Default is Siemens
@@ -1344,11 +1349,11 @@ def filter_epi_fmap_pairs(pair):
     epi_substrings = ['epi', 'bold', 'rest', 'fmri', 'pasl',
                       'asl', 'dsi', 'dti', 'dwi']
     fmap_substrings = ['fmap', 'fieldmap', 'map']
-    if (has_substring(pair[0].lower(), epi_substrings) and
-            has_substring(pair[1].lower(), fmap_substrings)):
+    if (has_substring(pair[0].lower(), epi_substrings)
+            and has_substring(pair[1].lower(), fmap_substrings)):
         return True
-    if (has_substring(pair[1].lower(), epi_substrings) and
-            has_substring(pair[0].lower(), fmap_substrings)):
+    if (has_substring(pair[1].lower(), epi_substrings)
+            and has_substring(pair[0].lower(), fmap_substrings)):
         return True
     return False
 
@@ -1358,13 +1363,14 @@ def has_substring(input_string, substrings):
     for substring in substrings:
         if substring in input_string:
             return True
+    return False
 
 
 def previous_month(dt):
     """Return the first day of the previous month."""
-    return dt.replace(day=1) - timedelta(days=1)
+    return (dt.replace(day=1) - timedelta(days=1)).replace(day=1)
 
 
 def next_month(dt):
     """Return the first day of the next month."""
-    return dt.replace(day=28) + timedelta(days=5)
+    return (dt.replace(day=28) + timedelta(days=5)).replace(day=1)

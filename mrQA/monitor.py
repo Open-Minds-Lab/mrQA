@@ -1,13 +1,14 @@
 """Console script for mrQA."""
 import argparse
 import sys
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Union, List
 
 from MRdataset import import_dataset, load_mr_dataset
 
 from mrQA import logger
-from mrQA.config import PATH_CONFIG
+from mrQA.config import PATH_CONFIG, THIS_DIR, DATETIME_FORMAT
 from mrQA.project import check_compliance
 from mrQA.utils import is_writable, folders_modified_since, \
     get_last_valid_record, log_latest_non_compliance
@@ -30,7 +31,8 @@ def get_parser():
                           help='directory containing downloaded dataset with '
                                'dicom files, supports nested hierarchies')
     required.add_argument('--config', type=str,
-                          help='path to config file')
+                          help='path to config file',
+                          default=THIS_DIR / 'resources/mri-config.json')
     optional.add_argument('-o', '--output-dir', type=str,
                           help='specify the directory where the report'
                                ' would be saved. By default, the --data_source '
@@ -120,7 +122,8 @@ def parse_args():
     return args
 
 
-def main():
+def cli():
+    """Console script for mrQA monitor."""
     args = parse_args()
     monitor(name=args.name,
             data_source=args.data_source,
@@ -170,6 +173,8 @@ def monitor(name: str,
     """
     output_dir = Path(output_dir)
     last_record = get_last_valid_record(output_dir)
+    last_reported_on = None
+
     if last_record:
         last_reported_on, last_report_path, last_mrds_path = last_record
         # TODO: delete old logs, only keep latest 3-4 reports in the folder
@@ -203,21 +208,32 @@ def monitor(name: str,
                                  output_dir=output_dir)
         new_dataset = None
 
-    compliance_summary_dict, _ = check_compliance(dataset=dataset,
-                                                  output_dir=output_dir,
-                                                  decimals=decimals,
-                                                  verbose=verbose,
-                                                  tolerance=tolerance,
-                                                  reference_path=reference_path,
-                                                  config_path=config_path)
+    if last_reported_on is None:
+        # if this is the first time, set last_reported_on to 1 year ago
+        last_reported_on = datetime.now() - timedelta(days=365)
+        last_reported_on = last_reported_on.strftime(DATETIME_FORMAT)
 
-    log_latest_non_compliance(
-        ncomp_data=compliance_summary_dict['non_compliant'],
-        latest_data=new_dataset,
-        output_dir=output_dir, )
+    hz_audit_results, vt_audit_results = check_compliance(
+        dataset=dataset,
+        output_dir=output_dir,
+        decimals=decimals,
+        verbose=verbose,
+        tolerance=tolerance,
+        reference_path=reference_path,
+        config_path=config_path)
+
+    log_latest_non_compliance(dataset=hz_audit_results['non_compliant'],
+                              config_path=config_path,
+                              output_dir=output_dir, audit='hz',
+                              date=last_reported_on)
+
+    log_latest_non_compliance(dataset=vt_audit_results['non_compliant'],
+                              config_path=config_path,
+                              output_dir=output_dir, audit='vt',
+                              date=last_reported_on)
 
     return
 
 
 if __name__ == '__main__':
-    sys.exit(main())  # pragma: no cover
+    sys.exit(cli())  # pragma: no cover

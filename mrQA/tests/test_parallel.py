@@ -38,7 +38,7 @@ def test_equivalence_seq_vs_parallel():
                          output_dir=output_dir,
                          out_mrds_path=output_path['parallel'],
                          name='parallel',
-                         subjects_per_job=5,
+                         job_size=5,
                          config_path=config_path,
                          hpc=False, )
 

@@ -32,10 +32,28 @@ jobs:
                     pip install .
             -   name: Lint with flake8
                 run: |
+                    make lint
                     # stop the build if there are Python syntax errors or undefined names
-                    flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+                    # flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
                     # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-                    flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+                    # flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
             -   name: Test with pytest
                 run: |
                     pytest
+#            -   name: Coverage
+#                run: |
+#                    coverage run --rcfile=.coveragerc --source mrQA -m pytest
+#                    coverage report -m
+#                    coverage xml
+#            -   name: Run codacy-coverage-reporter
+#                uses: codacy/codacy-coverage-reporter-action@v1
+#                with:
+#                    # project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+#                    # or
+#                    api-token: ${{ secrets.CODACY_API_TOKEN }}
+#                    organization-provider: gh
+#                    username: sinhaharsh
+#                    project-name: mrQA
+#                    coverage-reports: coverage.xml
+#                    # or a comma-separated list for multiple reports
+#                    # coverage-reports: <PATH_TO_REPORT>, <PATH_TO_REPORT>

@@ -1,14 +1,21 @@
-from pathlib import Path
-from mrQA import monitor
 import tempfile
-import shutil
+from pathlib import Path
 
-from mrQA.tests.test_utils import copy2dest
+from mrQA import monitor
+from mrQA.tests.conftest import THIS_DIR
+from mrQA.tests.simulate import copy2dest
 
 
-def run(folder_path):
+# @settings(max_examples=10, deadline=None)
+# @given(args=dcm_dataset_strategy)
+def run(folder_path): # args):
+    # ds1, attributes = args
+    # assume(attributes['num_subjects'] > 4)
+    # folder_path = attributes['fake_ds_dir']
     folder_path = Path(folder_path).resolve()
-    config_path = Path('./mri-config.json').resolve()
+    # config_path = attributes['config_path']
+    config_path = THIS_DIR / 'resources/mri-config.json'
+
     # make a temporary output folder using tempfile
     with tempfile.TemporaryDirectory() as tmpdirname:
         output_dir = Path(tmpdirname) / 'output'
@@ -28,9 +35,8 @@ def run(folder_path):
                         decimals=2,
                         config_path=config_path,
                         verbose=False,
-                        reference_path='./wpc-6106.xml'
                         )
-        copy2dest(output_dir, tmpdirname, '/tmp')
+        # copy2dest(output_dir, tmpdirname, '/tmp')
         print('simulation-over')
 
 

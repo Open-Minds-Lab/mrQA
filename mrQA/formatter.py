@@ -160,9 +160,9 @@ class HtmlFormatter(BaseFormatter):
             logger.error('Reference protocol is empty. Cannot generate'
                          ' report for horizontal audit.')
             self.skip_hz_report = True
-        if not (compliant_ds.get_sequence_ids() or
-                non_compliant_ds.get_sequence_ids() or
-                undetermined_ds.get_sequence_ids()):
+        if not (compliant_ds.get_sequence_ids()
+                or non_compliant_ds.get_sequence_ids()
+                or undetermined_ds.get_sequence_ids()):
             logger.error('It seems the dataset has not been checked for '
                          'horizontal audit. Skipping horizontal audit report')
             self.skip_hz_report = True
@@ -214,8 +214,8 @@ class HtmlFormatter(BaseFormatter):
             logger.error('No sequences found in dataset. Cannot generate'
                          'report')
             self.skip_vt_report = True
-        if not (compliant_ds.get_sequence_ids() or
-                non_compliant_ds.get_sequence_ids()):
+        if not (compliant_ds.get_sequence_ids()
+                or non_compliant_ds.get_sequence_ids()):
             logger.error('It seems the dataset has not been checked for '
                          'vertical audit. Skipping vertical audit report')
             self.skip_vt_report = True
