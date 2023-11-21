@@ -82,9 +82,10 @@ def get_config(config_path: Union[str, Path], report_type='hz') -> dict:
     else:
         include_params = audit_config.get('include_parameters', None)
         if include_params is None:
-            logger.warn('Parameters to be included in the compliance check are '
-                        'not provided. All parameters will be included in the '
-                        f'{key}')
+            logger.warning(
+                'Parameters to be included in the compliance check are '
+                'not provided. All parameters will be included in the '
+                f'{key}')
     return audit_config
 
 
@@ -162,7 +163,7 @@ def is_writable(dir_path):
 #     fp_list : List[Path]
 #         List of folder paths
 #     ext : str
-#         Used to filter_fn files, and select only those which have this extension
+#         Used to filter_fn files, and select only those which have this ext
 #     Returns
 #     -------
 #     List of paths
@@ -211,7 +212,7 @@ def get_items_upto_count(dict_: Counter, rank: int = 1):
 
 def timestamp():
     """Generate a timestamp as a string"""
-    time_string = time.strftime('%m_%d_%Y_%H_%M_%S')
+    time_string = time.strftime(DATETIME_FORMAT)
     return time_string
 
 
@@ -238,16 +239,16 @@ def make_output_paths(output_dir, dataset):
         subject lists for each modality
     """
     ts = timestamp()
-    utc = datetime.strptime(ts, '%m_%d_%Y_%H_%M_%S').timestamp()
+    # utc = datetime.strptime(ts, '%m_%d_%Y_%H_%M_%S').timestamp()
     filename = f'{dataset.name}{DATE_SEPARATOR}{ts}'
     report_path = report_fpath(output_dir, filename)
     mrds_path = mrds_fpath(output_dir, filename)
     sub_lists_dir_path = subject_list_dir(output_dir, filename)
-    log_report_history(output_dir, mrds_path, report_path, ts, utc)
+    log_report_history(output_dir, mrds_path, report_path, ts)
     return report_path, mrds_path, sub_lists_dir_path
 
 
-def log_report_history(output_dir, mrds_path, report_path, ts, utc):
+def log_report_history(output_dir, mrds_path, report_path, ts):
     """
     Log the report generation history to a text file
 
@@ -268,8 +269,8 @@ def log_report_history(output_dir, mrds_path, report_path, ts, utc):
     if not records_filepath.parent.is_dir():
         records_filepath.parent.mkdir(parents=True)
     with open(records_filepath, 'a', encoding='utf-8') as fp:
-        fp.write(f'{utc},{report_path},'
-                 f'{mrds_path},{ts}\n')
+        fp.write(f'{ts},{report_path},'
+                 f'{mrds_path}\n')
 
 
 def majority_values(list_seqs: list,
@@ -449,9 +450,10 @@ def split_list(dir_index: Sized, num_chunks: int) -> Iterable:
     if len(dir_index) == 0:
         raise ValueError('List of directories is empty!')
     if len(dir_index) < num_chunks:
-        warnings.warn(f'Got num_chunks={num_chunks}, list_size={len(dir_index)}'
-                      f'Expected num_chunks < list_size',
-                      stacklevel=2)
+        logger.warning(
+            f'Got num_chunks={num_chunks}, list_size={len(dir_index)}'
+            f'Expected num_chunks < list_size',
+            stacklevel=2)
         num_chunks = len(dir_index)
     k, m = divmod(len(dir_index), num_chunks)
     #  k, m = (len(dir_index)//num_chunks, len(dir_index)%num_chunks)
@@ -761,9 +763,9 @@ def _cli_report(hz_audit: dict, report_name):
     non_compliant_ds = hz_audit['non_compliant']
     compliant_ds = hz_audit['compliant']
     undetermined_ds = hz_audit['undetermined']
-    if not (compliant_ds.get_sequence_ids() or
-            non_compliant_ds.get_sequence_ids() or
-            undetermined_ds.get_sequence_ids()):
+    if not (compliant_ds.get_sequence_ids()
+            or non_compliant_ds.get_sequence_ids()
+            or undetermined_ds.get_sequence_ids()):
         logger.error('No report generated for horizontal audit.')
         return
 
@@ -814,7 +816,7 @@ def _datasets_processed(dir_path, ignore_case=True):
 
 
 def _get_time(time_format: str, last_reported_on: str):
-    str_format = '%m/%d/%Y %H:%M:%S'
+    str_format = DATETIME_FORMAT
     if time_format == 'timestamp':
         mod_time = datetime.fromtimestamp(float(last_reported_on)).strftime(
             str_format)
@@ -867,7 +869,7 @@ def folders_modified_since(last_reported_on: str,
     """
     modified_folders = set()
 
-    mod_time = _get_time(time_format, last_reported_on)
+    mod_time = get_datetime(last_reported_on)
     out_path = Path(output_dir) / 'modified_folders_since.txt'
     if out_path.is_file():
         out_path.unlink()
@@ -923,9 +925,8 @@ def get_last_valid_record(folder_path: Path) -> Optional[tuple]:
             num_records = len(lines)
             if i < -num_records:
                 return None
-            last_line = lines[i]
-            last_reported_on, last_report_path, last_mrds_path, _ = \
-                last_line.split(',')
+            last_line = lines[i].strip('\n').split(',')
+            last_reported_on, last_report_path, last_mrds_path = last_line
             if Path(last_mrds_path).is_file():
                 return last_reported_on, last_report_path, last_mrds_path
             i -= 1
@@ -940,7 +941,7 @@ def get_timestamps():
     ts = datetime.timestamp(now)
     date_time = now.strftime('%m/%d/%Y %H:%M:%S%z')
     return {
-        'utc': ts,
+        'utc'      : ts,
         'date_time': date_time
     }
 
@@ -1213,7 +1214,7 @@ def modify_sequence_name(seq: "BaseSequence", stratify_by: str,
             stratify_value = ''
 
         seq_name_with_stratify = ATTRIBUTE_SEPARATOR.join([seq.name,
-                                                          stratify_value])
+                                                           stratify_value])
         if datasets:
             for ds in datasets:
                 ds.set_modified_seq_name(seq.name, seq_name_with_stratify)
@@ -1348,11 +1349,11 @@ def filter_epi_fmap_pairs(pair):
     epi_substrings = ['epi', 'bold', 'rest', 'fmri', 'pasl',
                       'asl', 'dsi', 'dti', 'dwi']
     fmap_substrings = ['fmap', 'fieldmap', 'map']
-    if (has_substring(pair[0].lower(), epi_substrings) and
-            has_substring(pair[1].lower(), fmap_substrings)):
+    if (has_substring(pair[0].lower(), epi_substrings)
+            and has_substring(pair[1].lower(), fmap_substrings)):
         return True
-    if (has_substring(pair[1].lower(), epi_substrings) and
-            has_substring(pair[0].lower(), fmap_substrings)):
+    if (has_substring(pair[1].lower(), epi_substrings)
+            and has_substring(pair[0].lower(), fmap_substrings)):
         return True
     return False
 
