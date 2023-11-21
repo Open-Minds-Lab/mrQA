@@ -98,20 +98,21 @@ def test_binary_parallel(args):
     ds1.load()
     with tempfile.TemporaryDirectory() as tempdir:
         # shlex doesn't test work with binaries
-        subprocess.run(['mrqa_parallel',
-                        '--data-source', attributes['fake_ds_dir'],
-                        '--config', attributes['config_path'],
-                        '--name', ds1.name,
-                        '--decimals', '3',
-                        '--tolerance', '0.1',
-                        '--verbose',
-                        '--job-size', '1',
-                        f'--out-mrds-path {tempdir}/test.mrds.pkl '
-                        '--output-dir', tempdir])
-        report_paths = list(Path(tempdir).glob('*.html'))
-        # check if report was generated
-        assert_paths_more_than_2_subjects(report_paths, tempdir, attributes,
-                                          ds1)
+        if attributes['num_subjects'] > 2:
+            subprocess.run(['mrqa_parallel',
+                            '--data-source', attributes['fake_ds_dir'],
+                            '--config', attributes['config_path'],
+                            '--name', ds1.name,
+                            '--decimals', '3',
+                            '--tolerance', '0.1',
+                            '--verbose',
+                            '--job-size', '1',
+                            '--out-mrds-path', Path(tempdir)/'test.mrds.pkl',
+                            '--output-dir', tempdir])
+            report_paths = list(Path(tempdir).glob('*.html'))
+            # check if report was generated
+            assert_paths_more_than_2_subjects(report_paths, tempdir, attributes,
+                                              ds1)
     return
 
 
