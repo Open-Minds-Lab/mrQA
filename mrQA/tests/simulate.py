@@ -1,9 +1,11 @@
 import tempfile
 import zipfile
 from collections import defaultdict
+from datetime import datetime
 from pathlib import Path
 
 import pydicom
+from pydicom import dcmread
 
 from mrQA.utils import convert2ascii
 
@@ -115,3 +117,22 @@ def setup_directories(src):
         raise FileNotFoundError("Temporary directory not found")
 
     return src_dir, dest_dir
+
+
+def copy2dest(folder, src, dest):
+    file_list = []
+    date = datetime.now()
+    for file in folder.rglob('*'):
+        if file.is_file():
+            try:
+                dicom = dcmread(file)
+            except:
+                continue
+            dicom.ContentDate = date.strftime('%Y%m%d')
+            rel_path = file.relative_to(src)
+            new_abs_path = dest / rel_path
+            parent = new_abs_path.parent
+            parent.mkdir(exist_ok=True, parents=True)
+            dicom.save_as(new_abs_path)
+            file_list.append(file)
+    return file_list
