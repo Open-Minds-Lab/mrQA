@@ -1,6 +1,7 @@
 import json
 import tempfile
 from abc import ABC, abstractmethod
+from datetime import timedelta
 from typing import List
 
 from MRdataset import valid_dirs
@@ -213,8 +214,28 @@ class NonCompliantDataset(BaseDataset):
         """
         self._vt_sequences.add(list_seqs)
 
+    def _is_scanned_before(self, date, seq):
+        # Provide an option to include those subjects that were
+        # scanned after the given date
+        content_date = seq['ContentDate'].get_value()
+        # Suppose date for report generation is 2023-11-21 01:00:00 am
+        # However content date doesn't have time information, so it is
+        # 2023-11-21 00:00:00 am. Now, if we compare the two dates, date for
+        # report generation will always be greater than content date,
+        # even though the scan could have been performed on the same day.
+        # Hence, we add 1 day to content date, so that the two dates
+        # can be compared.
+
+        # A better option is to use content time, but not all scanners
+        # provide content time. Hence, we use content date + 1 day. This means
+        # that the scan will be skipped only if it was performed at least
+        # 1 day before the date of report generation.
+        if date >= content_date + timedelta(days=1):
+            return True
+        return False
+
     def generate_hz_log(self, parameters, suppl_params, filter_fn=None,
-                        verbosity=1):
+                        verbosity=1, date=None):
         sequences = self.get_sequence_ids()
         nc_log = {}
         for seq_id in sequences:
@@ -224,25 +245,37 @@ class NonCompliantDataset(BaseDataset):
                     if param_name not in nc_log:  # empty
                         nc_log[param_name] = []
 
-                    nc_dict = {}
-                    nc_dict['subject'] = sub
-                    nc_dict['sequence_name'] = seq_id
-
-                    # if additional parameters have to be included in the log
-                    if suppl_params:
-                        for i in suppl_params:
-                            nc_dict[i] = seq[i].get_value()
-
-                    if verbosity > 1:
-                        nc_dict['values'] = [p.get_value() for p in param_tupl]
-                    if verbosity > 2:
-                        nc_dict['path'] = str(path)
-
+                    if self._is_scanned_before(date, seq):
+                        continue
+                    nc_dict = self._populate_nc_dict(param_tuple=param_tupl,
+                                                     sub=sub, path=path,
+                                                     seq=seq, seq_ids=seq_id,
+                                                     suppl_params=suppl_params,
+                                                     verbosity=verbosity)
                     nc_log[param_name].append(nc_dict)
         return nc_log
 
+    def _populate_nc_dict(self, param_tuple, seq_ids, sub, path, seq,
+                          suppl_params, verbosity):
+
+        nc_dict = {}
+        nc_dict['date'] = str(seq['ContentDate'].get_value().date())
+        nc_dict['subject'] = sub
+        nc_dict['sequence_name'] = seq_ids
+
+        # if additional parameters have to be included in the log
+        if suppl_params:
+            for i in suppl_params:
+                nc_dict[i] = seq[i].get_value()
+
+        if verbosity > 1:
+            nc_dict['values'] = [p.get_value() for p in param_tuple]
+        if verbosity > 2:
+            nc_dict['path'] = str(path)
+        return nc_dict
+
     def generate_nc_log(self, parameters, filter_fn=None, output_dir=None,
-                        suppl_params=None, audit='vt', verbosity=1):
+                        suppl_params=None, audit='vt', verbosity=1, date=None):
         """
         Generate a log of all non-compliant parameters in the dataset.
         Apart from returning the log, it also dumps the log as a json file
@@ -250,11 +283,11 @@ class NonCompliantDataset(BaseDataset):
         nc_log = {}
         if audit == 'hz':
             nc_log = self.generate_hz_log(parameters, suppl_params,
-                                          filter_fn, verbosity)
+                                          filter_fn, verbosity, date=date)
             filename = self.name + '_hz_log.json'
         elif audit == 'vt':
             nc_log = self.generate_vt_log(parameters, suppl_params,
-                                          filter_fn, verbosity)
+                                          filter_fn, verbosity, date=date)
             filename = self.name + '_vt_log.json'
         if audit not in ['vt', 'hz']:
             raise ValueError('Expected one of [vt, hz], got {}'.format(audit))
@@ -267,7 +300,7 @@ class NonCompliantDataset(BaseDataset):
         return nc_log
 
     def generate_vt_log(self, parameters, suppl_params, filter_fn=None,
-                        verbosity=1):
+                        verbosity=1, date=None):
 
         nc_log = {}
         sequence_pairs = self.get_vt_sequences()
@@ -276,22 +309,22 @@ class NonCompliantDataset(BaseDataset):
         # want to highlight the issues in field-map and epi sequences.
         for pair in filter(filter_fn, sequence_pairs):
             for param_name in parameters:
-                for param_tupl, sub, path, seq in self.get_vt_param_values(
-                                                            pair, param_name):
+                for param_tuple, sub, path, seq in self.get_vt_param_values(
+                        pair, param_name):
                     if param_name not in nc_log:  # empty
                         nc_log[param_name] = []
 
-                    nc_dict = {}
-                    nc_dict['subject'] = sub
-                    nc_dict['sequence_names'] = pair
+                    # Provide a date to include those subjects that were
+                    # scanned after the given date
+                    if self._is_scanned_before(date, seq):
+                        continue
 
-                    if verbosity > 1:
-                        nc_dict['values'] = [p.get_value() for p in param_tupl]
-                    if verbosity > 2:
-                        nc_dict['path'] = str(path)
-
+                    nc_dict = self._populate_nc_dict(param_tuple=param_tuple,
+                                                     sub=sub, path=path,
+                                                     seq=seq, seq_ids=pair,
+                                                     suppl_params=suppl_params,
+                                                     verbosity=verbosity)
                     nc_log[param_name].append(nc_dict)
-
         return nc_log
 
     def get_nc_param_ids(self, seq_id):
