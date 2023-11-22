@@ -1,3 +1,4 @@
+import tempfile
 import typing as tp
 from pathlib import Path
 from typing import Tuple
@@ -42,9 +43,11 @@ def create_dataset(draw_from: st.DrawFn) -> Tuple:
                                               repetition_time,
                                               echo_train_length,
                                               flip_angle)
+    temp_dir = Path(tempfile.mkdtemp())
     ds = DicomDataset(name=name,
                       data_source=fake_ds_dir,
-                      config_path=THIS_DIR / 'resources/mri-config.json')
+                      config_path=THIS_DIR / 'resources/mri-config.json',
+                      output_dir=temp_dir)
     ref_protocol_path = sample_protocol()
     attributes = {
         'name': name,
