@@ -4,8 +4,12 @@ mrQA : automatic protocol compliance checks on MR datasets
 .. image:: https://img.shields.io/pypi/v/mrQA.svg
         :target: https://pypi.python.org/pypi/mrQA
 
-.. image:: https://img.shields.io/travis/Open-Minds-Lab/mrQA.svg
-        :target: https://travis-ci.com/Open-Minds-Lab/mrQA
+.. image:: https://app.codacy.com/project/badge/Grade/8cd263e1eaa0480d8fac50eba0094401
+        :target: https://app.codacy.com/gh/sinhaharsh/mrQA/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade
+
+.. image:: https://github.com/sinhaharsh/mrQA/actions/workflows/continuous-integration.yml/badge.svg
+        :target: https://github.com/sinhaharsh/mrQA/actions/workflows/continuous-integration.yml
+
 
 .. image:: https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg
         :target: https://nbviewer.org/github/Open-Minds-Lab/mrQA/blob/master/examples/usage.ipynb

@@ -3,5 +3,11 @@ pydicom
 nibabel
 dictdiffer
 jinja2
-weasyprint
+protocol
+hypothesis
+pytest
+bokeh
+flake8
+requests
+coverage
 

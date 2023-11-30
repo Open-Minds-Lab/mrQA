@@ -1,13 +1,14 @@
-import math
 import os
 import subprocess
 from pathlib import Path
+from time import sleep
 from typing import Union, Iterable
 
-from MRdataset.log import logger
-from MRdataset.utils import valid_dirs
+from MRdataset import valid_dirs
 
-from mrQA.utils import is_integer_number, execute_local, list2txt
+from mrQA import logger
+from mrQA.utils import is_integer_number, execute_local, list2txt, \
+    folders_with_min_files
 
 
 def _check_args(data_source: Union[str, Path, Iterable] = None,
@@ -17,7 +18,8 @@ def _check_args(data_source: Union[str, Path, Iterable] = None,
                 subjects_per_job: int = None,
                 hpc: bool = False,
                 conda_dist: str = None,
-                conda_env: str = None):
+                conda_env: str = None,
+                config_path: Union[str, Path] = None):
     # It is not possible to submit jobs while debugging, why would you submit
     # a job, if code is still being debugged
     if debug and hpc:
@@ -33,7 +35,7 @@ def _check_args(data_source: Union[str, Path, Iterable] = None,
     # Check if data_source is a valid directory, or list of valid directories
     data_source = valid_dirs(data_source)
 
-    # RULE : If output_dir not provided, output wil be saved in 'mrqa_files'
+    # RULE : If output_dir not provided, output will be saved in 'mrqa_files'
     # created in the parent folder of data_source
     if not output_dir:
         if isinstance(data_source, Iterable):
@@ -42,19 +44,20 @@ def _check_args(data_source: Union[str, Path, Iterable] = None,
             raise RuntimeError('Need an output directory to store files')
 
         # Didn't find a good alternative to os.access
-        # in pathlib, please raise a issue if you know one, happy to incorporate
-        output_dir = data_source.parent / (
-            data_source.name + '_mrqa_files')
+        # in pathlib, please raise an issue if you know one,
+        # happy to incorporate
+        parent_dir = Path(data_source[0]).parent
+        output_dir = parent_dir / (data_source[0].name + '_mrqa_files')
 
         # Check if permission to create a folder in data_source.parent
-        if os.access(data_source.parent, os.W_OK):
+        if os.access(parent_dir, os.W_OK):
             logger.warning('Expected a directory to save job scripts. Using '
                            'parent folder of --data_source instead.')
         else:
-            raise PermissionError(f'You do not have write permission to'
-                                  f'create a folder in '
-                                  f'{data_source.parent}'
-                                  f'Please provide output_dir')
+            raise PermissionError('You do not have write permission to'
+                                  'create a folder in '
+                                  f'{parent_dir}'
+                                  'Please provide output_dir')
     else:
         output_dir = Path(output_dir)
     # Information about conda env is required for creating slurm scripts
@@ -64,6 +67,8 @@ def _check_args(data_source: Union[str, Path, Iterable] = None,
         conda_env = 'mrqa' if hpc else 'mrcheck'
     if not conda_dist:
         conda_dist = 'miniconda3' if hpc else 'anaconda3'
+    if not Path(config_path).exists():
+        raise FileNotFoundError(f'Config file not found at {config_path}')
     return data_source, output_dir, conda_env, conda_dist
 
 
@@ -76,12 +81,12 @@ def _make_file_folders(output_dir):
     # created by the corresponding bash script
 
     folder_paths = {
-        'ids': output_dir / 'id_lists',
+        'fnames': output_dir / 'fname_lists',
         'scripts': output_dir / 'bash_scripts',
         'mrds': output_dir / 'partial_mrds'
     }
     files_per_batch = {
-        'ids': output_dir / 'per_batch_id_list.txt',
+        'fnames': output_dir / 'per_batch_folders_list.txt',
         'scripts': output_dir / 'per_batch_script_list.txt',
         'mrds': output_dir / 'per_batch_partial_mrds_list.txt'
     }
@@ -91,7 +96,7 @@ def _make_file_folders(output_dir):
 
     # And store the original complete list (contains all
     # subject ids) in "complete_id_list.txt"
-    all_ids_path = output_dir / 'complete_id_list.txt'
+    all_ids_path = output_dir / 'complete_fname_list.txt'
     return folder_paths, files_per_batch, all_ids_path
 
 
@@ -119,6 +124,8 @@ def _run_single_batch(script_path: Union[str, Path],
             # to submit the script
             # TODO: Add try/except block here
             subprocess.run(['sbatch', script_path], check=True, shell=True)
+            # Without any delay, you may receive NODE_FAIL error
+            sleep(2)
             # print(out.stdout)
             # some way to check was submitted/accepted
 
@@ -134,13 +141,14 @@ def _run_single_batch(script_path: Union[str, Path],
 
 
 def _create_slurm_script(output_script_path: Union[str, Path],
-                         ids_filepath: Union[str, Path],
+                         fnames_filepath: Union[str, Path],
                          env: str = 'mrqa',
                          conda_dist: str = 'anaconda3',
-                         num_subj_per_job: int = 50,
+                         folders_per_job: int = 50,
                          verbose: bool = False,
-                         include_phantom: bool = False,
-                         output_mrds_path: bool = None) -> None:
+                         config_path: Union[str, Path] = None,
+                         output_mrds_path: bool = None,
+                         email='mail.sinha.harsh@gmail.com') -> None:
     """
     Creates a slurm script file which can be submitted to a hpc.
 
@@ -148,18 +156,16 @@ def _create_slurm_script(output_script_path: Union[str, Path],
     ----------
     output_script_path : str
         Path to slurm script file
-    ids_filepath : str
+    fnames_filepath : str
         Path to text file containing list of subject ids
     env : str
         Conda environment name
     conda_dist : str
         Conda distribution
-    num_subj_per_job : int
+    folders_per_job : int
         Number of subjects to process in each slurm job
     verbose : bool
         If True, prints the output of the script
-    include_phantom : bool
-        If True, includes phantom, localizer and calibration studies
     output_mrds_path : str
         Path to the partial mrds pickle file
     """
@@ -171,20 +177,18 @@ def _create_slurm_script(output_script_path: Union[str, Path],
     # Sys Time (CPU Time) : 10 minutes      20 minutes
 
     # Set the memory and cpu time limits
-    mem_reqd = 2000  # MB;
-    num_mins_per_subject = 1  # minutes
-    num_hours = int(math.ceil(num_subj_per_job * num_mins_per_subject / 60))
+    mem_required = 2000  # MB;
+    # num_mins_per_subject = 1  # minutes
     # Set the number of hours to 3 if less than 3
-    time_limit = 3 if num_hours < 3 else num_hours
+    time_limit = 24
     # Setup python command to run
-    python_cmd = f'mrpc_subset -o {output_mrds_path} -b {ids_filepath}'
+    python_cmd = (f'mrqa_subset -o {output_mrds_path} -b {fnames_filepath} '
+                  f'--config {config_path}')
 
     # Add flags to python command
     if verbose:
         python_cmd += ' --verbose'
-    if include_phantom:
-        python_cmd += ' --include_phantom'
-    python_cmd += ' --is_partial'
+    python_cmd += ' --is-partial'
 
     # Create the slurm script file
     with open(output_script_path, 'w', encoding='utf-8') as fp:
@@ -193,14 +197,14 @@ def _create_slurm_script(output_script_path: Union[str, Path],
             '#SBATCH -A med220005p',
             '#SBATCH -N 1',
             '#SBATCH -p RM-shared',
-            f'#SBATCH --mem-per-cpu={mem_reqd}M #memory per cpu-core',
+            f'#SBATCH --mem-per-cpu={mem_required}M #memory per cpu-core',
             f'#SBATCH --time={time_limit}:00:00',
             '#SBATCH --ntasks-per-node=1',
-            f'#SBATCH --error={ids_filepath.stem}.%J.err',
-            f'#SBATCH --output={ids_filepath.stem}.%J.out',
+            f'#SBATCH --error={fnames_filepath.stem}.%J.err',
+            f'#SBATCH --output={fnames_filepath.stem}.%J.out',
             '#SBATCH --mail-type=end          # send email when job ends',
             '#SBATCH --mail-type=fail         # send email if job fails',
-            '#SBATCH --mail-user=mail.sinha.harsh@gmail.com',
+            f'#SBATCH --mail-user={email}',
             '#Clear the environment from any previously loaded modules',
             'module purge > /dev/null 2>&1',
             f'source  ${{HOME}}/{conda_dist}/etc/profile.d/conda.sh',
@@ -211,25 +215,27 @@ def _create_slurm_script(output_script_path: Union[str, Path],
         )
 
 
-def _get_num_workers(subjects_per_job, subject_list):
-    if subjects_per_job > len(subject_list):
+def _get_num_workers(folders_per_job, folder_list):
+    if folders_per_job > len(folder_list):
         # If subjects_per_job is greater than the number of subjects,
         # process all subjects in a single job. Stop execution.
         raise RuntimeError('Trying to create more jobs than total number of '
-                           'subjects in the directory. Why?')
+                           'folders in the directory. Why?')
 
     # Get the number of jobs
-    workers = len(subject_list) // subjects_per_job
+    workers = len(folder_list) // folders_per_job
     if workers == 1:
         # If there is only one job, process all subjects in a single job
-        raise RuntimeError('Decrease number of subjects per job. Expected'
+        raise RuntimeError('Decrease number of folders per job. Expected'
                            'workers > 1 for parallel processing. Got 1')
 
     return workers
 
 
-def _get_subject_ids(data_source: Union[str, Path],
-                     all_ids_path: Union[str, Path]) -> list:
+def _get_terminal_folders(data_source: Union[str, Path],
+                          all_ids_path: Union[str, Path],
+                          pattern='*',
+                          min_count=1) -> Iterable:
     """
     Get the list of subject ids from the data source folder
 
@@ -242,18 +248,16 @@ def _get_subject_ids(data_source: Union[str, Path],
 
     Returns
     -------
-    subject_list : list
+    subject_list : Iterable
         List of subject ids
     """
-    subject_list = []
+    terminal_folder_list = []
     # Get the list of subject ids
-    for root, _, _ in os.walk(data_source):
-        if 'sub-' in Path(root).name:
-            # Get the subject id
-            num_files_in_root = len(list(Path(root).rglob('*/*')))
-            if num_files_in_root > 0:
-                subject_list.append(root)
+    for directory in valid_dirs(data_source):
+        sub_folders = folders_with_min_files(directory, pattern,
+                                             min_count)
+        terminal_folder_list.extend(sub_folders)
     # Store the list of unique subject ids to a text file given by
     # output_path
-    list2txt(all_ids_path, list(set(subject_list)))
-    return subject_list
+    list2txt(all_ids_path, list(set(terminal_folder_list)))
+    return terminal_folder_list

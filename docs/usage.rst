@@ -4,15 +4,23 @@ CLI usage
 A protocol compliance report can be generated directly from the command line
 interface.  The following is an example of generating a protocol compliance report
 
-For a DICOM dataset::
+For a DICOM dataset
+
+.. code:: bash
 
     mrqa --data-source /path/to/dataset --format dicom --name my_dataset
 
-For a BIDS dataset::
+For a BIDS dataset
+
+.. code:: bash
 
     mrqa --data-source /path/to/dataset --format bids --name my_dataset
 
 
+.. toctree::
+    :maxdepth: 1
+
+    cli
 
 API Tutorial
 ------------

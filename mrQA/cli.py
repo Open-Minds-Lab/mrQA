@@ -3,16 +3,17 @@ import argparse
 import sys
 from pathlib import Path
 
-from MRdataset import import_dataset
-from MRdataset.utils import is_writable, valid_dirs
-from MRdataset.log import logger
+from MRdataset import import_dataset, load_mr_dataset, valid_dirs, \
+    DatasetEmptyException
 
 from mrQA import check_compliance
-from mrQA.config import PATH_CONFIG
+from mrQA import logger
+from mrQA.config import PATH_CONFIG, THIS_DIR
+from mrQA.utils import is_writable
 
 
 def get_parser():
-    """Console script for mrQA."""
+    """Parser for command line interface."""
     parser = argparse.ArgumentParser(
         description='Protocol Compliance of MRI scans',
         add_help=False
@@ -25,12 +26,15 @@ def get_parser():
     required.add_argument('-d', '--data-source', nargs='+', required=True,
                           help='directory containing downloaded dataset with '
                                'dicom files, supports nested hierarchies')
+    required.add_argument('--config', type=str,
+                          help='path to config file',
+                          default=THIS_DIR / 'resources/mri-config.json')
     optional.add_argument('-o', '--output-dir', type=str,
                           help='specify the directory where the report'
                                ' would be saved. By default, the --data_source '
                                'directory will be used to save reports')
     optional.add_argument('-f', '--format', type=str, default='dicom',
-                          help='type of dataset, one of [dicom|bids|pybids]')
+                          help='type of dataset, one of [dicom|bids]')
     optional.add_argument('-n', '--name', type=str,
                           help='provide a identifier/name for the dataset')
     optional.add_argument('-h', '--help', action='help',
@@ -43,27 +47,17 @@ def get_parser():
                                'of the decimal point.')
     optional.add_argument('-t', '--tolerance', type=float, default=0,
                           help='tolerance for checking against reference '
-                               'protocol. Default is 0.1')
+                               'protocol. Default is 0')
     # TODO: use this flag to store cache
     optional.add_argument('-v', '--verbose', action='store_true',
                           help='allow verbose output on console')
-    optional.add_argument('-ref', '--reference_path', type=str,
-                          help='.yaml file containing protocol specification')
-    optional.add_argument('--strategy', type=str, default='majority',
-                          help='how to examine parameters [majority|reference].'
-                               '--reference_path required if using reference')
-    optional.add_argument('--include-phantom', action='store_true',
-                          help='whether to include phantom, localizer, '
-                               'aahead_scout')
-    optional.add_argument('--include-nifti-header', action='store_true',
-                          help='whether to check nifti headers for compliance,'
-                               'only used when --format==bids')
-    # Experimental features, not implemented yet.
-    optional.add_argument('-l', '--logging', type=int, default=40,
-                          help='set logging to appropriate level')
-    optional.add_argument('--skip', nargs='+',
-                          help='skip these parameters')
-
+    optional.add_argument('-ref', '--ref-protocol-path', type=str,
+                          help='XML file containing desired protocol. If not '
+                               'provided, the protocol will be inferred from '
+                               'the dataset.')
+    optional.add_argument('-pkl', '--mrds-pkl-path', type=str,
+                          help='.mrds.pkl file can be provided to facilitate '
+                               'faster re-runs.')
     if len(sys.argv) < 2:
         logger.critical('Too few arguments!')
         parser.print_help()
@@ -72,33 +66,47 @@ def get_parser():
     return parser
 
 
-def main():
+def cli():
+    """
+    Console script for mrQA.
+    """
     args = parse_args()
+    if args.mrds_pkl_path:
+        dataset = load_mr_dataset(args.mrds_pkl_path)
+    else:
+        dataset = import_dataset(data_source=args.data_source,
+                                 ds_format=args.format,
+                                 name=args.name,
+                                 verbose=args.verbose,
+                                 config_path=args.config,
+                                 output_dir=args.output_dir)
 
-    dataset = import_dataset(data_source=args.data_source,
-                             ds_format=args.format,
-                             name=args.name,
-                             verbose=args.verbose,
-                             include_phantom=args.include_phantom,
-                             include_nifti_header=args.include_nifti_header)
-
-    check_compliance(dataset=dataset,
-                     strategy=args.strategy,
-                     output_dir=args.output_dir,
-                     decimals=args.decimals,
-                     verbose=args.verbose,
-                     tolerance=args.tolerance,)
+    try:
+        check_compliance(dataset=dataset,
+                         output_dir=args.output_dir,
+                         decimals=args.decimals,
+                         verbose=args.verbose,
+                         tolerance=args.tolerance,
+                         config_path=args.config,
+                         reference_path=args.ref_protocol_path, )
+    except DatasetEmptyException:
+        logger.error("Cannot check compliance if the dataset doesn't have "
+                     "any scans. Please check the dataset.")
+    except NotADirectoryError:
+        logger.error('Provided output directory for saving reports is invalid.'
+                     'Either it is not a directory or it does not exist. ')
     return 0
 
 
 def parse_args():
+    """Validates command line arguments and returns parsed arguments"""
     parser = get_parser()
     args = parser.parse_args()
 
     if args.verbose:
-        logger.setLevel('INFO')
-    else:
         logger.setLevel('WARNING')
+    else:
+        logger.setLevel('ERROR')
 
     if not valid_dirs(args.data_source):
         raise OSError('Expected valid directory for --data_source argument, '
@@ -114,12 +122,26 @@ def parse_args():
             try:
                 Path(args.output_dir).mkdir(parents=True, exist_ok=True)
             except OSError as exc:
+                logger.error(f'Unable to create folder {args.output_dir} for '
+                             f'saving reports')
                 raise exc
 
     if not is_writable(args.output_dir):
         raise OSError(f'Output Folder {args.output_dir} is not writable')
+
+    check_path(args.config, '--config')
+    check_path(args.ref_protocol_path, '--ref-protocol-path')
+    check_path(args.mrds_pkl_path, '--mrds-pkl-path')
     return args
 
 
+def check_path(path, arg_name):
+    """Validates if the path is a valid file"""
+    if path is not None:
+        if not Path(path).is_file():
+            raise OSError(
+                f'Expected valid file for {arg_name} argument, Got {path}')
+
+
 if __name__ == "__main__":
-    sys.exit(main())  # pragma: no cover
+    cli()

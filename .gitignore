@@ -104,3 +104,10 @@ ENV/
 .vscode/
 .idea/
 /update_today.txt
+
+# codacy
+*.sarif
+
+# mri protocol
+*.xml
+*.secrets

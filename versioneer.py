@@ -623,7 +623,7 @@ def git_versions_from_keywords(keywords, tag_prefix, verbose):
         # expansion behaves like git log --decorate=short and strips out the
         # refs/heads/ and refs/tags/ prefixes that would let us distinguish
         # between branches and tags. By ignoring refnames without digits, we
-        # filter out many common branch names like "release" and
+        # filter_fn out many common branch names like "release" and
         # "stabilization", as well as "HEAD" and "master".
         tags = {r for r in refs if re.search(r'\d', r)}
         if verbose:
@@ -1146,7 +1146,7 @@ def git_versions_from_keywords(keywords, tag_prefix, verbose):
         # expansion behaves like git log --decorate=short and strips out the
         # refs/heads/ and refs/tags/ prefixes that would let us distinguish
         # between branches and tags. By ignoring refnames without digits, we
-        # filter out many common branch names like "release" and
+        # filter_fn out many common branch names like "release" and
         # "stabilization", as well as "HEAD" and "master".
         tags = {r for r in refs if re.search(r'\d', r)}
         if verbose:

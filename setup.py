@@ -18,6 +18,9 @@ requirements = [
     "nibabel",
     "dictdiffer",
     "jinja2>=3.0.3",
+    "protocol",
+    "bokeh",
+    "tqdm"
 ]
 
 test_requirements = ['pytest>=3', 'hypothesis']
@@ -25,25 +28,22 @@ test_requirements = ['pytest>=3', 'hypothesis']
 setup(
     author="Pradeep Raamana",
     author_email='raamana@gmail.com',
-    python_requires='>=3.6',
+    python_requires='>=3.8',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
         'Natural Language :: English',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
     ],
     description="mrQA suite of tools offering automatic evaluation of "
                 "protocol compliance",
     entry_points={
         'console_scripts': [
-            'mrqa=mrQA.cli:main',
-            'mrqa_monitor=mrQA.monitor:main',
-            'mrqa_parallel=mrQA.run_parallel:main',
-            'mrpc_subset=mrQA.run_subset:main'
+            'mrqa=mrQA.cli:cli',
+            'mrqa_monitor=mrQA.monitor:cli',
+            'mrqa_parallel=mrQA.run_parallel:cli',
+            'mrqa_subset=mrQA.run_subset:cli'
         ],
     },
     install_requires=requirements,
