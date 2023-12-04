@@ -1203,6 +1203,7 @@ def modify_sequence_name(seq: "BaseSequence", stratify_by: str,
     """
     # TODO: change stratify_by from attributes to acquisition parameters
     stratify_value = ''
+    seq_name_with_stratify = seq.name
     if 'gre_field' in seq.name.lower():
         stratify_by = 'NonLinearGradientCorrection'
         nlgc = seq[stratify_by].get_value()
@@ -1215,12 +1216,20 @@ def modify_sequence_name(seq: "BaseSequence", stratify_by: str,
 
         seq_name_with_stratify = ATTRIBUTE_SEPARATOR.join([seq.name,
                                                            stratify_value])
-        if datasets:
-            for ds in datasets:
-                ds.set_modified_seq_name(seq.name, seq_name_with_stratify)
+    if stratify_by:
+        try:
+            stratify_value = seq[stratify_by].get_value()
+            seq_name_with_stratify = ATTRIBUTE_SEPARATOR.join(
+                [seq.name, stratify_value])
+        except KeyError:
+            logger.warning(f"Attribute {stratify_by} not found in "
+                           f"sequence {seq.name}")
 
-        return seq_name_with_stratify
-    return seq.name
+    if datasets:
+        for ds in datasets:
+            ds.set_modified_seq_name(seq.name, seq_name_with_stratify)
+
+    return seq_name_with_stratify
 
 
 def get_config_from_file(config_path: Union[Path, str]) -> dict:
