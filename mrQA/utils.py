@@ -6,22 +6,23 @@ import time
 import unicodedata
 from collections import Counter
 from datetime import datetime, timedelta, timezone
+from email.message import EmailMessage
 from itertools import takewhile
 from pathlib import Path
+from smtplib import SMTP
 from subprocess import run, CalledProcessError, TimeoutExpired, Popen
 from typing import Union, List, Optional, Any, Iterable, Sized
 
 from MRdataset import BaseDataset, is_dicom_file
 from dateutil import parser
-from protocol import BaseSequence, MRImagingProtocol, SiemensMRImagingProtocol
-from tqdm import tqdm
-
 from mrQA import logger
 from mrQA.base import CompliantDataset, NonCompliantDataset, UndeterminedDataset
 from mrQA.config import past_records_fpath, report_fpath, mrds_fpath, \
     subject_list_dir, DATE_SEPARATOR, CannotComputeMajority, \
     Unspecified, \
     EqualCount, status_fpath, ATTRIBUTE_SEPARATOR, DATETIME_FORMAT, DATE_FORMAT
+from protocol import BaseSequence, MRImagingProtocol, SiemensMRImagingProtocol
+from tqdm import tqdm
 
 
 def get_reference_protocol(dataset: BaseDataset,
@@ -1130,12 +1131,15 @@ def log_latest_non_compliance(dataset, config_path,
     if not status_filepath.parent.is_dir():
         status_filepath.parent.mkdir(parents=True)
 
+    if not nc_log:
+        # there is no new non-compliant data
+        return False
     with open(status_filepath, 'w', encoding='utf-8') as fp:
         for parameter in nc_log:
             for i in nc_log[parameter]:
                 fp.write(f" {i['date']}, {ds_name}, {i['sequence_name']},"
                          f" {i['subject']}, {parameter} \n")
-    return None  # status_filepath
+    return True
 
 
 def tuples2dict(mylist):
@@ -1216,14 +1220,14 @@ def modify_sequence_name(seq: "BaseSequence", stratify_by: str,
 
         seq_name_with_stratify = ATTRIBUTE_SEPARATOR.join([seq.name,
                                                            stratify_value])
-    if stratify_by:
-        try:
-            stratify_value = seq[stratify_by].get_value()
-            seq_name_with_stratify = ATTRIBUTE_SEPARATOR.join(
-                [seq.name, stratify_value])
-        except KeyError:
-            logger.warning(f"Attribute {stratify_by} not found in "
-                           f"sequence {seq.name}")
+    # elif stratify_by:
+    #     try:
+    #         stratify_value = seq[stratify_by].get_value()
+    #         seq_name_with_stratify = ATTRIBUTE_SEPARATOR.join(
+    #             [seq.name, stratify_value])
+    #     except KeyError:
+    #         logger.warning(f"Attribute {stratify_by} not found in "
+    #                        f"sequence {seq.name}")
 
     if datasets:
         for ds in datasets:
@@ -1383,3 +1387,42 @@ def previous_month(dt):
 def next_month(dt):
     """Return the first day of the next month."""
     return (dt.replace(day=28) + timedelta(days=5)).replace(day=1)
+
+
+def email(log_filepath,
+          project_code,
+          email_config,
+          report_path):
+    """
+    Send an email alert if there is a change in the status of the audit
+    """
+    if not Path(log_filepath).is_file():
+        raise FileNotFoundError(f'Log file not found: {log_filepath}')
+
+    with open(log_filepath) as fp:
+        msg = EmailMessage()
+        msg.set_content(fp.read())
+
+    today = datetime.today()
+    msg['Subject'] = f'mrQA : {project_code} dt. {today.strftime("%m.%d-%Y")}'
+
+    try:
+        config = get_config_from_file(email_config)
+    except (ValueError, FileNotFoundError, TypeError) as e:
+        logger.error(f'Error while reading config file: {e}. Please provide'
+                     f'a valid path to the email configuration JSON file.')
+        raise e
+    msg['From'] = config['from']
+
+    to_emails = config.get('email_for_project', {})
+    if project_code in to_emails:
+        msg['To'] = to_emails[project_code]
+    else:
+        msg['To'] = config['to']
+
+    with open(report_path, 'rb') as fp:
+        report_data = fp.read()
+    msg.add_attachment(report_data, maintype='text',
+                       subtype='html')
+    with SMTP('localhost') as s:
+        s.send_message(msg)
