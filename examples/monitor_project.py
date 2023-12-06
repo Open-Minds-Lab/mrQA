@@ -4,7 +4,7 @@ from pathlib import Path
 
 from MRdataset import DatasetEmptyException, valid_dirs, load_mr_dataset
 from mrQA import monitor, logger, check_compliance
-from mrQA.utils import txt2list, filter_epi_fmap_pairs
+from mrQA.utils import txt2list, log_latest_non_compliance
 
 
 def main():
@@ -95,7 +95,7 @@ def run(folder_path, output_dir, config_path):
         logger.warning(f'{e}: Folder {name} has no DICOM files.')
 
 
-def compile_reports(folder_path, output_dir, config_path, audit='vt'):
+def compile_reports(folder_path, output_dir, config_path, audit='vt', date=None):
     output_dir = Path(output_dir)
     complete_log = []
     # Look for all mrds.pkl file in the output_dir. For ex, mrqa_reports
@@ -108,35 +108,41 @@ def compile_reports(folder_path, output_dir, config_path, audit='vt'):
         ds = load_mr_dataset(mrds)
         # TODO : check compliance, but maybe its better is to save
         #  compliance results which can be re-used here
-        hz, vt = check_compliance(
+        hz_audit_results, vt_audit_results = check_compliance(
             ds,
             output_dir=output_dir / 'compiled_reports',
             config_path=config_path,
         )
-        if audit == 'hz':
-            non_compliant_ds = hz['non_compliant']
-            filter_fn = None
-            nc_params = ['ReceiveCoilActiveElements']
-            supplementary_params = ['BodyPartExamined']
-        elif audit == 'vt':
-            non_compliant_ds = vt['non_compliant']
-            nc_params = ['ShimSetting', 'PixelSpacing']
-            supplementary_params = []
-            # TODO: discuss what parameters can be compared between anatomical
-            #   and functional scans
-            # after checking compliance just look for epi-fmap pairs for now
-            filter_fn = filter_epi_fmap_pairs
-        else:
-            raise ValueError(f"Invalid audit type {audit}. Choose one of "
-                             f"[hz, vt]")
-
-        nc_log = non_compliant_ds.generate_nc_log(
-            parameters=nc_params,
-            suppl_params=supplementary_params,
-            filter_fn=filter_fn,
-            output_dir=output_dir,
-            audit=audit,
-            verbosity=4)
+        log_latest_non_compliance(dataset=hz_audit_results['non_compliant'],
+                                  config_path=config_path,
+                                  output_dir=output_dir / 'compiled_reports',
+                                  audit='hz',
+                                  date=date)
+        # if audit == 'hz':
+        #     non_compliant_ds = hz['non_compliant']
+        #     filter_fn = None
+        #     nc_params = config.get("include_parameters", None)
+        #     # nc_params = ['ReceiveCoilActiveElements']
+        #     supplementary_params = ['BodyPartExamined']
+        # elif audit == 'vt':
+        #     non_compliant_ds = vt['non_compliant']
+        #     nc_params = ['ShimSetting', 'PixelSpacing']
+        #     supplementary_params = []
+        #     # TODO: discuss what parameters can be compared between anatomical
+        #     #   and functional scans
+        #     # after checking compliance just look for epi-fmap pairs for now
+        #     filter_fn = filter_epi_fmap_pairs
+        # else:
+        #     raise ValueError(f"Invalid audit type {audit}. Choose one of "
+        #                      f"[hz, vt]")
+        #
+        # nc_log = non_compliant_ds.generate_nc_log(
+        #     parameters=nc_params,
+        #     suppl_params=supplementary_params,
+        #     filter_fn=filter_fn,
+        #     output_dir=output_dir,
+        #     audit=audit,
+        #     verbosity=4)
 
 
 
