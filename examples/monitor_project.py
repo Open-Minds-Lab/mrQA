@@ -7,8 +7,8 @@ from pathlib import Path
 
 from MRdataset import DatasetEmptyException, valid_dirs, load_mr_dataset
 from mrQA import monitor, logger, check_compliance
-from mrQA.config import PATH_CONFIG
-from mrQA.utils import txt2list, log_latest_non_compliance, is_writable
+from mrQA.config import PATH_CONFIG, daily_log_fpath
+from mrQA.utils import txt2list, log_latest_non_compliance, is_writable, email
 
 
 def get_parser():
@@ -50,6 +50,8 @@ def get_parser():
                                'monitoring')
     required.add_argument('--config', type=str,
                           help='path to config file')
+    optional.add_argument('-e', '--email-config-path', type=str,
+                          help='filepath to email config file')
 
     if len(sys.argv) < 2:
         logger.critical('Too few arguments!')
@@ -137,6 +139,14 @@ def parse_args():
         raise FileNotFoundError(
             f'Expected valid file for config_path,  Got {args.config_path}'
             f'the file does not exist')
+    if args.email_config_path:
+        if not Path(args.email_config_path).is_file():
+            raise FileNotFoundError(
+                f'Expected valid file for config_path,  Got {args.config_path}'
+                f'the file does not exist')
+    else:
+        logger.info('Use --email-config-path to specify filepath to email. '
+                    'Skipping')
     return args, dirs
 
 
@@ -146,7 +156,8 @@ def main():
 
     if args.task == 'monitor':
         pool = mp.Pool(processes=10)
-        arguments = [(f, args.output_dir, args.config) for f in dirs]
+        arguments = [(f, args.output_dir, args.config,
+                      args.email_config_path) for f in dirs]
         pool.starmap(run_monitor, arguments)
     elif args.task == 'compile':
         compile_reports(folder_paths=dirs, output_dir=args.output_dir,
@@ -157,21 +168,27 @@ def main():
                                   "one of [monitor, compile]")
 
 
-def run_monitor(folder_path, output_dir, config_path):
+def run_monitor(folder_path, output_dir, config_path, email_config_path=None):
     """Run monitor for a single project"""
     name = Path(folder_path).stem
     print(f"\nProcessing {name}\n")
     output_folder = Path(output_dir) / name
     try:
-        monitor(name=name,
-                data_source=folder_path,
-                output_dir=output_folder,
-                decimals=2,
-                verbose=False,
-                ds_format='dicom',
-                tolerance=0,
-                config_path=config_path,
-                )
+        hz_flag, vt_flag, report_path = monitor(name=name,
+                                                data_source=folder_path,
+                                                output_dir=output_folder,
+                                                decimals=2,
+                                                verbose=False,
+                                                ds_format='dicom',
+                                                tolerance=0,
+                                                config_path=config_path,
+                                                )
+        if hz_flag:
+            log_fpath = daily_log_fpath(folder_path, name, audit='hz')
+            logger.info(f"Non-compliant scans found for {name}")
+            logger.info(f"Check {log_fpath} for horizontal audit")
+            email(log_fpath, project_code=name, report_path=report_path,
+                  email_config=email_config_path)
     except DatasetEmptyException as e:
         logger.warning(f'{e}: Folder {name} has no DICOM files.')
 
