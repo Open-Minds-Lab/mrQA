@@ -75,7 +75,6 @@ DATETIME_FORMAT = '%m_%d_%Y_%H_%M_%S'
 DATE_FORMAT = '%m_%d_%Y'
 Unspecified = UnspecifiedType()
 
-
 def past_records_fpath(folder):
     """Constructs the path to the past record file"""
     return Path(folder / 'past_record.txt')
@@ -99,6 +98,11 @@ def mrds_fpath(folder_path, fname):
 def subject_list_dir(folder_path, fname):
     """Constructs the path to the folder containing subject list files"""
     return folder_path / f'{fname}_files'
+
+
+def daily_log_fpath(folder_path, ds_name, audit):
+    """Constructs the path to the daily log file"""
+    return folder_path / f'{ds_name}_{audit}_log.json'
 
 
 class CannotComputeMajority(MRException):
