@@ -6,11 +6,16 @@ import time
 import unicodedata
 from collections import Counter
 from datetime import datetime, timedelta, timezone
+from email import encoders
 from email.message import EmailMessage
+from email.mime.application import MIMEApplication
+from email.mime.base import MIMEBase
+from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from itertools import takewhile
+from os.path import basename
 from pathlib import Path
-from smtplib import SMTP
+from smtplib import SMTP, SMTPServerDisconnected
 from subprocess import run, CalledProcessError, TimeoutExpired, Popen
 from typing import Union, List, Optional, Any, Iterable, Sized
 
@@ -1393,41 +1398,60 @@ def next_month(dt):
 def email(log_filepath,
           project_code,
           email_config,
-          report_path):
+          report_path, server='localhost', port=25):
     """
     Send an email alert if there is a change in the status of the audit
     """
+    # check if log filepath exists
     if not Path(log_filepath).is_file():
         raise FileNotFoundError(f'Log file not found: {log_filepath}')
 
-    with open(log_filepath) as fp:
-        msg = MIMEText(fp.read())
-        # msg.set_content()
-
-    today = datetime.today()
-    msg['Subject'] = f'Compliance Report: {project_code} dt. {today.strftime("%m.%d.%Y")}'
-
+    # check if config exists
     try:
         config = get_config_from_file(email_config)
     except (ValueError, FileNotFoundError, TypeError) as e:
         logger.error(f'Error while reading config file: {e}. Please provide'
                      f'a valid path to the email configuration JSON file.')
         raise e
-    msg['From'] = 'mrqa'
-
     to_emails = config.get('email_for_project', {})
+
+    # Create email message
+    with open(log_filepath) as fp:
+        msg = MIMEMultipart()
+        msg.attach(MIMEText(fp.read()))
+
+    today = datetime.today()
+    msg['Subject'] = (f'Compliance Report: '
+                      f'{project_code} dt. {today.strftime("%m.%d.%Y")}')
+    msg['From'] = 'mrqa'
     if project_code in to_emails:
         msg['To'] = to_emails[project_code]
     else:
         msg['To'] = config['to']
 
+    # Attach report to the email
     with open(report_path, 'rb') as fp:
-        report_data = fp.read()
-    print(msg['From'])
-    print(msg['To'])
-    # print(msg.get_content())
-    # msg.add_attachment(report_data, maintype='text',
-    #                   subtype='html')
-    with SMTP('localhost', 25) as s:
-        s.sendmail('sinhah', config['to'], msg.as_string())
+        part = MIMEBase("application", "octet-stream")
+        part.set_payload(fp.read())
 
+    # Encode to base64
+    encoders.encode_base64(part)
+
+    # Add header
+    part.add_header(
+        "Content-Disposition",
+        f"attachment; filename={Path(report_path).name}",
+    )
+
+    # Add attachment to your message and convert it to string
+    msg.attach(part)
+
+    # send your email,
+    # the recipient will receive it as spam, very likely
+    # assuming postfix server is running on localhost
+    # https://medium.com/yavar/send-mail-using-postfix-server-bbb08331d39d # noqa
+    try:
+        with SMTP(server, port) as s:
+            s.send_message(msg)
+    except (OSError, ConnectionRefusedError) as e:
+        logger.error(f'Unable to send email. {e}')
