@@ -7,6 +7,7 @@ import unicodedata
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 from email.message import EmailMessage
+from email.mime.text import MIMEText
 from itertools import takewhile
 from pathlib import Path
 from smtplib import SMTP
@@ -1400,11 +1401,11 @@ def email(log_filepath,
         raise FileNotFoundError(f'Log file not found: {log_filepath}')
 
     with open(log_filepath) as fp:
-        msg = EmailMessage()
-        msg.set_content(fp.read())
+        msg = MIMEText(fp.read())
+        # msg.set_content()
 
     today = datetime.today()
-    msg['Subject'] = f'mrQA : {project_code} dt. {today.strftime("%m.%d-%Y")}'
+    msg['Subject'] = f'Compliance Report: {project_code} dt. {today.strftime("%m.%d.%Y")}'
 
     try:
         config = get_config_from_file(email_config)
@@ -1412,7 +1413,7 @@ def email(log_filepath,
         logger.error(f'Error while reading config file: {e}. Please provide'
                      f'a valid path to the email configuration JSON file.')
         raise e
-    msg['From'] = config['from']
+    msg['From'] = 'mrqa'
 
     to_emails = config.get('email_for_project', {})
     if project_code in to_emails:
@@ -1422,7 +1423,11 @@ def email(log_filepath,
 
     with open(report_path, 'rb') as fp:
         report_data = fp.read()
-    msg.add_attachment(report_data, maintype='text',
-                       subtype='html')
-    with SMTP('localhost') as s:
-        s.send_message(msg)
+    print(msg['From'])
+    print(msg['To'])
+    # print(msg.get_content())
+    # msg.add_attachment(report_data, maintype='text',
+    #                   subtype='html')
+    with SMTP('localhost', 25) as s:
+        s.sendmail('sinhah', config['to'], msg.as_string())
+
