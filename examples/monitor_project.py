@@ -135,9 +135,9 @@ def parse_args():
         if Path(fpath).resolve() in skip_list:
             dirs.remove(fpath)
 
-    if not Path(args.config_path).is_file():
+    if not Path(args.config).is_file():
         raise FileNotFoundError(
-            f'Expected valid file for config_path,  Got {args.config_path}'
+            f'Expected valid file for config,  Got {args.config}'
             f'the file does not exist')
     if args.email_config_path:
         if not Path(args.email_config_path).is_file():
