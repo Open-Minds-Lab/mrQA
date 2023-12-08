@@ -12,7 +12,7 @@ from mrQA.utils import split_list, convert2ascii, next_month, previous_month, \
     has_substring, filter_epi_fmap_pairs, get_protocol_from_file, \
     get_config_from_file, valid_paths, folders_with_min_files, \
     find_terminal_folders, save_audit_results, is_folder_with_no_subfolders, \
-    get_reference_protocol, get_config, is_writable, email, logger
+    get_reference_protocol, get_config, is_writable, send_email, logger
 from protocol import SiemensMRImagingProtocol, MRImagingProtocol
 
 
@@ -389,14 +389,14 @@ def test_get_config():
 def test_is_writable():
     assert not is_writable('/sys/firmware/')
 
-def test_email():
-    log_fpath = '/home/sinhah/mrqa_reports/MRRC-reportsv2/mrqa_reports_v2/7T/7T_previous_run_log.json'
-    email_config = '/home/sinhah/github/mrQA/examples/email_config.json'
-    report_fpath =  '/home/sinhah/mrqa_reports/MRRC-reportsv2/mrqa_reports_v2/7T/7T_DATE_11_25_2023_08_04_04.html'
-    try:
-        email(log_filepath=log_fpath,
-              project_code='7T',
-              email_config=email_config,
-              report_path=report_fpath)
-    except FileNotFoundError as e:
-        logger.error(f'Could not send email. {e}')
+# def test_email():
+#     log_fpath = '/home/sinhah/status_check.txt'
+#     email_config = '/home/sinhah/github/mrQA/examples/email_config.json'
+#     report_fpath =  '/home/sinhah/mrqa_reports/MRRC-reportsv2/mrqa_reports_v2/7T/7T_DATE_11_25_2023_08_04_04.html'
+#     try:
+#         send_email(log_filepath=log_fpath,
+#                    project_code='7T',
+#                    email_config=email_config,
+#                    report_path=report_fpath)
+#     except FileNotFoundError as e:
+#         logger.error(f'Could not send email. {e}')
