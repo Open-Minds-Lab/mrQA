@@ -4,7 +4,6 @@ from pathlib import Path
 
 from MRdataset import import_dataset, save_mr_dataset, load_mr_dataset
 from MRdataset.config import MRDS_EXT
-
 from mrQA import check_compliance
 from mrQA.parallel_utils import _make_file_folders
 from mrQA.run_parallel import process_parallel, split_folders_list
@@ -46,7 +45,7 @@ def test_equivalence_seq_vs_parallel():
         # Generate a report for the merged dataset
         parallel_ds = load_mr_dataset(output_path['parallel'])
 
-        report_path = {
+        results = {
             'sequential': check_compliance(dataset=sequential_ds,
                                            output_dir=output_dir,
                                            config_path=config_path),
@@ -55,8 +54,8 @@ def test_equivalence_seq_vs_parallel():
                                          config_path=config_path)
         }
     # check hz_audit_results
-    sequential_hz_results, sequential_vt_results = report_path['sequential']
-    parallel_hz_results, parallel_vt_results = report_path['parallel']
+    sequential_hz_results, sequential_vt_results, report_path = results['sequential']
+    parallel_hz_results, parallel_vt_results, report_path = results['parallel']
 
     assert sequential_hz_results['complete_ds'] == parallel_hz_results[
         'complete_ds']

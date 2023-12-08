@@ -5,7 +5,6 @@ from pathlib import Path
 import hypothesis.strategies as st
 from MRdataset import import_dataset
 from hypothesis import given, settings, assume
-
 from mrQA import check_compliance
 from mrQA.tests.simulate import make_test_dataset
 from mrQA.utils import get_config_from_file
@@ -108,15 +107,16 @@ def test_non_compliance(num_noncompliant_subjects,
         mrd = import_dataset(fake_ds_dir,
                              config_path=THIS_DIR / 'resources/mri-config.json',
                              output_dir=tempdir)
-        compliance_dict, _ = check_compliance(dataset=mrd,
-                                              output_dir=tempdir,
-                                              config_path=THIS_DIR / 'resources/mri-config.json')
+        hz_audit_results, vt_audit_results, report_path = check_compliance(
+            dataset=mrd,
+            output_dir=tempdir,
+            config_path=THIS_DIR / 'resources/mri-config.json')
         config_dict = get_config_from_file(
             THIS_DIR / 'resources/mri-config.json')
         # include_params = config_dict['include_parameters']
         stratify_by = config_dict.get('stratify_by', None)
 
-        if compliance_dict is not None:
+        if hz_audit_results is not None:
             # Check on disk, basically the truth
             sub_names_by_modality = defaultdict(list)
             for modality_path in Path(fake_ds_dir).iterdir():
@@ -126,9 +126,9 @@ def test_non_compliance(num_noncompliant_subjects,
                         sub_names_by_modality[modality_path.name].append(
                             subject_path.name)
 
-            fully_compliant_ds = compliance_dict['compliant']
-            non_compliant_ds = compliance_dict['non_compliant']
-            reference = compliance_dict['reference']
+            fully_compliant_ds = hz_audit_results['compliant']
+            non_compliant_ds = hz_audit_results['non_compliant']
+            reference = hz_audit_results['reference']
             non_compliant_sequences = non_compliant_ds.get_sequence_ids()
             # non_compliant_sequences = [f.split(ATTRIBUTE_SEPARATOR)[0] for f in non_compliant_sequences]
             fully_compliant_sequences = fully_compliant_ds.get_sequence_ids()
