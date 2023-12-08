@@ -7,7 +7,7 @@ from typing import List
 from MRdataset import valid_dirs
 from MRdataset.base import BaseDataset
 from bokeh.palettes import turbo, d3
-from mrQA.config import daily_log_fpath
+from mrQA.config import status_fpath
 from protocol import BaseSequence
 
 
@@ -293,7 +293,7 @@ class NonCompliantDataset(BaseDataset):
 
         # if output_dir is provided, dump it as a json file
         if nc_log and output_dir is not None:
-            filepath = daily_log_fpath(output_dir, self.name, audit=audit)
+            filepath = status_fpath(output_dir, audit=audit)
             with open(filepath, 'w') as f:
                 json.dump(nc_log, f, indent=4)
         return nc_log
