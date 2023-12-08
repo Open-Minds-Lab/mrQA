@@ -7,15 +7,12 @@ import unicodedata
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 from email import encoders
-from email.message import EmailMessage
-from email.mime.application import MIMEApplication
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from itertools import takewhile
-from os.path import basename
 from pathlib import Path
-from smtplib import SMTP, SMTPServerDisconnected
+from smtplib import SMTP
 from subprocess import run, CalledProcessError, TimeoutExpired, Popen
 from typing import Union, List, Optional, Any, Iterable, Sized
 
@@ -1141,8 +1138,8 @@ def log_latest_non_compliance(dataset, config_path,
         # there is no new non-compliant data
         return False
     with open(status_filepath, 'w', encoding='utf-8') as fp:
-        fp.write(f"Scan Date, Dataset Name, Sequence Name,"
-                 f" Subject ID, Parameter\n")
+        fp.write("Scan Date, Dataset Name, Sequence Name,"
+                 " Subject ID, Parameter\n")
         for parameter in nc_log:
             for i in nc_log[parameter]:
                 fp.write(f" {i['date']}, {ds_name}, {i['sequence_name']},"

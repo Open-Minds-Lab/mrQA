@@ -75,6 +75,7 @@ DATETIME_FORMAT = '%m_%d_%Y_%H_%M_%S'
 DATE_FORMAT = '%m_%d_%Y'
 Unspecified = UnspecifiedType()
 
+
 def past_records_fpath(folder):
     """Constructs the path to the past record file"""
     return Path(folder / 'past_record.txt')
