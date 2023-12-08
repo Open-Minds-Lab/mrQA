@@ -195,7 +195,7 @@ def monitor(name: str,
         else:
             logger.warning('No new files found since last report. '
                            'Returning last report')
-            return
+            return None, None, last_report_path
     else:
         logger.warning('Dataset %s not found in records. Running '
                        'compliance check on entire dataset', name)
