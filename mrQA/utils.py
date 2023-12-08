@@ -1141,6 +1141,8 @@ def log_latest_non_compliance(dataset, config_path,
         # there is no new non-compliant data
         return False
     with open(status_filepath, 'w', encoding='utf-8') as fp:
+        fp.write(f"Scan Date, Dataset Name, Sequence Name,"
+                 f" Subject ID, Parameter\n")
         for parameter in nc_log:
             for i in nc_log[parameter]:
                 fp.write(f" {i['date']}, {ds_name}, {i['sequence_name']},"
