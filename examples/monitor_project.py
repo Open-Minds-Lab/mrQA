@@ -8,7 +8,8 @@ from pathlib import Path
 from MRdataset import DatasetEmptyException, valid_dirs, load_mr_dataset
 from mrQA import monitor, logger, check_compliance
 from mrQA.config import PATH_CONFIG, status_fpath
-from mrQA.utils import txt2list, log_latest_non_compliance, is_writable, email
+from mrQA.utils import txt2list, log_latest_non_compliance, is_writable, \
+    send_email
 
 
 def get_parser():
@@ -187,8 +188,8 @@ def run_monitor(folder_path, output_dir, config_path, email_config_path=None):
             log_fpath = status_fpath(output_dir, audit='hz')
             logger.info(f"Non-compliant scans found for {name}")
             logger.info(f"Check {log_fpath} for horizontal audit")
-            email(log_fpath, project_code=name, report_path=report_path,
-                  email_config=email_config_path)
+            send_email(log_fpath, project_code=name, report_path=report_path,
+                       email_config=email_config_path)
     except DatasetEmptyException as e:
         logger.warning(f'{e}: Folder {name} has no DICOM files.')
 

@@ -1395,10 +1395,10 @@ def next_month(dt):
     return (dt.replace(day=28) + timedelta(days=5)).replace(day=1)
 
 
-def email(log_filepath,
-          project_code,
-          email_config,
-          report_path, server='localhost', port=25):
+def send_email(log_filepath,
+               project_code,
+               email_config,
+               report_path, server='localhost', port=25):
     """
     Send an email alert if there is a change in the status of the audit
     """
@@ -1421,13 +1421,13 @@ def email(log_filepath,
         msg.attach(MIMEText(fp.read()))
 
     today = datetime.today()
-    msg['Subject'] = (f'Compliance Report: '
+    msg['Subject'] = (f'mrQA : '
                       f'{project_code} dt. {today.strftime("%m.%d.%Y")}')
     msg['From'] = 'mrqa'
     if project_code in to_emails:
         msg['To'] = to_emails[project_code]
     else:
-        msg['To'] = config['to']
+        msg['To'] = config['default_email']
 
     # Attach report to the email
     with open(report_path, 'rb') as fp:
