@@ -61,8 +61,7 @@
         "stratify_by": null,
         "skip_sequences": [
             "coil_error",
-            "qa",
-            "fmri"
+            "qa"
         ],
         "include_parameters": [
             "PixelSpacing",
@@ -73,10 +72,16 @@
             "MagneticFieldStrength",
             "ScanningSequence",
             "SequenceVariant",
-            "SequenceName",
             "NonLinearGradientCorrection",
             "MRAcquisitionType",
+            "MTState",
+            "SpoilingState",
+            "ParallelReductionFactorInPlane",
+            "PartialFourier",
+            "ParallelAcquisitionTechnique",
+            "PartialFourierDirection",
             "PhaseEncodingDirection",
+            "MultiBandAccelerationFactor",
             "EchoTime",
             "InversionTime",
             "DwellTime",
@@ -94,7 +99,21 @@
             "ImageOrientationPatient",
             "NumberOfAverages",
             "ShimMode",
-            "FieldOfView"
+            "FieldOfView",
+            "AngioFlag",
+            "ImagedNucleus",
+            "SpacingBetweenSlices",
+            "TransmitCoilName",
+            "FlowCompensation",
+            "SliceResolution",
+            "SamplesPerPixel",
+            "PhotometricInterpretation",
+            "BitsAllocated",
+            "BitsStored",
+            "HighBit",
+            "PixelRepresentation",
+            "PATMode",
+            "PositivePCSDirections"
         ]
     },
     "plots": {

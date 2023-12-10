@@ -1,1 +1,3 @@
 mrQA/_version.py export-subst
+.github/workflows/continuous-integration.yml merge=oursstrategy
+

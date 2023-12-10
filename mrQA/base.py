@@ -7,6 +7,7 @@ from typing import List
 from MRdataset import valid_dirs
 from MRdataset.base import BaseDataset
 from bokeh.palettes import turbo, d3
+from mrQA.config import status_fpath
 from protocol import BaseSequence
 
 
@@ -242,11 +243,11 @@ class NonCompliantDataset(BaseDataset):
             for param_name in parameters:
                 for param_tupl, sub, path, seq in self.get_nc_param_values(
                         seq_id, param_name):
+                    if self._is_scanned_before(date, seq):
+                        continue
                     if param_name not in nc_log:  # empty
                         nc_log[param_name] = []
 
-                    if self._is_scanned_before(date, seq):
-                        continue
                     nc_dict = self._populate_nc_dict(param_tuple=param_tupl,
                                                      sub=sub, path=path,
                                                      seq=seq, seq_ids=seq_id,
@@ -284,19 +285,17 @@ class NonCompliantDataset(BaseDataset):
         if audit == 'hz':
             nc_log = self.generate_hz_log(parameters, suppl_params,
                                           filter_fn, verbosity, date=date)
-            filename = self.name + '_hz_log.json'
         elif audit == 'vt':
             nc_log = self.generate_vt_log(parameters, suppl_params,
                                           filter_fn, verbosity, date=date)
-            filename = self.name + '_vt_log.json'
         if audit not in ['vt', 'hz']:
             raise ValueError('Expected one of [vt, hz], got {}'.format(audit))
 
         # if output_dir is provided, dump it as a json file
         if nc_log and output_dir is not None:
-            with open(output_dir / filename, 'w') as f:
+            filepath = status_fpath(output_dir, audit=audit)
+            with open(filepath, 'w') as f:
                 json.dump(nc_log, f, indent=4)
-
         return nc_log
 
     def generate_vt_log(self, parameters, suppl_params, filter_fn=None,
@@ -311,13 +310,13 @@ class NonCompliantDataset(BaseDataset):
             for param_name in parameters:
                 for param_tuple, sub, path, seq in self.get_vt_param_values(
                         pair, param_name):
-                    if param_name not in nc_log:  # empty
-                        nc_log[param_name] = []
-
                     # Provide a date to include those subjects that were
                     # scanned after the given date
                     if self._is_scanned_before(date, seq):
                         continue
+
+                    if param_name not in nc_log:  # empty
+                        nc_log[param_name] = []
 
                     nc_dict = self._populate_nc_dict(param_tuple=param_tuple,
                                                      sub=sub, path=path,

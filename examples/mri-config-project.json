@@ -20,7 +20,7 @@
         ]
     },
     "horizontal_audit": {
-        "stratify_by": "series_number",
+        "stratify_by": null,
         "include_parameters": [
             "PixelSpacing",
             "Rows",

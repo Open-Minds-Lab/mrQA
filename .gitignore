@@ -108,6 +108,9 @@ ENV/
 # codacy
 *.sarif
 
+# act
+event.json
+
 # mri protocol
 *.xml
 *.secrets

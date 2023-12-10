@@ -7,14 +7,13 @@ import pytest
 from hypothesis import given, settings, assume
 from hypothesis.strategies import lists, integers, dates, text, composite, \
     characters, booleans, tuples
-from protocol import SiemensMRImagingProtocol, MRImagingProtocol
-
 from mrQA.tests.conftest import sample_protocol, THIS_DIR, dcm_dataset_strategy
 from mrQA.utils import split_list, convert2ascii, next_month, previous_month, \
     has_substring, filter_epi_fmap_pairs, get_protocol_from_file, \
     get_config_from_file, valid_paths, folders_with_min_files, \
     find_terminal_folders, save_audit_results, is_folder_with_no_subfolders, \
-    get_reference_protocol, get_config, is_writable
+    get_reference_protocol, get_config, is_writable, send_email, logger
+from protocol import SiemensMRImagingProtocol, MRImagingProtocol
 
 
 @given(
@@ -310,24 +309,21 @@ def test_find_terminal_folders_multiple_terminals():
 
 def test_find_folders_with_min_files():
     with tempfile.TemporaryDirectory() as tmpdirname:
-        root = Path(tmpdirname)
-        folder1 = root / "folder1"
-        folder1.mkdir()
-        file = folder1 / "file.dcm"
-        file.touch()
-        folder2 = root / "folder2"
-        folder2.mkdir()
-        file = folder2 / "file.dcm"
-        file.touch()
-        folder3 = root / "folder3"
-        folder3.mkdir()
-        file = folder3 / "file.dcm"
-        file.touch()
+        root = Path(tmpdirname).resolve()
+        thresh = 3
+        expected = set()
+        for idx, num_files in zip(range(5), [2, 3, 3, 5, 1]):
+            folder = root / f"folder{idx}"
+            folder.mkdir()
+            for count in range(num_files):
+                file = folder / f"file{count}.dcm"
+                file.touch()
 
-        terminal_folders = folders_with_min_files(root,
-                                                  pattern="*.dcm",
-                                                  min_count=1)
-        assert set(terminal_folders) == {folder1, folder2, folder3}
+            if num_files >= thresh:
+                expected.add(folder.resolve())
+
+        terminal_folders = folders_with_min_files(root, "*.dcm", min_count=thresh)
+        assert set(terminal_folders) == expected
 
 
 def test_save_audit_results():
@@ -392,3 +388,15 @@ def test_get_config():
 
 def test_is_writable():
     assert not is_writable('/sys/firmware/')
+
+# def test_email():
+#     log_fpath = '/home/sinhah/status_check.txt'
+#     email_config = '/home/sinhah/github/mrQA/examples/email_config.json'
+#     report_fpath =  '/home/sinhah/mrqa_reports/MRRC-reportsv2/mrqa_reports_v2/7T/7T_DATE_11_25_2023_08_04_04.html'
+#     try:
+#         send_email(log_filepath=log_fpath,
+#                    project_code='7T',
+#                    email_config=email_config,
+#                    report_path=report_fpath)
+#     except FileNotFoundError as e:
+#         logger.error(f'Could not send email. {e}')

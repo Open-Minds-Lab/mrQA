@@ -6,22 +6,26 @@ import time
 import unicodedata
 from collections import Counter
 from datetime import datetime, timedelta, timezone
+from email import encoders
+from email.mime.base import MIMEBase
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from itertools import takewhile
 from pathlib import Path
+from smtplib import SMTP
 from subprocess import run, CalledProcessError, TimeoutExpired, Popen
 from typing import Union, List, Optional, Any, Iterable, Sized
 
 from MRdataset import BaseDataset, is_dicom_file
 from dateutil import parser
-from protocol import BaseSequence, MRImagingProtocol, SiemensMRImagingProtocol
-from tqdm import tqdm
-
 from mrQA import logger
 from mrQA.base import CompliantDataset, NonCompliantDataset, UndeterminedDataset
 from mrQA.config import past_records_fpath, report_fpath, mrds_fpath, \
     subject_list_dir, DATE_SEPARATOR, CannotComputeMajority, \
     Unspecified, \
     EqualCount, status_fpath, ATTRIBUTE_SEPARATOR, DATETIME_FORMAT, DATE_FORMAT
+from protocol import BaseSequence, MRImagingProtocol, SiemensMRImagingProtocol
+from tqdm import tqdm
 
 
 def get_reference_protocol(dataset: BaseDataset,
@@ -1130,12 +1134,17 @@ def log_latest_non_compliance(dataset, config_path,
     if not status_filepath.parent.is_dir():
         status_filepath.parent.mkdir(parents=True)
 
+    if not nc_log:
+        # there is no new non-compliant data
+        return False
     with open(status_filepath, 'w', encoding='utf-8') as fp:
+        fp.write("Scan Date, Dataset Name, Sequence Name,"
+                 " Subject ID, Parameter\n")
         for parameter in nc_log:
             for i in nc_log[parameter]:
                 fp.write(f" {i['date']}, {ds_name}, {i['sequence_name']},"
                          f" {i['subject']}, {parameter} \n")
-    return None  # status_filepath
+    return True
 
 
 def tuples2dict(mylist):
@@ -1203,6 +1212,7 @@ def modify_sequence_name(seq: "BaseSequence", stratify_by: str,
     """
     # TODO: change stratify_by from attributes to acquisition parameters
     stratify_value = ''
+    seq_name_with_stratify = seq.name
     if 'gre_field' in seq.name.lower():
         stratify_by = 'NonLinearGradientCorrection'
         nlgc = seq[stratify_by].get_value()
@@ -1215,12 +1225,20 @@ def modify_sequence_name(seq: "BaseSequence", stratify_by: str,
 
         seq_name_with_stratify = ATTRIBUTE_SEPARATOR.join([seq.name,
                                                            stratify_value])
-        if datasets:
-            for ds in datasets:
-                ds.set_modified_seq_name(seq.name, seq_name_with_stratify)
+    # elif stratify_by:
+    #     try:
+    #         stratify_value = seq[stratify_by].get_value()
+    #         seq_name_with_stratify = ATTRIBUTE_SEPARATOR.join(
+    #             [seq.name, stratify_value])
+    #     except KeyError:
+    #         logger.warning(f"Attribute {stratify_by} not found in "
+    #                        f"sequence {seq.name}")
 
-        return seq_name_with_stratify
-    return seq.name
+    if datasets:
+        for ds in datasets:
+            ds.set_modified_seq_name(seq.name, seq_name_with_stratify)
+
+    return seq_name_with_stratify
 
 
 def get_config_from_file(config_path: Union[Path, str]) -> dict:
@@ -1374,3 +1392,65 @@ def previous_month(dt):
 def next_month(dt):
     """Return the first day of the next month."""
     return (dt.replace(day=28) + timedelta(days=5)).replace(day=1)
+
+
+def send_email(log_filepath,
+               project_code,
+               email_config,
+               report_path, server='localhost', port=25):
+    """
+    Send an email alert if there is a change in the status of the audit
+    """
+    # check if log filepath exists
+    if not Path(log_filepath).is_file():
+        raise FileNotFoundError(f'Log file not found: {log_filepath}')
+
+    # check if config exists
+    try:
+        config = get_config_from_file(email_config)
+    except (ValueError, FileNotFoundError, TypeError) as e:
+        logger.error(f'Error while reading config file: {e}. Please provide'
+                     f'a valid path to the email configuration JSON file.')
+        raise e
+    to_emails = config.get('email_for_project', {})
+
+    # Create email message
+    with open(log_filepath) as fp:
+        msg = MIMEMultipart()
+        msg.attach(MIMEText(fp.read()))
+
+    today = datetime.today()
+    msg['Subject'] = (f'mrQA : '
+                      f'{project_code} dt. {today.strftime("%m.%d.%Y")}')
+    msg['From'] = 'mrqa'
+    if project_code in to_emails:
+        msg['To'] = to_emails[project_code]
+    else:
+        msg['To'] = config['default_email']
+
+    # Attach report to the email
+    with open(report_path, 'rb') as fp:
+        part = MIMEBase("application", "octet-stream")
+        part.set_payload(fp.read())
+
+    # Encode to base64
+    encoders.encode_base64(part)
+
+    # Add header
+    part.add_header(
+        "Content-Disposition",
+        f"attachment; filename={Path(report_path).name}",
+    )
+
+    # Add attachment to your message and convert it to string
+    msg.attach(part)
+
+    # send your email,
+    # the recipient will receive it as spam, very likely
+    # assuming postfix server is running on localhost
+    # https://medium.com/yavar/send-mail-using-postfix-server-bbb08331d39d # noqa
+    try:
+        with SMTP(server, port) as s:
+            s.send_message(msg)
+    except (OSError, ConnectionRefusedError) as e:
+        logger.error(f'Unable to send email. {e}')

@@ -83,22 +83,27 @@ def past_records_fpath(folder):
 
 def status_fpath(folder, audit):
     """Constructs the path to the status file"""
-    return Path(folder / f'{audit}_non_compliance_log.txt')
+    return Path(folder) / f'{audit}_non_compliance_log.txt'
 
 
 def report_fpath(folder_path, fname):
     """Constructs the path to the report file"""
-    return folder_path / f'{fname}.html'
+    return Path(folder_path) / f'{fname}.html'
 
 
 def mrds_fpath(folder_path, fname):
     """Constructs the path to the MRDS file"""
-    return folder_path / f'{fname}{MRDS_EXT}'
+    return Path(folder_path) / f'{fname}{MRDS_EXT}'
 
 
 def subject_list_dir(folder_path, fname):
     """Constructs the path to the folder containing subject list files"""
-    return folder_path / f'{fname}_files'
+    return Path(folder_path) / f'{fname}_files'
+
+
+def daily_log_fpath(folder_path, ds_name, audit):
+    """Constructs the path to the daily log file"""
+    return Path(folder_path) / f'{ds_name}_{audit}_log.json'
 
 
 class CannotComputeMajority(MRException):

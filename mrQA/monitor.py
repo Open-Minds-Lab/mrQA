@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Union, List
 
 from MRdataset import import_dataset, load_mr_dataset
-
 from mrQA import logger
 from mrQA.config import PATH_CONFIG, THIS_DIR, DATETIME_FORMAT
 from mrQA.project import check_compliance
@@ -196,7 +195,7 @@ def monitor(name: str,
         else:
             logger.warning('No new files found since last report. '
                            'Returning last report')
-            return
+            return None, None, last_report_path
     else:
         logger.warning('Dataset %s not found in records. Running '
                        'compliance check on entire dataset', name)
@@ -213,7 +212,7 @@ def monitor(name: str,
         last_reported_on = datetime.now() - timedelta(days=365)
         last_reported_on = last_reported_on.strftime(DATETIME_FORMAT)
 
-    hz_audit_results, vt_audit_results = check_compliance(
+    hz_audit_results, vt_audit_results, report_path = check_compliance(
         dataset=dataset,
         output_dir=output_dir,
         decimals=decimals,
@@ -222,17 +221,19 @@ def monitor(name: str,
         reference_path=reference_path,
         config_path=config_path)
 
-    log_latest_non_compliance(dataset=hz_audit_results['non_compliant'],
-                              config_path=config_path,
-                              output_dir=output_dir, audit='hz',
-                              date=last_reported_on)
+    flag_hz = log_latest_non_compliance(
+        dataset=hz_audit_results['non_compliant'],
+        config_path=config_path,
+        output_dir=output_dir, audit='hz',
+        date=last_reported_on)
 
-    log_latest_non_compliance(dataset=vt_audit_results['non_compliant'],
-                              config_path=config_path,
-                              output_dir=output_dir, audit='vt',
-                              date=last_reported_on)
+    flag_vt = log_latest_non_compliance(
+        dataset=vt_audit_results['non_compliant'],
+        config_path=config_path,
+        output_dir=output_dir, audit='vt',
+        date=last_reported_on)
 
-    return
+    return flag_hz, flag_vt, report_path
 
 
 if __name__ == '__main__':
