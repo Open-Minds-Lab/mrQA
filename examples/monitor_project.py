@@ -81,7 +81,8 @@ def parse_args():
         if Path(args.data_root).is_dir():
             data_root = Path(args.data_root)
             non_empty_folders = []
-            for folder in data_root.iterdir():
+            all_folders = sorted(Path(data_root).iterdir(), key=os.path.getmtime)
+            for folder in all_folders:
                 if folder.is_dir() and any(folder.iterdir()):
                     non_empty_folders.append(folder)
         else:
@@ -186,7 +187,7 @@ def run_monitor(folder_path, output_dir, config_path, email_config_path=None):
                                                 config_path=config_path,
                                                 )
         if hz_flag:
-            log_fpath = status_fpath(output_dir, audit='hz')
+            log_fpath = status_fpath(output_folder, audit='hz')
             logger.info(f"Non-compliant scans found for {name}")
             logger.info(f"Check {log_fpath} for horizontal audit")
             send_email(log_fpath, project_code=name, report_path=report_path,
