@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from MRdataset import DatasetEmptyException, valid_dirs, load_mr_dataset
+
 from mrQA import monitor, logger, check_compliance
 from mrQA.config import PATH_CONFIG, status_fpath
 from mrQA.utils import txt2list, log_latest_non_compliance, is_writable, \
@@ -23,7 +24,7 @@ def get_parser():
     optional = parser.add_argument_group('optional arguments')
 
     # Add help
-    required.add_argument('-d', '--data-root', type=str, required=True,
+    optional.add_argument('-d', '--data-root', type=str, required=True,
                           help='A folder which contains projects'
                                'to process. Required if task is monitor')
     optional.add_argument('-t', '--task', type=str,
