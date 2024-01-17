@@ -212,7 +212,7 @@ def compile_reports(folder_paths, output_dir, config_path, audit='hz',
         ds = load_mr_dataset(latest_mrds)
         # TODO : check compliance, but maybe its better is to save
         #  compliance results which can be re-used here
-        hz_audit_results, vt_audit_results = check_compliance(
+        hz_audit_results, vt_audit_results, _ = check_compliance(
             ds,
             output_dir=output_dir / 'compiled_reports',
             config_path=config_path,
