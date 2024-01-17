@@ -24,7 +24,7 @@ def get_parser():
     optional = parser.add_argument_group('optional arguments')
 
     # Add help
-    optional.add_argument('-d', '--data-root', type=str, required=True,
+    optional.add_argument('-d', '--data-root', type=str,
                           help='A folder which contains projects'
                                'to process. Required if task is monitor')
     optional.add_argument('-t', '--task', type=str,
