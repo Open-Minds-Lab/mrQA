@@ -8,7 +8,7 @@ from pathlib import Path
 from MRdataset import DatasetEmptyException, valid_dirs, load_mr_dataset
 
 from mrQA import monitor, logger, check_compliance
-from mrQA.config import PATH_CONFIG, status_fpath
+from mrQA.config import PATH_CONFIG, status_fpath, DATETIME_FORMAT
 from mrQA.utils import txt2list, log_latest_non_compliance, is_writable, \
     send_email
 
@@ -102,12 +102,13 @@ def parse_args():
 
         if args.date is None:
             two_weeks_ago = datetime.now() - timedelta(days=14)
-            args.date = two_weeks_ago.strftime('%m_%d_%Y')
+            args.date = two_weeks_ago.strftime(DATETIME_FORMAT)
         else:
             try:
-                datetime.strptime(args.date, '%m_%d_%Y')
+                datetime.strptime(args.date, DATETIME_FORMAT)
             except ValueError:
-                raise ValueError("Incorrect date format, should be MM_DD_YYYY")
+                raise ValueError(f"Incorrect date format, "
+                                 f"should be {DATETIME_FORMAT}")
 
     else:
         raise NotImplementedError(f"Task {args.task} not implemented. Choose "
