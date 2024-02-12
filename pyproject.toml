@@ -34,6 +34,11 @@ classifiers = [
 [project.urls]
 Homepage ='https://github.com/Open-Minds-Lab/mrQA'
 
+[project.scripts]
+mrqa = "mrQA.cli:cli"
+mrqa_monitor = "mrQA.monitor:cli"
+mrqa_parallel = "mrQA.run_parallel:cli"
+mrqa_subset = "mrQA.run_subset:cli"
 
 [tool.hatch.build]
 include = [
