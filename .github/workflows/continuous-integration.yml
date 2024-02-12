@@ -37,8 +37,9 @@ jobs:
                 run: |
                     make lint
             -   name: Test with pytest
+                working-directory: ${{ runner.temp }}
                 run: |
-                    pytest
+                    pytest --pyargs mrQA
 #            -   name: Coverage
 #                run: |
 #                    coverage run --rcfile=.coveragerc --source mrQA -m pytest
