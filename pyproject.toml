@@ -43,6 +43,7 @@ mrqa_subset = "mrQA.run_subset:cli"
 [tool.hatch.build]
 include = [
     "mrQA/*.py",
+    "mrQA/layout.html",
     "mrQA/resources/*",
     "mrQA/tests/*",
     "mrQA/tests/resources/*",
