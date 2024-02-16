@@ -1,13 +1,23 @@
+# dependencies
 mrdataset
 pydicom
 nibabel
 dictdiffer
 jinja2
 protocol
+bokeh
+
+# test dependencies
 hypothesis
 pytest
-bokeh
 flake8
 requests
 coverage
+
+# docs
+sphinx
+
+# optional dependencies
+hatch
+hatch-vcs
 

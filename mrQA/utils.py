@@ -1424,9 +1424,9 @@ def send_email(log_filepath,
                       f'{project_code} dt. {today.strftime("%m.%d.%Y")}')
     msg['From'] = 'mrqa'
     if project_code in to_emails:
-        msg['To'] = to_emails[project_code]
-    else:
-        msg['To'] = config['default_email']
+        msg['To'] = ", ".join(to_emails[project_code])
+    # else:
+    msg['To'] = ", ".join(config['default_email'])
 
     # Attach report to the email
     with open(report_path, 'rb') as fp:

@@ -6,8 +6,9 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from MRdataset import DatasetEmptyException, valid_dirs, load_mr_dataset
+
 from mrQA import monitor, logger, check_compliance
-from mrQA.config import PATH_CONFIG, status_fpath
+from mrQA.config import PATH_CONFIG, status_fpath, DATETIME_FORMAT
 from mrQA.utils import txt2list, log_latest_non_compliance, is_writable, \
     send_email
 
@@ -23,7 +24,7 @@ def get_parser():
     optional = parser.add_argument_group('optional arguments')
 
     # Add help
-    required.add_argument('-d', '--data-root', type=str, required=True,
+    optional.add_argument('-d', '--data-root', type=str,
                           help='A folder which contains projects'
                                'to process. Required if task is monitor')
     optional.add_argument('-t', '--task', type=str,
@@ -80,7 +81,8 @@ def parse_args():
         if Path(args.data_root).is_dir():
             data_root = Path(args.data_root)
             non_empty_folders = []
-            for folder in data_root.iterdir():
+            all_folders = sorted(Path(data_root).iterdir(), key=os.path.getmtime)
+            for folder in all_folders:
                 if folder.is_dir() and any(folder.iterdir()):
                     non_empty_folders.append(folder)
         else:
@@ -100,12 +102,13 @@ def parse_args():
 
         if args.date is None:
             two_weeks_ago = datetime.now() - timedelta(days=14)
-            args.date = two_weeks_ago.strftime('%m_%d_%Y')
+            args.date = two_weeks_ago.strftime(DATETIME_FORMAT)
         else:
             try:
-                datetime.strptime(args.date, '%m_%d_%Y')
+                datetime.strptime(args.date, DATETIME_FORMAT)
             except ValueError:
-                raise ValueError("Incorrect date format, should be MM_DD_YYYY")
+                raise ValueError(f"Incorrect date format, "
+                                 f"should be {DATETIME_FORMAT}")
 
     else:
         raise NotImplementedError(f"Task {args.task} not implemented. Choose "
@@ -185,7 +188,7 @@ def run_monitor(folder_path, output_dir, config_path, email_config_path=None):
                                                 config_path=config_path,
                                                 )
         if hz_flag:
-            log_fpath = status_fpath(output_dir, audit='hz')
+            log_fpath = status_fpath(output_folder, audit='hz')
             logger.info(f"Non-compliant scans found for {name}")
             logger.info(f"Check {log_fpath} for horizontal audit")
             send_email(log_fpath, project_code=name, report_path=report_path,
@@ -210,7 +213,7 @@ def compile_reports(folder_paths, output_dir, config_path, audit='hz',
         ds = load_mr_dataset(latest_mrds)
         # TODO : check compliance, but maybe its better is to save
         #  compliance results which can be re-used here
-        hz_audit_results, vt_audit_results = check_compliance(
+        hz_audit_results, vt_audit_results, _ = check_compliance(
             ds,
             output_dir=output_dir / 'compiled_reports',
             config_path=config_path,
