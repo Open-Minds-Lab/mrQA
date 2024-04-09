@@ -33,13 +33,20 @@ classifiers = [
 
 [project.urls]
 Homepage ='https://github.com/Open-Minds-Lab/mrQA'
+Documentation = "https://open-minds-lab.github.io/mrQA/"
 
 [project.scripts]
 mrqa = "mrQA.cli:cli"
 mrqa_monitor = "mrQA.monitor:cli"
 mrqa_parallel = "mrQA.run_parallel:cli"
 mrqa_subset = "mrQA.run_subset:cli"
-
+[project.optional-dependencies]
+test = [
+    "pytest~=7.1.2",
+    "hypothesis>=6.97.1",
+    "flake8",
+    "coverage"
+]
 [tool.hatch.build]
 include = [
     "mrQA/*.py",
@@ -59,10 +66,12 @@ version-file = "mrQA/_version.py"
 
 [tool.hatch.build.targets.sdist]
 include = [
-    "/mrQA",
-]
+    "mrQA/*.py",
+    "mQA/resources/*",
+    "mrQA/tests/*",
+    "mrQA/tests/resources/*",]
 exclude = [
-  "/.github",
-  "/docs",
+    "/.github",
+    "/docs",
 ]
 strict-naming = false
