@@ -45,7 +45,8 @@ test = [
     "pytest~=7.1.2",
     "hypothesis>=6.97.1",
     "flake8",
-    "coverage"
+    "coverage",
+    "requests"
 ]
 [tool.hatch.build]
 include = [
