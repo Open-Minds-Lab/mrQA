@@ -1,9 +1,14 @@
-rm -rf dist mrQA.egg-info
+#!/bin/bash
 
-python setup.py sdist bdist_wheel
 
-twine upload dist/*
+rm -rf dist
 
-echo "----"
-echo "deleting temp folders"
-rm -rf dist mrQA.egg-info
+hatch build
+
+hatch publish
+
+git push --tags
+git push --follow-tags
+
+rm -rf dist
+
