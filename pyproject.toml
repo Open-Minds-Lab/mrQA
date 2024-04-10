@@ -1,0 +1,78 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mrQA"
+dynamic = ["version"]
+description = "rQA suite of tools offering automatic evaluation of protocol compliance"
+readme = "README.rst"
+license = "Apache-2.0"
+requires-python = ">=3.8"
+dependencies = [
+    "mrdataset",
+    "pydicom",
+    "nibabel",
+    "dictdiffer",
+    "jinja2>=3.0.3",
+    "protocol",
+    "bokeh",
+    "tqdm"
+]
+authors = [
+    { name = "Pradeep Reddy Raamana", email = "raamana@gmail.com" },
+    { name = "Harsh Sinha", email = "harsh.sinha@pitt.edu" },
+]
+keywords = [
+    "protocol compliance, quality assurance",
+]
+classifiers = [
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+]
+
+[project.urls]
+Homepage ='https://github.com/Open-Minds-Lab/mrQA'
+Documentation = "https://open-minds-lab.github.io/mrQA/"
+
+[project.scripts]
+mrqa = "mrQA.cli:cli"
+mrqa_monitor = "mrQA.monitor:cli"
+mrqa_parallel = "mrQA.run_parallel:cli"
+mrqa_subset = "mrQA.run_subset:cli"
+[project.optional-dependencies]
+test = [
+    "pytest~=7.1.2",
+    "hypothesis>=6.97.1",
+    "flake8",
+    "coverage",
+    "requests"
+]
+[tool.hatch.build]
+include = [
+    "mrQA/*.py",
+    "mrQA/layout.html",
+    "mrQA/resources/*",
+    "mrQA/tests/*",
+    "mrQA/tests/resources/*",
+]
+exclude = [
+]
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "mrQA/_version.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "mrQA/*.py",
+    "mQA/resources/*",
+    "mrQA/tests/*",
+    "mrQA/tests/resources/*",]
+exclude = [
+    "/.github",
+    "/docs",
+]
+strict-naming = false

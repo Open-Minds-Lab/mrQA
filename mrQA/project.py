@@ -10,7 +10,7 @@ from mrQA.utils import _cli_report, \
     export_subject_lists, make_output_paths, \
     modify_sequence_name, _init_datasets, get_reference_protocol, get_config, \
     save_audit_results
-from protocol.utils import import_string
+# from protocol.utils import import_string
 
 
 def check_compliance(dataset: BaseDataset,
@@ -113,20 +113,20 @@ def check_compliance(dataset: BaseDataset,
     return hz_audit_results, vt_audit_results, report_path
 
 
-def plot_patterns(non_compliant_ds, complete_ds, config_path=None):
-    plots = {}
-    plots_config = get_config(config_path=config_path, report_type='plots')
-    if not plots_config:
-        return plots
-
-    include_params = plots_config.get("include_parameters", None)
-    for param in include_params:
-        param_cls = import_string('mrQA.plotting.' + param)
-        print(param)
-        param_figure = param_cls()
-        param_figure.plot(non_compliant_ds, complete_ds)
-        plots[param] = param_figure
-    return plots
+# def plot_patterns(non_compliant_ds, complete_ds, config_path=None):
+#     plots = {}
+#     plots_config = get_config(config_path=config_path, report_type='plots')
+#     if not plots_config:
+#         return plots
+#
+#     include_params = plots_config.get("include_parameters", None)
+#     for param in include_params:
+#         param_cls = import_string('mrQA.plotting.' + param)
+#         print(param)
+#         param_figure = param_cls()
+#         param_figure.plot(non_compliant_ds, complete_ds)
+#         plots[param] = param_figure
+#     return plots
 
 
 def horizontal_audit(dataset: BaseDataset,
