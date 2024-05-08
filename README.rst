@@ -27,10 +27,12 @@ Documentation: https://open-minds-lab.github.io/mrQA/
 
 Key features:
 
-- evaluation of protocol compliance (within-sequence across-dataset) in an existing dataset
+- protocol compliance checks in key dimensions, both
+   - horizontal audit (within-sequence across-dataset), as well as 
+   - vertical audit (within-session across-sequence)
 - continuous monitoring of incoming data (hourly or daily on XNAT server or similar)
 - parallel processing of very large datasets (like ABCD or UK Biobank) on a HPC cluster
-- few more to be released soon including vertical audit within-session across-sequence checks
+- few more to be released soon including automatic artefact detection and rating
 
 Simple schematic of the library:
 
